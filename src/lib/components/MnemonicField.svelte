@@ -32,9 +32,9 @@
   // Get editable params for the selected concrete type (exclude nested/delegating)
   let selectedParams = $derived.by(() => {
     if (!selectedSpec) return [];
-    return Object.values(selectedSpec.parameters).filter(
-      (p) => p.name !== '@delegating@' && !isNestedParam(p)
-    );
+    return Object.values(selectedSpec.parameters)
+      .filter((p) => p.name !== '@delegating@' && !isNestedParam(p))
+      .sort((a, b) => (b.order ?? 0) - (a.order ?? 0));
   });
 
   function onTypeChange(e) {

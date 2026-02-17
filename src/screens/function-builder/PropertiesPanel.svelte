@@ -16,9 +16,9 @@
   // DomainFunction params (trace, metrics, verbose) — exclude declaration, nested, @delegating@
   const DF_IGNORE = new Set(['declaration', '@delegating@']);
   const dfParams = isDomainFunction
-    ? Object.values(node.spec.parameters).filter(
-        (p) => !isNestedParam(p) && !DF_IGNORE.has(p.name)
-      )
+    ? Object.values(node.spec.parameters)
+        .filter((p) => !isNestedParam(p) && !DF_IGNORE.has(p.name))
+        .sort((a, b) => (b.order ?? 0) - (a.order ?? 0))
     : [];
 
   // Inner task node (for DomainFunction) or self (for other nodes)
@@ -28,9 +28,9 @@
 
   const taskNode = isDomainFunction ? innerTask : node;
   const taskParams = taskNode
-    ? Object.values(taskNode.spec.parameters).filter(
-        (p) => !isNestedParam(p)
-      )
+    ? Object.values(taskNode.spec.parameters)
+        .filter((p) => !isNestedParam(p))
+        .sort((a, b) => (b.order ?? 0) - (a.order ?? 0))
     : [];
 
   // Local reactive values — separate stores for DF and task

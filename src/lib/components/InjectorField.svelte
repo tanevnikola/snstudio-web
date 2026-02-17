@@ -82,9 +82,9 @@
   // Get injector's non-nested params, excluding @delegating@ from the regular loop
   let injectorParams = $derived.by(() => {
     if (!injectorNode) return [];
-    return Object.values(injectorNode.spec.parameters).filter(
-      (p) => !isNestedParam(p) && p.name !== '@delegating@'
-    );
+    return Object.values(injectorNode.spec.parameters)
+      .filter((p) => !isNestedParam(p) && p.name !== '@delegating@')
+      .sort((a, b) => (b.order ?? 0) - (a.order ?? 0));
   });
 
   let hasDelegating = $derived(injectorNode?.spec.parameters['@delegating@'] != null);

@@ -74,7 +74,9 @@
 
   let nestedParams = $derived.by(() => {
     if (!displayNode) return [];
-    return Object.values(displayNode.spec.parameters).filter(isNestedParam);
+    return Object.values(displayNode.spec.parameters)
+      .filter(isNestedParam)
+      .sort((a, b) => (b.order ?? 0) - (a.order ?? 0));
   });
 
   let selected = $derived(selectedId === nodeId);
