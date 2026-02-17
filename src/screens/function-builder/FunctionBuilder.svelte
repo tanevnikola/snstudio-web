@@ -24,6 +24,7 @@
 
   // YAML editor state
   let yamlText = $state('');
+  let yamlLineMap = $state(new Map()); // nodeId → line number
   let yamlEditing = $state(false); // true while user is typing in the editor
   let yamlError = $state(null);
   let debounceTimer = null;
@@ -41,17 +42,46 @@
     if (yamlEditing) return;
     if (skipNextSerialize) {
       skipNextSerialize = false;
+      // Still rebuild lineMap from the current text so click-to-scroll works
+      if (rootNodeId) {
+        try {
+          const result = nodeToYaml(rootNodeId);
+          yamlLineMap = result.lineMap;
+        } catch { /* ignore */ }
+      }
       return;
     }
     if (!rootNodeId) {
       yamlText = '';
+      yamlLineMap = new Map();
       return;
     }
     try {
-      yamlText = nodeToYaml(rootNodeId);
+      const result = nodeToYaml(rootNodeId);
+      yamlText = result.text;
+      yamlLineMap = result.lineMap;
     } catch {
       yamlText = '# Error generating YAML';
+      yamlLineMap = new Map();
     }
+  });
+
+  // Scroll YAML editor to the selected node's line
+  $effect(() => {
+    if (!selectedNodeId || yamlCollapsed || yamlEditing) return;
+    const line = yamlLineMap.get(selectedNodeId);
+    if (line == null) return;
+    // Find the textarea and scroll to the line
+    const textarea = document.querySelector('.yaml-textarea');
+    if (!textarea) return;
+    const lineHeight = parseFloat(getComputedStyle(textarea).lineHeight) || 18;
+    const scrollTarget = line * lineHeight;
+    const viewHeight = textarea.clientHeight;
+    // Center the target line in the viewport
+    textarea.scrollTop = Math.max(0, scrollTarget - viewHeight / 3);
+    // Also sync the highlight overlay
+    const highlight = textarea.parentElement?.querySelector('.yaml-highlight');
+    if (highlight) highlight.scrollTop = textarea.scrollTop;
   });
 
   function bumpTree() {

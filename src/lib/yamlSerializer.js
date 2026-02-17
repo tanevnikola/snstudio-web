@@ -5,19 +5,59 @@ import { isNestedParam, isInjectorRef, getNode } from './specApi.js';
  * Convert a node tree into the t:/v: YAML notation.
  * Uses the registry (plain objects) to avoid Svelte proxy dependencies.
  * @param {string} nodeId - root node ID
+ * @returns {{ text: string, lineMap: Map<string, number> }}
+ *   text — the YAML string
+ *   lineMap — maps nodeId → 0-based line number where that node starts
  */
 export function nodeToYaml(nodeId) {
   const node = getNode(nodeId);
-  if (!node) return '';
-  // Root DomainFunction is always inlined (no t:/v: wrapper)
-  const obj = nodeToObject(node, node.mnemonic);
-  return yaml.dump(obj, {
+  if (!node) return { text: '', lineMap: new Map() };
+
+  const markers = new Map(); // marker string → nodeId
+  const obj = nodeToObject(node, node.mnemonic, markers);
+  const raw = yaml.dump(obj, {
     indent: 2,
     lineWidth: -1,
     noRefs: true,
     quotingType: "'",
     forceQuotes: false,
   });
+
+  // Build lineMap by scanning for marker keys, then strip them.
+  // When a marker is the first key in an array item (has "- " prefix),
+  // transfer the "- " to the next real line so array structure is preserved.
+  const lineMap = new Map();
+  const MARKER_RE = /^(\s*(-\s+)?)__node_(.+):\s*null\s*$/;
+  const lines = raw.split('\n');
+  const cleanLines = [];
+  let cleanLineIndex = 0;
+  let pendingArrayPrefix = null; // indent + "- " to prepend to next line
+
+  for (const line of lines) {
+    const m = line.match(MARKER_RE);
+    if (m) {
+      const indent = m[1];
+      const dash = m[2]; // "- " or undefined
+      const nid = m[3];
+      lineMap.set(nid, cleanLineIndex);
+      if (dash) {
+        // This marker was the first item in an array entry — save the prefix
+        pendingArrayPrefix = indent;
+      }
+    } else {
+      let out = line;
+      if (pendingArrayPrefix != null) {
+        // Replace leading spaces with the array prefix (indent + "- ")
+        const stripped = line.replace(/^\s+/, '');
+        out = pendingArrayPrefix + stripped;
+        pendingArrayPrefix = null;
+      }
+      cleanLines.push(out);
+      cleanLineIndex++;
+    }
+  }
+
+  return { text: cleanLines.join('\n'), lineMap };
 }
 
 /**
@@ -28,12 +68,14 @@ export function nodeToYaml(nodeId) {
  *   If the node's mnemonic matches exactly, we inline (skip t:/v: wrapper).
  *   If it differs (concrete subtype of abstract param), we wrap with t:/v:.
  */
-function nodeToObject(node, expectedMnemonic) {
+function nodeToObject(node, expectedMnemonic, markers) {
   const params = node.spec.parameters;
   const inline = expectedMnemonic && node.mnemonic === expectedMnemonic;
+  const marker = `__node_${node.id}`;
+  if (markers) markers.set(marker, node.id);
 
   // Build the properties object (v contents)
-  const v = buildProperties(node, params);
+  const v = buildProperties(node, params, markers);
 
   // @delegating@ means the value goes directly (no param name wrapper)
   const delegating = params['@delegating@'];
@@ -41,44 +83,48 @@ function nodeToObject(node, expectedMnemonic) {
     if (isNestedParam(delegating)) {
       const kids = node.children['@delegating@'];
       if (kids && kids.length > 0) {
-        const mapped = kids.map((child) => nodeToObject(child, delegating.mnemonic));
+        const mapped = kids.map((child) => nodeToObject(child, delegating.mnemonic, markers));
         if (delegating.injectionStrategy === 'COLLECTION') {
-          return inline ? mapped : { t: node.mnemonic, v: mapped };
+          return inline ? mapped : { [marker]: null, t: node.mnemonic, v: mapped };
         } else {
-          return inline ? mapped[0] : { t: node.mnemonic, v: mapped[0] };
+          return inline ? mapped[0] : { [marker]: null, t: node.mnemonic, v: mapped[0] };
         }
       }
-      return inline ? {} : { t: node.mnemonic };
+      return inline ? {} : { [marker]: null, t: node.mnemonic };
     } else {
       const val = node.values['@delegating@'];
       if (val !== undefined && val !== '') {
         if (isInjectorRef(val)) {
-          const s = serializeInjectorRef(val);
-          if (s != null) return inline ? s : { t: node.mnemonic, v: s };
+          const s = serializeInjectorRef(val, markers);
+          if (s != null) return inline ? s : { [marker]: null, t: node.mnemonic, v: s };
         }
         const coerced = coerceValue(val, delegating.mnemonic);
-        return inline ? coerced : { t: node.mnemonic, v: coerced };
+        return inline ? coerced : { [marker]: null, t: node.mnemonic, v: coerced };
       }
-      return inline ? undefined : { t: node.mnemonic };
+      return inline ? undefined : { [marker]: null, t: node.mnemonic };
     }
   }
 
   if (inline) {
     // Inline: just output the properties directly (no t:/v: wrapper)
-    return Object.keys(v).length > 0 ? v : {};
+    // Inject marker as first key
+    if (Object.keys(v).length > 0) {
+      return { [marker]: null, ...v };
+    }
+    return { [marker]: null };
   }
 
   // Wrapped: { t: mnemonic, v: { ...properties } }
   if (Object.keys(v).length === 0) {
-    return { t: node.mnemonic };
+    return { [marker]: null, t: node.mnemonic };
   }
-  return { t: node.mnemonic, v };
+  return { [marker]: null, t: node.mnemonic, v };
 }
 
 /**
  * Build the properties object from a node's values and children.
  */
-function buildProperties(node, params) {
+function buildProperties(node, params, markers) {
   const v = {};
 
   // Add property values (non-nested params)
@@ -91,7 +137,7 @@ function buildProperties(node, params) {
 
     // Check if the entire value is an injector reference
     if (isInjectorRef(val)) {
-      const serialized = serializeInjectorRef(val);
+      const serialized = serializeInjectorRef(val, markers);
       if (serialized != null) v[name] = serialized;
       continue;
     }
@@ -103,7 +149,7 @@ function buildProperties(node, params) {
           if (entry.key) {
             // Each map value may be an injector ref
             if (isInjectorRef(entry.value)) {
-              const s = serializeInjectorRef(entry.value);
+              const s = serializeInjectorRef(entry.value, markers);
               if (s != null) map[entry.key] = s;
             } else {
               map[entry.key] = entry.value;
@@ -118,7 +164,7 @@ function buildProperties(node, params) {
       if (Array.isArray(val) && val.length > 0) {
         v[name] = val
           .filter((x) => x !== '')
-          .map((item) => isInjectorRef(item) ? (serializeInjectorRef(item) ?? item) : item);
+          .map((item) => isInjectorRef(item) ? (serializeInjectorRef(item, markers) ?? item) : item);
       }
     } else {
       v[name] = coerceValue(val, param.mnemonic);
@@ -134,9 +180,9 @@ function buildProperties(node, params) {
     if (!kids || kids.length === 0) continue;
 
     if (param.injectionStrategy === 'COLLECTION') {
-      v[name] = kids.map((child) => nodeToObject(child, param.mnemonic));
+      v[name] = kids.map((child) => nodeToObject(child, param.mnemonic, markers));
     } else {
-      v[name] = nodeToObject(kids[0], param.mnemonic);
+      v[name] = nodeToObject(kids[0], param.mnemonic, markers);
     }
   }
 
@@ -147,12 +193,11 @@ function buildProperties(node, params) {
  * Serialize an injector reference { __injectorNodeId } to a t:/v: object.
  * Reuses nodeToObject — injectors are normal nodes in the registry.
  */
-function serializeInjectorRef(ref) {
+function serializeInjectorRef(ref, markers) {
   if (!ref?.__injectorNodeId) return null;
   const injNode = getNode(ref.__injectorNodeId);
   if (!injNode) return null;
-  // Injectors are always wrapped (never inlined) — pass null as expectedMnemonic
-  return nodeToObject(injNode, null);
+  return nodeToObject(injNode, null, markers);
 }
 
 function coerceValue(val, mnemonic) {
