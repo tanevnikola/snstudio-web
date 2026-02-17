@@ -1,103 +1,187 @@
 <script>
   import DropZone from './DropZone.svelte';
   import ComponentBlock from './ComponentBlock.svelte';
-  import { isNestedParam, fetchSpec, createNode, unregisterNode } from './specApi.js';
+  import { isNestedParam, fetchSpec, createNode, getNode, addChild, removeChild } from './specApi.js';
 
-  let { node, selectedId, onselect } = $props();
+  let { nodeId, selectedId, onselect, onchange } = $props();
 
   let collapsed = $state(false);
 
-  let nestedParams = $derived(
-    Object.values(node.spec.parameters).filter(isNestedParam)
-  );
+  // Read from registry — plain object, no proxy mutation issues
+  const node = getNode(nodeId);
 
-  let selected = $derived(selectedId === node.id);
+  const isDomainFunction = node?.mnemonic === 'DomainFunction';
+
+  // For DomainFunction: look through to the inner task
+  // For other nodes: use self
+  let displayNode = $derived.by(() => {
+    if (!isDomainFunction) return node;
+    const taskKids = getNode(nodeId)?.children['task'];
+    return taskKids?.[0] ?? null;
+  });
+
+  let nestedParams = $derived.by(() => {
+    if (!displayNode) return [];
+    return Object.values(displayNode.spec.parameters).filter(isNestedParam);
+  });
+
+  let selected = $derived(selectedId === nodeId);
+
+  // Reactive snapshot of children — from the display node (the inner task)
+  let childrenSnapshot = $state({});
+
+  function refreshChildren() {
+    // Re-read display node's children from registry
+    const n = getNode(nodeId);
+    if (isDomainFunction) {
+      const taskKids = n?.children['task'];
+      const innerTask = taskKids?.[0];
+      childrenSnapshot = innerTask ? { ...innerTask.children } : {};
+    } else {
+      childrenSnapshot = n ? { ...n.children } : {};
+    }
+  }
+
+  // Initialize
+  refreshChildren();
 
   async function handleDrop(droppedMnemonic, paramName) {
     try {
-      const spec = await fetchSpec(droppedMnemonic);
-      const child = createNode(droppedMnemonic, spec);
-      const param = node.spec.parameters[paramName];
+      const targetNodeId = isDomainFunction
+        ? getNode(nodeId)?.children['task']?.[0]?.id
+        : nodeId;
+      if (!targetNodeId) return;
 
-      if (!node.children[paramName]) {
-        node.children[paramName] = [];
-      }
+      const targetNode = getNode(targetNodeId);
+      const param = targetNode?.spec.parameters[paramName];
 
-      if (param.injectionStrategy === 'DIRECT') {
-        if (node.children[paramName].length) {
-          unregisterDeep(node.children[paramName][0]);
-        }
-        node.children[paramName] = [child];
+      // If the drop zone expects DomainFunction but a task was dropped, auto-wrap
+      if (param?.mnemonic === 'DomainFunction' && droppedMnemonic !== 'DomainFunction') {
+        const dfSpec = await fetchSpec('DomainFunction');
+        const dfNode = createNode('DomainFunction', dfSpec);
+        const taskSpec = await fetchSpec(droppedMnemonic);
+        const taskNode = createNode(droppedMnemonic, taskSpec);
+        addChild(dfNode.id, 'task', taskNode);
+        addChild(targetNodeId, paramName, dfNode);
       } else {
-        node.children[paramName] = [...node.children[paramName], child];
+        const spec = await fetchSpec(droppedMnemonic);
+        const child = createNode(droppedMnemonic, spec);
+        addChild(targetNodeId, paramName, child);
       }
+      refreshChildren();
+      queueMicrotask(() => onchange?.());
     } catch (e) {
       console.error('Failed to drop component:', e);
     }
   }
 
-  function removeChild(paramName, index) {
-    const removed = node.children[paramName][index];
-    if (removed) unregisterDeep(removed);
-    node.children[paramName] = node.children[paramName].filter((_, i) => i !== index);
+  async function handleTaskDrop(droppedMnemonic) {
+    // Drop a task onto a DomainFunction that has no task yet
+    try {
+      const spec = await fetchSpec(droppedMnemonic);
+      const child = createNode(droppedMnemonic, spec);
+      addChild(nodeId, 'task', child);
+      refreshChildren();
+      queueMicrotask(() => onchange?.());
+    } catch (e) {
+      console.error('Failed to drop task:', e);
+    }
   }
 
-  function unregisterDeep(n) {
-    unregisterNode(n.id);
-    for (const kids of Object.values(n.children)) {
-      for (const kid of kids) {
-        unregisterDeep(kid);
-      }
-    }
+  function handleRemoveChild(paramName, index) {
+    const targetNodeId = isDomainFunction
+      ? getNode(nodeId)?.children['task']?.[0]?.id
+      : nodeId;
+    if (!targetNodeId) return;
+
+    removeChild(targetNodeId, paramName, index);
+    refreshChildren();
+    queueMicrotask(() => onchange?.());
+  }
+
+  function handleChildChange() {
+    refreshChildren();
+    onchange?.();
   }
 </script>
 
+{#if node}
 <div class="component">
-  <div class="block-row">
-    <button
-      class="collapse-btn"
-      onclick={() => (collapsed = !collapsed)}
-      title={collapsed ? 'Expand' : 'Collapse'}
-    >
-      {collapsed ? '▶' : '▼'}
-    </button>
-    <button
-      class="block"
-      class:selected
-      onclick={() => onselect?.(node.id)}
-    >
-      <span class="mnemonic">{node.mnemonic}</span>
-      <span class="stereotype">{node.spec.implementsStereotype}</span>
-    </button>
-  </div>
+  {#if isDomainFunction && !displayNode}
+    <!-- DomainFunction with no task yet — show drop zone for task -->
+    <div class="block-row">
+      <button
+        class="block empty-df"
+        class:selected
+        onclick={() => onselect?.(nodeId)}
+      >
+        <span class="mnemonic">DomainFunction</span>
+        <span class="hint">drop a task</span>
+      </button>
+    </div>
+    <DropZone
+      paramName="task"
+      acceptedMnemonic="DomainTask"
+      ondrop={(mnemonic, _param) => handleTaskDrop(mnemonic)}
+    />
+  {:else if displayNode}
+    <div class="block-row">
+      {#if nestedParams.length > 0}
+        <button
+          class="collapse-btn"
+          onclick={() => (collapsed = !collapsed)}
+          title={collapsed ? 'Expand' : 'Collapse'}
+        >
+          {collapsed ? '▶' : '▼'}
+        </button>
+      {/if}
+      <button
+        class="block"
+        class:selected
+        onclick={() => onselect?.(nodeId)}
+      >
+        <span class="mnemonic">{displayNode.mnemonic}</span>
+        <span class="stereotype">{displayNode.spec.implementsStereotype}</span>
+        {#if isDomainFunction}
+          {#if getNode(nodeId)?.values['trace']}
+            <span class="trace">{getNode(nodeId).values['trace']}</span>
+          {/if}
+        {/if}
+      </button>
+    </div>
 
-  {#if !collapsed}
-    {#each nestedParams as param (param.name)}
-      <div class="nested-section">
-        <span class="param-label">{param.name}:</span>
-        {#if node.children[param.name]?.length}
-          {#each node.children[param.name] as child, i (child.id)}
-            <div class="nested-child">
-              <ComponentBlock
-                node={child}
-                {selectedId}
-                {onselect}
-              />
-              <button class="remove-child" onclick={() => removeChild(param.name, i)}>✕</button>
-            </div>
-          {/each}
-        {/if}
-        {#if param.injectionStrategy === 'COLLECTION' || !node.children[param.name]?.length}
-          <DropZone
-            paramName={param.name}
-            acceptedMnemonic={param.mnemonic}
-            ondrop={handleDrop}
-          />
-        {/if}
-      </div>
-    {/each}
+    {#if !collapsed}
+      {#each nestedParams as param (param.name)}
+        <div class="nested-section">
+          {#if param.name !== '@delegating@'}
+            <span class="param-label">{param.name}:</span>
+          {/if}
+          {#if childrenSnapshot[param.name]?.length}
+            {#each childrenSnapshot[param.name] as child, i (child.id)}
+              <div class="nested-child">
+                <ComponentBlock
+                  nodeId={child.id}
+                  {selectedId}
+                  {onselect}
+                  onchange={handleChildChange}
+                />
+                <button class="remove-child" onclick={() => handleRemoveChild(param.name, i)}>✕</button>
+              </div>
+            {/each}
+          {/if}
+          {#if param.injectionStrategy === 'COLLECTION' || !childrenSnapshot[param.name]?.length}
+            <DropZone
+              paramName={param.name}
+              acceptedMnemonic={param.mnemonic}
+              ondrop={handleDrop}
+            />
+          {/if}
+        </div>
+      {/each}
+    {/if}
   {/if}
 </div>
+{/if}
 
 <style>
   .component {
@@ -149,6 +233,11 @@
     background: #f0f6ff;
   }
 
+  .block.empty-df {
+    border-style: dashed;
+    color: #999;
+  }
+
   .mnemonic {
     font-weight: 600;
     font-size: 0.9rem;
@@ -160,6 +249,20 @@
     background: #eee;
     padding: 0.1rem 0.4rem;
     border-radius: 3px;
+  }
+
+  .trace {
+    font-size: 0.7rem;
+    color: #888;
+    font-style: italic;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .hint {
+    font-size: 0.75rem;
+    color: #bbb;
   }
 
   .nested-section {

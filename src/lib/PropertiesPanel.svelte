@@ -1,22 +1,51 @@
 <script>
   import { isNestedParam, isPrimitive, fetchSpec, getNode } from './specApi.js';
 
-  let { nodeId } = $props();
+  let { nodeId, onchange } = $props();
 
-  // Get the raw node from the registry — we read spec/mnemonic from it
-  // but manage values in local $state for reactivity
   const node = getNode(nodeId);
-  const params = Object.values(node.spec.parameters).filter((p) => !isNestedParam(p));
+  const isDomainFunction = node?.mnemonic === 'DomainFunction';
 
-  // Local reactive copy of values — edits here, synced back to node
-  let values = $state({ ...node.values });
+  // DomainFunction params (trace, metrics, verbose) — exclude declaration, nested, @delegating@
+  const DF_IGNORE = new Set(['declaration', '@delegating@']);
+  const dfParams = isDomainFunction
+    ? Object.values(node.spec.parameters).filter(
+        (p) => !isNestedParam(p) && !DF_IGNORE.has(p.name)
+      )
+    : [];
 
-  // Sync local values back to the registry node whenever they change
+  // Inner task node (for DomainFunction) or self (for other nodes)
+  const innerTask = isDomainFunction
+    ? node.children['task']?.[0] ?? null
+    : null;
+
+  const taskNode = isDomainFunction ? innerTask : node;
+  const taskParams = taskNode
+    ? Object.values(taskNode.spec.parameters).filter(
+        (p) => !isNestedParam(p) && p.name !== '@delegating@'
+      )
+    : [];
+
+  // Local reactive values — separate stores for DF and task
+  let dfValues = $state(isDomainFunction ? { ...node.values } : {});
+  let taskValues = $state(taskNode ? { ...taskNode.values } : {});
+
+  // Collapsible DF section
+  let dfExpanded = $state(false);
+
+  // Sync back to registry
   $effect(() => {
-    node.values = { ...values };
+    if (isDomainFunction) node.values = { ...dfValues };
+  });
+  $effect(() => {
+    if (taskNode) taskNode.values = { ...taskValues };
   });
 
-  // Resolved enum values: paramName → string[] or null
+  function notifyChange() {
+    queueMicrotask(() => onchange?.());
+  }
+
+  // Enum resolution
   let enumCache = $state({});
 
   async function resolveEnum(param) {
@@ -27,153 +56,218 @@
         enumCache = { ...enumCache, [param.name]: spec.constraints.values };
       }
     } catch {
-      // not an enum or fetch failed — leave as text
+      // not an enum or fetch failed
     }
   }
 
-  // Resolve enums for unknown mnemonics on mount
-  for (const param of params) {
+  for (const param of [...dfParams, ...taskParams]) {
     if (param.mnemonic && !isPrimitive(param.mnemonic)) {
       resolveEnum(param);
     }
   }
 
-  function getValue(name) {
-    return values[name] ?? '';
+  // Value accessors — take a store reference
+  function getValue(store, name) {
+    return store[name] ?? '';
   }
-
-  function setValue(name, value) {
-    values = { ...values, [name]: value };
-  }
-
-  function getBoolValue(name) {
-    const v = values[name];
+  function getBoolValue(store, name) {
+    const v = store[name];
     return v === true || v === 'true';
   }
-
-  function getMapEntries(name) {
-    return values[name] || [];
+  function getMapEntries(store, name) {
+    return store[name] || [];
+  }
+  function getCollectionEntries(store, name) {
+    return store[name] || [];
   }
 
-  function addMapEntry(name) {
-    const current = values[name] || [];
-    values = { ...values, [name]: [...current, { key: '', value: '' }] };
+  // Returns a setter bound to a specific store ('df' or 'task')
+  function setVal(which, name, value) {
+    if (which === 'df') {
+      dfValues = { ...dfValues, [name]: value };
+    } else {
+      taskValues = { ...taskValues, [name]: value };
+    }
+    notifyChange();
   }
 
-  function removeMapEntry(name, index) {
-    const current = values[name] || [];
-    values = { ...values, [name]: current.filter((_, i) => i !== index) };
+  function addMapEntry(which, name) {
+    const store = which === 'df' ? dfValues : taskValues;
+    const current = store[name] || [];
+    if (which === 'df') {
+      dfValues = { ...dfValues, [name]: [...current, { key: '', value: '' }] };
+    } else {
+      taskValues = { ...taskValues, [name]: [...current, { key: '', value: '' }] };
+    }
+    notifyChange();
   }
 
-  function updateMapEntry(name, index, field, value) {
-    const current = [...(values[name] || [])];
+  function removeMapEntry(which, name, index) {
+    const store = which === 'df' ? dfValues : taskValues;
+    const current = store[name] || [];
+    const updated = current.filter((_, i) => i !== index);
+    if (which === 'df') {
+      dfValues = { ...dfValues, [name]: updated };
+    } else {
+      taskValues = { ...taskValues, [name]: updated };
+    }
+    notifyChange();
+  }
+
+  function updateMapEntry(which, name, index, field, value) {
+    const store = which === 'df' ? dfValues : taskValues;
+    const current = [...(store[name] || [])];
     current[index] = { ...current[index], [field]: value };
-    values = { ...values, [name]: current };
+    if (which === 'df') {
+      dfValues = { ...dfValues, [name]: current };
+    } else {
+      taskValues = { ...taskValues, [name]: current };
+    }
+    notifyChange();
   }
 
-  function getCollectionEntries(name) {
-    return values[name] || [];
+  function addCollectionEntry(which, name) {
+    const store = which === 'df' ? dfValues : taskValues;
+    const current = store[name] || [];
+    if (which === 'df') {
+      dfValues = { ...dfValues, [name]: [...current, ''] };
+    } else {
+      taskValues = { ...taskValues, [name]: [...current, ''] };
+    }
+    notifyChange();
   }
 
-  function addCollectionEntry(name) {
-    const current = values[name] || [];
-    values = { ...values, [name]: [...current, ''] };
+  function removeCollectionEntry(which, name, index) {
+    const store = which === 'df' ? dfValues : taskValues;
+    const current = store[name] || [];
+    const updated = current.filter((_, i) => i !== index);
+    if (which === 'df') {
+      dfValues = { ...dfValues, [name]: updated };
+    } else {
+      taskValues = { ...taskValues, [name]: updated };
+    }
+    notifyChange();
   }
 
-  function removeCollectionEntry(name, index) {
-    const current = values[name] || [];
-    values = { ...values, [name]: current.filter((_, i) => i !== index) };
-  }
-
-  function updateCollectionEntry(name, index, value) {
-    const current = [...(values[name] || [])];
+  function updateCollectionEntry(which, name, index, value) {
+    const store = which === 'df' ? dfValues : taskValues;
+    const current = [...(store[name] || [])];
     current[index] = value;
-    values = { ...values, [name]: current };
+    if (which === 'df') {
+      dfValues = { ...dfValues, [name]: current };
+    } else {
+      taskValues = { ...taskValues, [name]: current };
+    }
+    notifyChange();
   }
 </script>
 
-<div class="panel">
-  <h3>{node.mnemonic}</h3>
+{#snippet paramField(param, which)}
+  {@const store = which === 'df' ? dfValues : taskValues}
+  <div class="param">
+    <span class="param-name">
+      {param.name}
+      {#if param.required}<span class="required">*</span>{/if}
+    </span>
+    <span class="param-hint">{param.mnemonic}{param.injectionStrategy && param.injectionStrategy !== 'DIRECT' ? ` · ${param.injectionStrategy}` : ''}</span>
 
-  {#each params as param (param.name)}
-    <div class="param">
-      <span class="param-name">
-        {param.name}
-        {#if param.required}<span class="required">*</span>{/if}
-      </span>
-      <span class="param-hint">{param.mnemonic}{param.injectionStrategy && param.injectionStrategy !== 'DIRECT' ? ` · ${param.injectionStrategy}` : ''}</span>
-
-      {#if param.mnemonic === 'Boolean'}
-        <label class="checkbox-label">
-          <input
-            type="checkbox"
-            checked={getBoolValue(param.name)}
-            onchange={(e) => setValue(param.name, e.target.checked)}
-          />
-          {getBoolValue(param.name) ? 'true' : 'false'}
-        </label>
-
-      {:else if enumCache[param.name]}
-        <select
-          value={getValue(param.name)}
-          onchange={(e) => setValue(param.name, e.target.value)}
-        >
-          <option value="">-- select --</option>
-          {#each enumCache[param.name] as val (val)}
-            <option value={val}>{val}</option>
-          {/each}
-        </select>
-
-      {:else if param.injectionStrategy === 'MAP'}
-        <div class="map-entries">
-          {#each getMapEntries(param.name) as entry, i (i)}
-            <div class="map-row">
-              <input
-                type="text"
-                class="map-key"
-                placeholder="key"
-                value={entry.key}
-                oninput={(e) => updateMapEntry(param.name, i, 'key', e.target.value)}
-              />
-              <input
-                type="text"
-                class="map-value"
-                placeholder="value"
-                value={entry.value}
-                oninput={(e) => updateMapEntry(param.name, i, 'value', e.target.value)}
-              />
-              <button class="remove-btn" onclick={() => removeMapEntry(param.name, i)}>✕</button>
-            </div>
-          {/each}
-          <button class="add-btn" onclick={() => addMapEntry(param.name)}>+ add entry</button>
-        </div>
-
-      {:else if param.injectionStrategy === 'COLLECTION'}
-        <div class="collection-entries">
-          {#each getCollectionEntries(param.name) as entry, i (i)}
-            <div class="collection-row">
-              <input
-                type="text"
-                value={entry}
-                placeholder="value"
-                oninput={(e) => updateCollectionEntry(param.name, i, e.target.value)}
-              />
-              <button class="remove-btn" onclick={() => removeCollectionEntry(param.name, i)}>✕</button>
-            </div>
-          {/each}
-          <button class="add-btn" onclick={() => addCollectionEntry(param.name)}>+ add</button>
-        </div>
-
-      {:else}
+    {#if param.mnemonic === 'Boolean'}
+      <label class="checkbox-label">
         <input
-          type="text"
-          value={getValue(param.name)}
-          placeholder={param.defaultValue != null ? String(param.defaultValue) : ''}
-          oninput={(e) => setValue(param.name, e.target.value)}
+          type="checkbox"
+          checked={getBoolValue(store, param.name)}
+          onchange={(e) => setVal(which, param.name, e.target.checked)}
         />
+        {getBoolValue(store, param.name) ? 'true' : 'false'}
+      </label>
+
+    {:else if enumCache[param.name]}
+      <select
+        value={getValue(store, param.name)}
+        onchange={(e) => setVal(which, param.name, e.target.value)}
+      >
+        <option value="">-- select --</option>
+        {#each enumCache[param.name] as val (val)}
+          <option value={val}>{val}</option>
+        {/each}
+      </select>
+
+    {:else if param.injectionStrategy === 'MAP'}
+      <div class="map-entries">
+        {#each getMapEntries(store, param.name) as entry, i (i)}
+          <div class="map-row">
+            <input
+              type="text"
+              class="map-key"
+              placeholder="key"
+              value={entry.key}
+              oninput={(e) => updateMapEntry(which, param.name, i, 'key', e.target.value)}
+            />
+            <input
+              type="text"
+              class="map-value"
+              placeholder="value"
+              value={entry.value}
+              oninput={(e) => updateMapEntry(which, param.name, i, 'value', e.target.value)}
+            />
+            <button class="remove-btn" onclick={() => removeMapEntry(which, param.name, i)}>✕</button>
+          </div>
+        {/each}
+        <button class="add-btn" onclick={() => addMapEntry(which, param.name)}>+ add entry</button>
+      </div>
+
+    {:else if param.injectionStrategy === 'COLLECTION'}
+      <div class="collection-entries">
+        {#each getCollectionEntries(store, param.name) as entry, i (i)}
+          <div class="collection-row">
+            <input
+              type="text"
+              value={entry}
+              placeholder="value"
+              oninput={(e) => updateCollectionEntry(which, param.name, i, e.target.value)}
+            />
+            <button class="remove-btn" onclick={() => removeCollectionEntry(which, param.name, i)}>✕</button>
+          </div>
+        {/each}
+        <button class="add-btn" onclick={() => addCollectionEntry(which, param.name)}>+ add</button>
+      </div>
+
+    {:else}
+      <input
+        type="text"
+        value={getValue(store, param.name)}
+        placeholder={param.defaultValue != null ? String(param.defaultValue) : ''}
+        oninput={(e) => setVal(which, param.name, e.target.value)}
+      />
+    {/if}
+  </div>
+{/snippet}
+
+<div class="panel">
+  {#if isDomainFunction && dfParams.length > 0}
+    <div class="df-section">
+      <button class="df-header" onclick={() => (dfExpanded = !dfExpanded)}>
+        <span class="df-arrow">{dfExpanded ? '▼' : '▶'}</span>
+        <span class="df-title">DomainFunction</span>
+      </button>
+      {#if dfExpanded}
+        <div class="df-body">
+          {#each dfParams as param (param.name)}
+            {@render paramField(param, 'df')}
+          {/each}
+        </div>
       {/if}
     </div>
-  {/each}
+  {/if}
+
+  {#if taskNode}
+    <h3>{taskNode.mnemonic}</h3>
+    {#each taskParams as param (param.name)}
+      {@render paramField(param, 'task')}
+    {/each}
+  {:else if isDomainFunction}
+    <div class="no-task">No task assigned yet</div>
+  {/if}
 </div>
 
 <style>
@@ -187,6 +281,52 @@
     font-size: 1rem;
     padding-bottom: 0.5rem;
     border-bottom: 1px solid #ddd;
+  }
+
+  .df-section {
+    margin-bottom: 0.75rem;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .df-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background: #f8f8f8;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.8rem;
+    text-align: left;
+  }
+
+  .df-header:hover {
+    background: #f0f0f0;
+  }
+
+  .df-arrow {
+    font-size: 0.6rem;
+    color: #999;
+  }
+
+  .df-title {
+    font-weight: 600;
+    color: #666;
+  }
+
+  .df-body {
+    padding: 0.5rem 0.75rem;
+    border-top: 1px solid #e8e8e8;
+  }
+
+  .no-task {
+    color: #999;
+    font-size: 0.85rem;
+    font-style: italic;
   }
 
   .param {

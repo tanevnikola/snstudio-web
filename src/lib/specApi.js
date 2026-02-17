@@ -50,3 +50,48 @@ export function createNode(mnemonic, spec) {
   registerNode(node);
   return node;
 }
+
+/**
+ * Add a child node under a parent's param slot.
+ * Operates on registry objects (plain JS, no proxy).
+ */
+export function addChild(parentId, paramName, childNode) {
+  const parent = getNode(parentId);
+  if (!parent) return;
+  const param = parent.spec.parameters[paramName];
+  if (!parent.children[paramName]) {
+    parent.children[paramName] = [];
+  }
+  if (param?.injectionStrategy === 'DIRECT') {
+    // Replace existing child
+    const existing = parent.children[paramName][0];
+    if (existing) unregisterDeep(existing);
+    parent.children[paramName] = [childNode];
+  } else {
+    parent.children[paramName] = [...parent.children[paramName], childNode];
+  }
+}
+
+/**
+ * Remove a child node at a given index from a parent's param slot.
+ */
+export function removeChild(parentId, paramName, index) {
+  const parent = getNode(parentId);
+  if (!parent) return;
+  const removed = parent.children[paramName]?.[index];
+  if (removed) unregisterDeep(removed);
+  parent.children[paramName] = (parent.children[paramName] || []).filter((_, i) => i !== index);
+}
+
+export function clearAllNodes() {
+  nodeRegistry.clear();
+}
+
+function unregisterDeep(node) {
+  unregisterNode(node.id);
+  for (const kids of Object.values(node.children)) {
+    for (const kid of kids) {
+      unregisterDeep(kid);
+    }
+  }
+}
