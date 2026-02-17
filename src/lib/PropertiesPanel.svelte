@@ -42,17 +42,16 @@
     if (taskNode) taskNode.values = { ...taskValues };
   });
 
-  function notifyChange() {
-    queueMicrotask(() => onchange?.());
-  }
-
   function setVal(which, name, value) {
     if (which === 'df') {
       dfValues = { ...dfValues, [name]: value };
+      // Write immediately to registry so card reflects changes
+      node.values = { ...dfValues };
     } else {
       taskValues = { ...taskValues, [name]: value };
+      if (taskNode) taskNode.values = { ...taskValues };
     }
-    notifyChange();
+    onchange?.();
   }
 </script>
 

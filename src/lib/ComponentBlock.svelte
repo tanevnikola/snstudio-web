@@ -30,6 +30,14 @@
 
   let selected = $derived(selectedId === nodeId);
 
+  // Reactive values snapshot — re-read from registry when treeTick changes.
+  // Used for any property shown on the card (trace, and future additions).
+  let dfValues = $derived.by(() => {
+    void treeTick;
+    return isDomainFunction ? getNode(nodeId)?.values ?? {} : {};
+  });
+  let trace = $derived(dfValues['trace'] || null);
+
   // Reactive snapshot of children — refreshes when treeTick changes
   let childrenSnapshot = $derived.by(() => {
     void treeTick; // re-run when treeTick changes
@@ -170,8 +178,8 @@
         >⠿</span>
         <span class="mnemonic">Task.Chain</span>
         <span class="stereotype">FlowTask</span>
-        {#if getNode(nodeId)?.values['trace']}
-          <span class="trace">{getNode(nodeId).values['trace']}</span>
+        {#if trace}
+          <span class="trace">{trace}</span>
         {/if}
       </button>
     </div>
@@ -226,10 +234,8 @@
         >⠿</span>
         <span class="mnemonic">{displayNode.mnemonic}</span>
         <span class="stereotype">{displayNode.spec.implementsStereotype}</span>
-        {#if isDomainFunction}
-          {#if getNode(nodeId)?.values['trace']}
-            <span class="trace">{getNode(nodeId).values['trace']}</span>
-          {/if}
+        {#if trace}
+          <span class="trace">{trace}</span>
         {/if}
       </button>
     </div>
