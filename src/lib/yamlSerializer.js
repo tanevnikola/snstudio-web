@@ -1,5 +1,5 @@
 import yaml from 'js-yaml';
-import { isNestedParam, getNode } from './specApi.js';
+import { isNestedParam, isInjectorRef, getNode } from './specApi.js';
 
 /**
  * Convert a node tree into the t:/v: YAML notation.
@@ -52,6 +52,10 @@ function nodeToObject(node, expectedMnemonic) {
     } else {
       const val = node.values['@delegating@'];
       if (val !== undefined && val !== '') {
+        if (isInjectorRef(val)) {
+          const s = serializeInjectorRef(val);
+          if (s != null) return inline ? s : { t: node.mnemonic, v: s };
+        }
         const coerced = coerceValue(val, delegating.mnemonic);
         return inline ? coerced : { t: node.mnemonic, v: coerced };
       }
@@ -85,12 +89,25 @@ function buildProperties(node, params) {
     const val = node.values[name];
     if (val === undefined || val === '') continue;
 
+    // Check if the entire value is an injector reference
+    if (isInjectorRef(val)) {
+      const serialized = serializeInjectorRef(val);
+      if (serialized != null) v[name] = serialized;
+      continue;
+    }
+
     if (param.injectionStrategy === 'MAP') {
       if (Array.isArray(val) && val.length > 0) {
         const map = {};
         for (const entry of val) {
           if (entry.key) {
-            map[entry.key] = entry.value;
+            // Each map value may be an injector ref
+            if (isInjectorRef(entry.value)) {
+              const s = serializeInjectorRef(entry.value);
+              if (s != null) map[entry.key] = s;
+            } else {
+              map[entry.key] = entry.value;
+            }
           }
         }
         if (Object.keys(map).length > 0) {
@@ -99,7 +116,9 @@ function buildProperties(node, params) {
       }
     } else if (param.injectionStrategy === 'COLLECTION') {
       if (Array.isArray(val) && val.length > 0) {
-        v[name] = val.filter((x) => x !== '');
+        v[name] = val
+          .filter((x) => x !== '')
+          .map((item) => isInjectorRef(item) ? (serializeInjectorRef(item) ?? item) : item);
       }
     } else {
       v[name] = coerceValue(val, param.mnemonic);
@@ -122,6 +141,18 @@ function buildProperties(node, params) {
   }
 
   return v;
+}
+
+/**
+ * Serialize an injector reference { __injectorNodeId } to a t:/v: object.
+ * Reuses nodeToObject — injectors are normal nodes in the registry.
+ */
+function serializeInjectorRef(ref) {
+  if (!ref?.__injectorNodeId) return null;
+  const injNode = getNode(ref.__injectorNodeId);
+  if (!injNode) return null;
+  // Injectors are always wrapped (never inlined) — pass null as expectedMnemonic
+  return nodeToObject(injNode, null);
 }
 
 function coerceValue(val, mnemonic) {

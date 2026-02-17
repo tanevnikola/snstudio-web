@@ -20,6 +20,9 @@
     return taskKids?.[0] ?? null;
   });
 
+  // Does this DF use `tasks` (chain sugar) instead of singular `task`?
+  let hasTasks = $derived(isDomainFunction && (getNode(nodeId)?.children['tasks']?.length ?? 0) > 0);
+
   let nestedParams = $derived.by(() => {
     if (!displayNode) return [];
     return Object.values(displayNode.spec.parameters).filter(isNestedParam);
@@ -36,7 +39,12 @@
     if (isDomainFunction) {
       const taskKids = n?.children['task'];
       const innerTask = taskKids?.[0];
-      childrenSnapshot = innerTask ? { ...innerTask.children } : {};
+      // Merge inner task's children + DomainFunction's own `tasks` children
+      const inner = innerTask ? { ...innerTask.children } : {};
+      if (n?.children['tasks']?.length) {
+        inner['tasks'] = n.children['tasks'];
+      }
+      childrenSnapshot = inner;
     } else {
       childrenSnapshot = n ? { ...n.children } : {};
     }
@@ -47,7 +55,8 @@
 
   async function handleDrop(droppedMnemonic, paramName) {
     try {
-      const targetNodeId = isDomainFunction
+      // `tasks` param lives on the DomainFunction itself, not the inner task
+      const targetNodeId = (isDomainFunction && paramName !== 'tasks')
         ? getNode(nodeId)?.children['task']?.[0]?.id
         : nodeId;
       if (!targetNodeId) return;
@@ -89,7 +98,7 @@
   }
 
   function handleRemoveChild(paramName, index) {
-    const targetNodeId = isDomainFunction
+    const targetNodeId = (isDomainFunction && paramName !== 'tasks')
       ? getNode(nodeId)?.children['task']?.[0]?.id
       : nodeId;
     if (!targetNodeId) return;
@@ -107,7 +116,7 @@
 
 {#if node}
 <div class="component">
-  {#if isDomainFunction && !displayNode}
+  {#if isDomainFunction && !displayNode && !hasTasks}
     <!-- DomainFunction with no task yet — show drop zone for task -->
     <div class="block-row">
       <button
@@ -124,6 +133,51 @@
       acceptedMnemonic="DomainTask"
       ondrop={(mnemonic, _param) => handleTaskDrop(mnemonic)}
     />
+  {:else if isDomainFunction && !displayNode && hasTasks}
+    <!-- DomainFunction with tasks → render as Task.Chain -->
+    <div class="block-row">
+      <button
+        class="collapse-btn"
+        onclick={() => (collapsed = !collapsed)}
+        title={collapsed ? 'Expand' : 'Collapse'}
+      >
+        {collapsed ? '▶' : '▼'}
+      </button>
+      <button
+        class="block"
+        class:selected
+        onclick={() => onselect?.(nodeId)}
+      >
+        <span class="mnemonic">Task.Chain</span>
+        <span class="stereotype">FlowTask</span>
+        {#if getNode(nodeId)?.values['trace']}
+          <span class="trace">{getNode(nodeId).values['trace']}</span>
+        {/if}
+      </button>
+    </div>
+
+    {#if !collapsed}
+      <div class="nested-section">
+        {#if childrenSnapshot['tasks']?.length}
+          {#each childrenSnapshot['tasks'] as child, i (child.id)}
+            <div class="nested-child">
+              <ComponentBlock
+                nodeId={child.id}
+                {selectedId}
+                {onselect}
+                onchange={handleChildChange}
+              />
+              <button class="remove-child" onclick={() => handleRemoveChild('tasks', i)}>✕</button>
+            </div>
+          {/each}
+        {/if}
+        <DropZone
+          paramName="tasks"
+          acceptedMnemonic="DomainFunction"
+          ondrop={handleDrop}
+        />
+      </div>
+    {/if}
   {:else if displayNode}
     <div class="block-row">
       {#if nestedParams.length > 0}

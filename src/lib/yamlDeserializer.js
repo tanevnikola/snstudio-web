@@ -20,6 +20,22 @@ export async function yamlToNodeTree(yamlText) {
 }
 
 /**
+ * Check if a parsed YAML value looks like an injector object { t: ..., v: ... }.
+ */
+function looksLikeInjector(val) {
+  return val != null && typeof val === 'object' && !Array.isArray(val) && typeof val.t === 'string';
+}
+
+/**
+ * Create an injector node from a { t: ..., v: ... } YAML object.
+ * Returns { __injectorNodeId: id } reference for storage in parent values.
+ */
+async function parseInjectorValue(val) {
+  const injNode = await objectToNode(val, null);
+  return { __injectorNodeId: injNode.id };
+}
+
+/**
  * Recursively convert a plain object into a registered node.
  *
  * @param {object} obj - the parsed YAML object
@@ -61,7 +77,12 @@ async function objectToNode(obj, expectedMnemonic) {
         node.children['@delegating@'] = [await objectToNode(properties, delegating.mnemonic)];
       }
     } else {
-      node.values['@delegating@'] = properties;
+      // Non-nested delegating: value may be a literal or an injector
+      if (looksLikeInjector(properties)) {
+        node.values['@delegating@'] = await parseInjectorValue(properties);
+      } else {
+        node.values['@delegating@'] = properties;
+      }
     }
     return node;
   }
@@ -84,9 +105,29 @@ async function objectToNode(obj, expectedMnemonic) {
       }
     } else if (param.injectionStrategy === 'MAP' && typeof val === 'object' && !Array.isArray(val)) {
       // MAP — convert { key: value } back to [{ key, value }]
-      node.values[name] = Object.entries(val).map(([k, v]) => ({ key: k, value: v }));
+      // Each value may be a literal or an injector { t: ..., v: ... }
+      const entries = [];
+      for (const [k, v] of Object.entries(val)) {
+        if (looksLikeInjector(v)) {
+          entries.push({ key: k, value: await parseInjectorValue(v) });
+        } else {
+          entries.push({ key: k, value: v });
+        }
+      }
+      node.values[name] = entries;
     } else if (param.injectionStrategy === 'COLLECTION' && Array.isArray(val)) {
-      node.values[name] = val;
+      // COLLECTION items may be literals or injectors
+      node.values[name] = await Promise.all(
+        val.map(async (item) => {
+          if (looksLikeInjector(item)) {
+            return await parseInjectorValue(item);
+          }
+          return item;
+        })
+      );
+    } else if (looksLikeInjector(val)) {
+      // DIRECT param with an injector value
+      node.values[name] = await parseInjectorValue(val);
     } else {
       node.values[name] = val;
     }

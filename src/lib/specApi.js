@@ -24,6 +24,77 @@ export function isPrimitive(mnemonic) {
   return KNOWN_PRIMITIVES.includes(mnemonic);
 }
 
+/**
+ * True for non-nested params that accept injection (ResourceInjector).
+ * These get the inject toggle in the UI.
+ */
+export function isInjectionPoint(param) {
+  return param.injectionPoint === true && !isNestedParam(param);
+}
+
+/**
+ * Check if a value stored in node.values is an injector reference.
+ */
+export function isInjectorRef(value) {
+  return value != null && typeof value === 'object' && '__injectorNodeId' in value;
+}
+
+/**
+ * Recursively collect all CONCRETE ResourceInjector mnemonics.
+ * Cached after first call.
+ */
+let _concreteInjectors = null;
+
+export async function fetchConcreteInjectors() {
+  if (_concreteInjectors) return _concreteInjectors;
+
+  const result = [];
+  async function collect(mnemonic) {
+    const spec = await fetchSpec(mnemonic);
+    if (spec.category === 'CONCRETE') {
+      result.push(mnemonic);
+    } else if (spec.implementations?.length) {
+      await Promise.all(spec.implementations.map(collect));
+    }
+  }
+  await collect('ResourceInjector');
+  _concreteInjectors = result.sort();
+  return _concreteInjectors;
+}
+
+/**
+ * Unregister an injector node (and its nested injectors) from the registry.
+ * Walks the injector's values looking for nested __injectorNodeId refs.
+ */
+export function unregisterInjectorDeep(nodeId) {
+  const node = getNode(nodeId);
+  if (!node) return;
+  // Recurse into values that may be nested injectors
+  for (const val of Object.values(node.values)) {
+    if (isInjectorRef(val)) {
+      unregisterInjectorDeep(val.__injectorNodeId);
+    }
+    // MAP entries: array of {key, value} where value may be injector
+    if (Array.isArray(val)) {
+      for (const item of val) {
+        if (isInjectorRef(item)) {
+          unregisterInjectorDeep(item.__injectorNodeId);
+        }
+        if (item && typeof item === 'object' && isInjectorRef(item.value)) {
+          unregisterInjectorDeep(item.value.__injectorNodeId);
+        }
+      }
+    }
+  }
+  // Also recurse into children (for injectors that have nested children like Inject.If)
+  for (const kids of Object.values(node.children)) {
+    for (const kid of kids) {
+      unregisterDeep(kid);
+    }
+  }
+  unregisterNode(nodeId);
+}
+
 // Flat registry of all nodes by id
 const nodeRegistry = new Map();
 
