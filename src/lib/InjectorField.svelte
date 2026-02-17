@@ -10,6 +10,9 @@
   // The injector node (if in inject mode)
   let injectorNode = $derived(injecting ? getNode(value.__injectorNodeId) : null);
 
+  // Stash the literal value so it can be restored when leaving inject mode
+  let stashedLiteral = $state(null);
+
   // Concrete injector types (loaded lazily)
   let injectorTypes = $state([]);
   let injectorTypesLoading = $state(false);
@@ -35,11 +38,12 @@
 
   function toggleInject() {
     if (injecting) {
-      // Switch to literal — remove injector node
+      // Switch to literal — remove injector node, restore stashed value
       unregisterInjectorDeep(value.__injectorNodeId);
-      onchange('');
+      onchange(stashedLiteral ?? '');
     } else {
-      // Switch to inject — load types, don't create node yet
+      // Switch to inject — stash current literal value, then enter inject mode
+      stashedLiteral = value;
       loadInjectorTypes();
       onchange({ __injectorNodeId: null }); // placeholder, no node yet
     }
