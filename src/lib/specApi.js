@@ -14,6 +14,7 @@ export async function fetchSpec(mnemonic) {
 }
 
 const KNOWN_PRIMITIVES = ['String', 'Boolean', 'Integer', 'Long', 'Double', 'Float', 'Object'];
+const INJECT_ONLY_RE = /\[\]$/; // byte[], int[], boolean[] etc.
 const NESTED_MNEMONICS = ['DomainFunction', 'DomainTask'];
 
 export function isNestedParam(param) {
@@ -33,10 +34,55 @@ export function isInjectionPoint(param) {
 }
 
 /**
+ * True for injection-point params whose mnemonic is an array type (byte[], int[], etc.)
+ * These can only be meaningfully set via injection — no literal input.
+ */
+export function isInjectOnly(param) {
+  return isInjectionPoint(param) && INJECT_ONLY_RE.test(param.mnemonic);
+}
+
+/**
  * Check if a value stored in node.values is an injector reference.
  */
 export function isInjectorRef(value) {
   return value != null && typeof value === 'object' && '__injectorNodeId' in value;
+}
+
+/**
+ * Check if a value stored in node.values is a mnemonic-type reference.
+ */
+export function isMnemonicRef(value) {
+  return value != null && typeof value === 'object' && '__mnemonicType' in value;
+}
+
+/**
+ * Check if a mnemonic ref has the factory flag set.
+ */
+export function isMnemonicFactory(value) {
+  return isMnemonicRef(value) && value.__mnemonicFactory === true;
+}
+
+/**
+ * Get a spec from cache synchronously (returns null if not cached).
+ * Use after loading screen has warmed the cache.
+ */
+export function getSpecSync(mnemonic) {
+  return cache.get(mnemonic) ?? null;
+}
+
+/**
+ * Check if a param represents a complex mnemonic type (not primitive, not enum,
+ * not a nested child slot). These get a dropdown + property editor.
+ * Note: injection points with mnemonic types (e.g. Embedding) are included —
+ * they get MnemonicField which handles injection on inner params.
+ */
+export function isMnemonicType(param) {
+  if (isNestedParam(param)) return false;
+  if (isPrimitive(param.mnemonic)) return false;
+  const spec = getSpecSync(param.mnemonic);
+  if (!spec) return false;
+  if (spec.category === 'ENUM') return false;
+  return true;
 }
 
 /**

@@ -1,5 +1,5 @@
 import yaml from 'js-yaml';
-import { isNestedParam, isInjectorRef, getNode } from './specApi.js';
+import { isNestedParam, isInjectorRef, isMnemonicRef, getNode } from './specApi.js';
 
 /**
  * Convert a node tree into the t:/v: YAML notation.
@@ -142,6 +142,13 @@ function buildProperties(node, params, markers) {
       continue;
     }
 
+    // Check if the value is a mnemonic-type reference
+    if (isMnemonicRef(val)) {
+      const serialized = serializeMnemonicRef(val);
+      if (serialized != null) v[name] = serialized;
+      continue;
+    }
+
     if (param.injectionStrategy === 'MAP') {
       if (Array.isArray(val) && val.length > 0) {
         const map = {};
@@ -198,6 +205,37 @@ function serializeInjectorRef(ref, markers) {
   const injNode = getNode(ref.__injectorNodeId);
   if (!injNode) return null;
   return nodeToObject(injNode, null, markers);
+}
+
+/**
+ * Serialize a mnemonic-type value { __mnemonicType, __mnemonicValues, __mnemonicFactory? }
+ * to { t, v } or { t, factory } when factory flag is set.
+ */
+function serializeMnemonicRef(ref) {
+  if (!ref?.__mnemonicType) return null;
+  const isFactory = ref.__mnemonicFactory === true;
+  const valKey = isFactory ? 'factory' : 'v';
+  const vals = ref.__mnemonicValues;
+  if (!vals || Object.keys(vals).length === 0) {
+    return { t: ref.__mnemonicType };
+  }
+  // Recursively serialize nested mnemonic/injector refs in the values
+  const v = {};
+  for (const [k, val] of Object.entries(vals)) {
+    if (isMnemonicRef(val)) {
+      const s = serializeMnemonicRef(val);
+      if (s != null) v[k] = s;
+    } else if (isInjectorRef(val)) {
+      const s = serializeInjectorRef(val, null);
+      if (s != null) v[k] = s;
+    } else if (val !== undefined && val !== '') {
+      v[k] = val;
+    }
+  }
+  if (Object.keys(v).length === 0) {
+    return { t: ref.__mnemonicType };
+  }
+  return { t: ref.__mnemonicType, [valKey]: v };
 }
 
 function coerceValue(val, mnemonic) {

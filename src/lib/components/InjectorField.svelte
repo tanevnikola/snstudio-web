@@ -1,8 +1,11 @@
 <script>
-  import { fetchSpec, fetchConcreteInjectors, createNode, getNode, isInjectorRef, isInjectionPoint, isNestedParam, unregisterInjectorDeep } from '../../lib/specApi.js';
+  import { fetchSpec, fetchConcreteInjectors, createNode, getNode, isInjectorRef, isInjectionPoint, isInjectOnly, isNestedParam, unregisterInjectorDeep } from '../specApi.js';
   import ParamField from './ParamField.svelte';
 
   let { value, param, onchange } = $props();
+
+  // Inject-only params (byte[], int[], etc.) cannot have literal values
+  let injectOnly = isInjectOnly(param);
 
   // Determine if currently in inject mode
   let injecting = $derived(isInjectorRef(value));
@@ -12,6 +15,14 @@
 
   // Stash the literal value so it can be restored when leaving inject mode
   let stashedLiteral = $state(null);
+
+  // Auto-enter inject mode for inject-only params
+  $effect(() => {
+    if (injectOnly && !injecting) {
+      loadInjectorTypes();
+      onchange({ __injectorNodeId: null });
+    }
+  });
 
   // Concrete injector types (loaded lazily)
   let injectorTypes = $state([]);
@@ -37,6 +48,7 @@
   });
 
   function toggleInject() {
+    if (injectOnly) return; // Cannot switch to literal for inject-only params
     if (injecting) {
       // Switch to literal — remove injector node, restore stashed value
       unregisterInjectorDeep(value.__injectorNodeId);
@@ -109,11 +121,13 @@
   {#if injecting}
     <!-- Inject mode: toggle + type picker -->
     <div class="field-row">
-      <button
-        class="inject-toggle active"
-        onclick={toggleInject}
-        title="Switch to literal value"
-      >&#x26A1;</button>
+      {#if !injectOnly}
+        <button
+          class="inject-toggle active"
+          onclick={toggleInject}
+          title="Switch to literal value"
+        >&#x26A1;</button>
+      {/if}
       <select
         class="injector-select"
         value={injectorNode?.mnemonic ?? ''}

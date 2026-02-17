@@ -1,6 +1,7 @@
 <script>
-  import { isInjectionPoint, isNestedParam, isPrimitive, fetchSpec } from '../../lib/specApi.js';
+  import { isInjectionPoint, isNestedParam, isPrimitive, isMnemonicType, fetchSpec } from '../specApi.js';
   import InjectorField from './InjectorField.svelte';
+  import MnemonicField from './MnemonicField.svelte';
 
   let { param, value, onchange } = $props();
 
@@ -147,6 +148,9 @@
     {/each}
     <button class="add-btn" onclick={addCollectionEntry}>+ add</button>
   </div>
+
+{:else if isMnemonicType(param)}
+  <MnemonicField {param} {value} {onchange} />
 
 {:else if isInjectionPoint(param)}
   <InjectorField
