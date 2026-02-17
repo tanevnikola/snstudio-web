@@ -75,6 +75,22 @@
     return Math.max(MAP_KEY_MIN, Math.min(MAP_KEY_MAX, widest + MAP_KEY_PAD));
   });
 
+  // Auto-resize textarea to fit content, capped at 25vh
+  function autoResize(el) {
+    function resize() {
+      el.style.height = 'auto';
+      const maxH = window.innerHeight * 0.25;
+      el.style.height = Math.min(el.scrollHeight, maxH) + 'px';
+    }
+    resize();
+    el.addEventListener('input', resize);
+    return {
+      destroy() {
+        el.removeEventListener('input', resize);
+      }
+    };
+  }
+
   // COLLECTION helpers
   function addCollectionEntry() {
     onchange([...(value || []), '']);
@@ -196,7 +212,7 @@
         value={getVal()}
         placeholder={param.defaultValue != null ? String(param.defaultValue) : ''}
         oninput={(e) => onchange(e.target.value)}
-        rows="4"
+        use:autoResize
       ></textarea>
     {:else}
       <input
@@ -381,7 +397,9 @@
     border-radius: 4px;
     font-size: 0.8rem;
     font-family: inherit;
-    resize: vertical;
+    resize: none;
+    overflow-y: auto;
+    min-height: 2.4rem;
   }
 
   .multiline-input:focus {
