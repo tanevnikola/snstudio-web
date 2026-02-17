@@ -179,20 +179,24 @@
   .field-row {
     display: flex;
     align-items: flex-start;
-    gap: 0.3rem;
+    gap: 0.25rem;
   }
 
   .inject-toggle {
     background: none;
     border: 1px solid #ddd;
-    border-radius: 3px;
-    padding: 0.2rem 0.35rem;
-    font-size: 0.7rem;
+    border-radius: 4px;
+    width: 1.75rem;
+    height: 1.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 0.75rem;
     cursor: pointer;
     flex-shrink: 0;
-    color: #aaa;
+    color: #bbb;
     line-height: 1;
-    margin-top: 0.2rem;
     transition: color 0.15s, border-color 0.15s, background 0.15s;
   }
 

@@ -56,7 +56,7 @@
 
   // Compute uniform key width from the widest key text across all entries
   const MAP_KEY_MIN = 32;   // px – minimum width (fits ~2-3 chars)
-  const MAP_KEY_MAX = 120;  // px – maximum width (same ballpark as old 40%)
+  const MAP_KEY_MAX = 170;  // px – maximum width
   const MAP_KEY_PAD = 18;   // px – padding inside the input (0.5rem * 2 ≈ 16 + buffer)
 
   let mapKeyMeasurer = $state(null);
@@ -248,16 +248,26 @@
 
   .remove-btn {
     background: none;
-    border: none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
     font-size: 0.75rem;
-    color: #ccc;
+    color: #bbb;
     cursor: pointer;
-    padding: 0.2rem;
+    width: 1.75rem;
+    height: 1.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
   }
 
   .remove-btn:hover {
     color: #d32f2f;
+    border-color: #d32f2f;
+    background: #fef2f2;
   }
 
   .add-btn {
@@ -323,7 +333,7 @@
   .text-field-row {
     display: flex;
     align-items: flex-start;
-    gap: 0.3rem;
+    gap: 0.25rem;
   }
 
   .text-field-row input[type="text"] {
@@ -333,14 +343,18 @@
   .multiline-toggle {
     background: none;
     border: 1px solid #ddd;
-    border-radius: 3px;
-    padding: 0.2rem 0.35rem;
-    font-size: 0.8rem;
+    border-radius: 4px;
+    width: 1.75rem;
+    height: 1.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 0.85rem;
     cursor: pointer;
     flex-shrink: 0;
-    color: #aaa;
+    color: #bbb;
     line-height: 1;
-    margin-top: 0.2rem;
     transition: color 0.15s, border-color 0.15s, background 0.15s;
   }
 

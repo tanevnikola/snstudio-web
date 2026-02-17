@@ -1,9 +1,13 @@
 <script>
   import DropZone from './DropZone.svelte';
   import ComponentBlock from './ComponentBlock.svelte';
-  import { isNestedParam, fetchSpec, createNode, getNode, addChild, removeChild, detachNode } from './specApi.js';
+  import { isNestedParam, fetchSpec, createNode, getNode, addChild, removeChild, detachNode, moveChild } from './specApi.js';
 
-  let { nodeId, selectedId, onselect, onchange, treeTick = 0 } = $props();
+  let { nodeId, selectedId, onselect, onchange, treeTick = 0, listIndex = -1, listSize = 0, onmoveup, onmovedown, onremove } = $props();
+
+  let inList = $derived(listIndex >= 0 && listSize > 1);
+  let canMoveUp = $derived(listIndex > 0);
+  let canMoveDown = $derived(listIndex < listSize - 1);
 
   let collapsed = $state(false);
 
@@ -127,6 +131,15 @@
     onchange?.();
   }
 
+  function handleMoveChild(paramName, index, delta) {
+    const targetNodeId = (isDomainFunction && paramName !== 'tasks')
+      ? getNode(nodeId)?.children['task']?.[0]?.id
+      : nodeId;
+    if (!targetNodeId) return;
+    moveChild(targetNodeId, paramName, index, delta);
+    onchange?.();
+  }
+
   function onBlockDragStart(e) {
     e.dataTransfer.setData('text/plain', node.mnemonic);
     e.dataTransfer.setData('application/x-node-id', nodeId);
@@ -167,20 +180,26 @@
       <button
         class="block"
         class:selected
+        draggable="true"
+        ondragstart={onBlockDragStart}
         onclick={() => onselect?.(nodeId)}
       >
-        <span
-          class="drag-handle"
-          draggable="true"
-          ondragstart={onBlockDragStart}
-          role="img"
-          aria-label="Drag to move"
-        >⠿</span>
-        <span class="mnemonic">Task.Chain</span>
-        <span class="stereotype">FlowTask</span>
-        {#if trace}
-          <span class="trace">{trace}</span>
+        {#if onremove}
+          <button class="close-btn" onclick={(e) => { e.stopPropagation(); onremove?.(); }} title="Remove">✕</button>
         {/if}
+        <span class="block-content">
+          {#if inList}
+            <span class="order-btns">
+              <button class="order-btn" disabled={!canMoveUp} onclick={(e) => { e.stopPropagation(); onmoveup?.(); }} title="Move up">▲</button>
+              <button class="order-btn" disabled={!canMoveDown} onclick={(e) => { e.stopPropagation(); onmovedown?.(); }} title="Move down">▼</button>
+            </span>
+          {/if}
+          <span class="mnemonic">Task.Chain</span>
+          <span class="stereotype">FlowTask</span>
+          {#if trace}
+            <span class="trace">{trace}</span>
+          {/if}
+        </span>
       </button>
     </div>
 
@@ -188,16 +207,18 @@
       <div class="nested-section">
         {#if childrenSnapshot['tasks']?.length}
           {#each childrenSnapshot['tasks'] as child, i (child.id)}
-            <div class="nested-child">
-              <ComponentBlock
-                nodeId={child.id}
-                {selectedId}
-                {onselect}
-                {treeTick}
-                onchange={handleChildChange}
-              />
-              <button class="remove-child" onclick={() => handleRemoveChild('tasks', i)}>✕</button>
-            </div>
+            <ComponentBlock
+              nodeId={child.id}
+              {selectedId}
+              {onselect}
+              {treeTick}
+              onchange={handleChildChange}
+              listIndex={i}
+              listSize={childrenSnapshot['tasks'].length}
+              onmoveup={() => handleMoveChild('tasks', i, -1)}
+              onmovedown={() => handleMoveChild('tasks', i, 1)}
+              onremove={() => handleRemoveChild('tasks', i)}
+            />
           {/each}
         {/if}
         <DropZone
@@ -223,20 +244,26 @@
       <button
         class="block"
         class:selected
+        draggable="true"
+        ondragstart={onBlockDragStart}
         onclick={() => onselect?.(nodeId)}
       >
-        <span
-          class="drag-handle"
-          draggable="true"
-          ondragstart={onBlockDragStart}
-          role="img"
-          aria-label="Drag to move"
-        >⠿</span>
-        <span class="mnemonic">{displayNode.mnemonic}</span>
-        <span class="stereotype">{displayNode.spec.implementsStereotype}</span>
-        {#if trace}
-          <span class="trace">{trace}</span>
+        {#if onremove}
+          <button class="close-btn" onclick={(e) => { e.stopPropagation(); onremove?.(); }} title="Remove">✕</button>
         {/if}
+        <span class="block-content">
+          {#if inList}
+            <span class="order-btns">
+              <button class="order-btn" disabled={!canMoveUp} onclick={(e) => { e.stopPropagation(); onmoveup?.(); }} title="Move up">▲</button>
+              <button class="order-btn" disabled={!canMoveDown} onclick={(e) => { e.stopPropagation(); onmovedown?.(); }} title="Move down">▼</button>
+            </span>
+          {/if}
+          <span class="mnemonic">{displayNode.mnemonic}</span>
+          <span class="stereotype">{displayNode.spec.implementsStereotype}</span>
+          {#if trace}
+            <span class="trace">{trace}</span>
+          {/if}
+        </span>
       </button>
     </div>
 
@@ -248,16 +275,18 @@
           {/if}
           {#if childrenSnapshot[param.name]?.length}
             {#each childrenSnapshot[param.name] as child, i (child.id)}
-              <div class="nested-child">
-                <ComponentBlock
-                  nodeId={child.id}
-                  {selectedId}
-                  {onselect}
-                  {treeTick}
-                  onchange={handleChildChange}
-                />
-                <button class="remove-child" onclick={() => handleRemoveChild(param.name, i)}>✕</button>
-              </div>
+              <ComponentBlock
+                nodeId={child.id}
+                {selectedId}
+                {onselect}
+                {treeTick}
+                onchange={handleChildChange}
+                listIndex={param.injectionStrategy === 'COLLECTION' ? i : -1}
+                listSize={param.injectionStrategy === 'COLLECTION' ? childrenSnapshot[param.name].length : 0}
+                onmoveup={() => handleMoveChild(param.name, i, -1)}
+                onmovedown={() => handleMoveChild(param.name, i, 1)}
+                onremove={() => handleRemoveChild(param.name, i)}
+              />
             {/each}
           {/if}
           {#if param.injectionStrategy === 'COLLECTION' || !childrenSnapshot[param.name]?.length}
@@ -309,17 +338,21 @@
 
   .block {
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    align-items: stretch;
     flex: 1;
-    padding: 0.6rem 1rem;
+    padding: 0;
     background: white;
     border: 2px solid #ddd;
     border-radius: 6px;
-    cursor: pointer;
+    cursor: grab;
     text-align: left;
     font-family: inherit;
     font-size: inherit;
+    overflow: hidden;
+  }
+
+  .block:active {
+    cursor: grabbing;
   }
 
   .block:hover {
@@ -331,26 +364,45 @@
     background: #f0f6ff;
   }
 
+  .block-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    padding: 0.6rem 0.75rem 0.6rem 0.6rem;
+    min-width: 0;
+  }
+
   .block.empty-df {
     border-style: dashed;
     color: #999;
+    padding: 0.6rem 1rem;
   }
 
-  .drag-handle {
-    cursor: grab;
+  .close-btn {
+    background: #f5f5f5;
+    border: none;
+    border-right: 1px solid #e0e0e0;
+    font-size: 0.7rem;
     color: #bbb;
-    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.4rem 0.3rem;
     line-height: 1;
-    user-select: none;
     flex-shrink: 0;
+    align-self: stretch;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s, background 0.15s;
   }
 
-  .drag-handle:hover {
-    color: #666;
+  .block:hover .close-btn {
+    background: #eee;
   }
 
-  .drag-handle:active {
-    cursor: grabbing;
+  .close-btn:hover {
+    color: #d32f2f;
+    background: #fef2f2;
   }
 
   .mnemonic {
@@ -394,29 +446,35 @@
     margin-bottom: 0.15rem;
   }
 
-  .nested-child {
-    position: relative;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.25rem;
+  .order-btns {
+    display: inline-flex;
+    flex-direction: row;
+    gap: 0.1rem;
+    flex-shrink: 0;
+    margin-right: -0.25rem;
   }
 
-  .nested-child :global(.component) {
-    flex: 1;
-  }
-
-  .remove-child {
+  .order-btn {
     background: none;
     border: none;
-    font-size: 0.75rem;
-    color: #ccc;
+    padding: 0.15rem 0.2rem;
+    font-size: 0.65rem;
+    color: #bbb;
     cursor: pointer;
-    padding: 0.3rem;
     line-height: 1;
-    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s;
   }
 
-  .remove-child:hover {
-    color: #d32f2f;
+  .order-btn:hover:not(:disabled) {
+    color: #555;
   }
+
+  .order-btn:disabled {
+    opacity: 0.25;
+    cursor: default;
+  }
+
 </style>

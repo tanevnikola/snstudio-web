@@ -14,7 +14,7 @@
   let selectedNodeId = $state(null);
   let error = $state(null);
   let paletteWidth = $state(260);
-  let propsWidth = $state(280);
+  let propsWidth = $state(Math.floor(window.innerWidth / 4));
   let resizingLeft = $state(false);
   let resizingRight = $state(false);
   let resizingYaml = $state(false);

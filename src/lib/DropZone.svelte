@@ -43,6 +43,7 @@
     align-items: center;
     justify-content: center;
     margin-top: 0.35rem;
+    margin-left: 1.45rem;
     padding: 0.5rem 1rem;
     border: 2px dashed #ccc;
     border-radius: 6px;

@@ -172,6 +172,22 @@ export function detachNode(nodeId) {
   return null;
 }
 
+/**
+ * Swap a child at `index` with the one at `index + delta` within a parent's param slot.
+ * delta = -1 for move up, +1 for move down.
+ */
+export function moveChild(parentId, paramName, index, delta) {
+  const parent = getNode(parentId);
+  if (!parent) return;
+  const kids = parent.children[paramName];
+  if (!kids) return;
+  const target = index + delta;
+  if (target < 0 || target >= kids.length) return;
+  const tmp = kids[index];
+  kids[index] = kids[target];
+  kids[target] = tmp;
+}
+
 export function clearAllNodes() {
   nodeRegistry.clear();
 }

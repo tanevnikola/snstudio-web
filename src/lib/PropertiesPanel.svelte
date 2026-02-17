@@ -1,3 +1,9 @@
+<script module>
+  // Shared collapse state — persists across component instances (node selections)
+  let _dfExpanded = false;
+  let _taskExpanded = true;
+</script>
+
 <script>
   import { isNestedParam, getNode } from './specApi.js';
   import ParamField from './ParamField.svelte';
@@ -31,8 +37,13 @@
   let dfValues = $state(isDomainFunction ? { ...node.values } : {});
   let taskValues = $state(taskNode ? { ...taskNode.values } : {});
 
-  // Collapsible DF section
-  let dfExpanded = $state(false);
+  // Collapsible sections — initialized from module-level shared state
+  let dfExpanded = $state(_dfExpanded);
+  let taskExpanded = $state(_taskExpanded);
+
+  // Sync back to module-level so next instance inherits the same state
+  $effect(() => { _dfExpanded = dfExpanded; });
+  $effect(() => { _taskExpanded = taskExpanded; });
 
   // Sync back to registry
   $effect(() => {
@@ -74,13 +85,13 @@
 
 <div class="panel">
   {#if isDomainFunction && dfParams.length > 0}
-    <div class="df-section">
-      <button class="df-header" onclick={() => (dfExpanded = !dfExpanded)}>
-        <span class="df-arrow">{dfExpanded ? '▼' : '▶'}</span>
-        <span class="df-title">DomainFunction</span>
+    <div class="section">
+      <button class="section-header" onclick={() => (dfExpanded = !dfExpanded)}>
+        <span class="section-arrow">{dfExpanded ? '▼' : '▶'}</span>
+        <span class="section-title">DomainFunction</span>
       </button>
       {#if dfExpanded}
-        <div class="df-body">
+        <div class="section-body">
           {#each dfParams as param (param.name)}
             {@render paramField(param, 'df')}
           {/each}
@@ -90,10 +101,19 @@
   {/if}
 
   {#if taskNode}
-    <h3>{taskNode.mnemonic}</h3>
-    {#each taskParams as param (param.name)}
-      {@render paramField(param, 'task')}
-    {/each}
+    <div class="section">
+      <button class="section-header" onclick={() => (taskExpanded = !taskExpanded)}>
+        <span class="section-arrow">{taskExpanded ? '▼' : '▶'}</span>
+        <span class="section-title">{taskNode.mnemonic}</span>
+      </button>
+      {#if taskExpanded}
+        <div class="section-body">
+          {#each taskParams as param (param.name)}
+            {@render paramField(param, 'task')}
+          {/each}
+        </div>
+      {/if}
+    </div>
   {:else if isDomainFunction}
     <div class="no-task">No task assigned yet</div>
   {/if}
@@ -105,21 +125,14 @@
     overflow-y: auto;
   }
 
-  h3 {
-    margin: 0 0 1rem 0;
-    font-size: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #ddd;
-  }
-
-  .df-section {
-    margin-bottom: 0.75rem;
+  .section {
+    margin-bottom: 0.5rem;
     border: 1px solid #e8e8e8;
     border-radius: 6px;
     overflow: hidden;
   }
 
-  .df-header {
+  .section-header {
     display: flex;
     align-items: center;
     gap: 0.4rem;
@@ -133,21 +146,21 @@
     text-align: left;
   }
 
-  .df-header:hover {
+  .section-header:hover {
     background: #f0f0f0;
   }
 
-  .df-arrow {
+  .section-arrow {
     font-size: 0.6rem;
     color: #999;
   }
 
-  .df-title {
+  .section-title {
     font-weight: 600;
     color: #666;
   }
 
-  .df-body {
+  .section-body {
     padding: 0.5rem 0.75rem;
     border-top: 1px solid #e8e8e8;
   }
