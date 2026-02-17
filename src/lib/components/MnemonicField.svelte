@@ -34,7 +34,7 @@
     if (!selectedSpec) return [];
     return Object.values(selectedSpec.parameters)
       .filter((p) => p.name !== '@delegating@' && !isNestedParam(p))
-      .sort((a, b) => (b.order ?? 0) - (a.order ?? 0));
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   });
 
   function onTypeChange(e) {

@@ -397,7 +397,7 @@
     border-radius: 4px;
     font-size: 0.8rem;
     font-family: inherit;
-    resize: none;
+    resize: vertical;
     overflow-y: auto;
     min-height: 2.4rem;
   }

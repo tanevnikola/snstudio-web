@@ -76,7 +76,7 @@
     if (!displayNode) return [];
     return Object.values(displayNode.spec.parameters)
       .filter(isNestedParam)
-      .sort((a, b) => (b.order ?? 0) - (a.order ?? 0));
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   });
 
   let selected = $derived(selectedId === nodeId);

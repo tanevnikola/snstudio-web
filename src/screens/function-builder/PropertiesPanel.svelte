@@ -18,7 +18,7 @@
   const dfParams = isDomainFunction
     ? Object.values(node.spec.parameters)
         .filter((p) => !isNestedParam(p) && !DF_IGNORE.has(p.name))
-        .sort((a, b) => (b.order ?? 0) - (a.order ?? 0))
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
     : [];
 
   // Inner task node (for DomainFunction) or self (for other nodes)
@@ -30,7 +30,7 @@
   const taskParams = taskNode
     ? Object.values(taskNode.spec.parameters)
         .filter((p) => !isNestedParam(p))
-        .sort((a, b) => (b.order ?? 0) - (a.order ?? 0))
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
     : [];
 
   // Local reactive values — separate stores for DF and task

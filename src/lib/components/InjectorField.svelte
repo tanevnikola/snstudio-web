@@ -84,7 +84,7 @@
     if (!injectorNode) return [];
     return Object.values(injectorNode.spec.parameters)
       .filter((p) => !isNestedParam(p) && p.name !== '@delegating@')
-      .sort((a, b) => (b.order ?? 0) - (a.order ?? 0));
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   });
 
   let hasDelegating = $derived(injectorNode?.spec.parameters['@delegating@'] != null);
