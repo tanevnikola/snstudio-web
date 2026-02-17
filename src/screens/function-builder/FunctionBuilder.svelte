@@ -2,7 +2,7 @@
   import ComponentBlock from './ComponentBlock.svelte';
   import PropertiesPanel from './PropertiesPanel.svelte';
   import ComponentsPalette from './ComponentsPalette.svelte';
-  import { fetchSpec, createNode, getNode, addChild } from '../../lib/specApi.js';
+  import { fetchSpec, createNode, getNode, addChild, clearAllNodes } from '../../lib/specApi.js';
   import { nodeToYaml } from '../../lib/yamlSerializer.js';
   import { yamlToNodeTree } from '../../lib/yamlDeserializer.js';
   import hljs from 'highlight.js/lib/core';
@@ -189,37 +189,24 @@
     });
   }
 
-  // Canvas drop zone — creates root node
-  let canvasHovering = $state(false);
-
-  async function handleCanvasDrop(e) {
-    e.preventDefault();
-    canvasHovering = false;
-    const mnemonic = e.dataTransfer.getData('text/plain');
-    if (!mnemonic) return;
-    error = null;
-    try {
-      if (mnemonic === 'DomainFunction') {
-        // DomainFunction dropped directly — use as root
-        const spec = await fetchSpec(mnemonic);
-        const node = createNode(mnemonic, spec);
-        rootNodeId = node.id;
-        selectedNodeId = node.id;
-      } else {
-        // Task dropped — auto-wrap in a DomainFunction root
-        const dfSpec = await fetchSpec('DomainFunction');
-        const dfNode = createNode('DomainFunction', dfSpec);
-        const taskSpec = await fetchSpec(mnemonic);
-        const taskNode = createNode(mnemonic, taskSpec);
-        addChild(dfNode.id, 'task', taskNode);
-        rootNodeId = dfNode.id;
-        selectedNodeId = taskNode.id;
-      }
-      bumpTree();
-    } catch (err) {
-      error = err.message;
-    }
+  // Create a fresh DomainFunction chain as root
+  async function initRoot() {
+    clearAllNodes();
+    const spec = await fetchSpec('DomainFunction');
+    const node = createNode('DomainFunction', spec);
+    // Initialize tasks array so it renders as Task.Chain
+    node.children['tasks'] = [];
+    rootNodeId = node.id;
+    selectedNodeId = node.id;
+    bumpTree();
   }
+
+  function handleRemoveRoot() {
+    initRoot();
+  }
+
+  // Auto-init on mount
+  initRoot();
 </script>
 
 <div class="function-builder">
@@ -241,21 +228,10 @@
               selectedId={selectedNodeId}
               onselect={(id) => (selectedNodeId = id)}
               onchange={bumpTree}
+              onremove={handleRemoveRoot}
               {treeTick}
             />
           {/key}
-        {:else}
-          <div
-            class="canvas-dropzone"
-            class:hovering={canvasHovering}
-            ondragover={(e) => { e.preventDefault(); canvasHovering = true; }}
-            ondragleave={() => (canvasHovering = false)}
-            ondrop={handleCanvasDrop}
-            role="region"
-            aria-label="Canvas drop zone"
-          >
-            Drop a component here to start
-          </div>
         {/if}
       </div>
       {#if !yamlCollapsed}
@@ -368,23 +344,6 @@
     background: white;
     overflow-y: auto;
     min-width: 0;
-  }
-
-  .canvas-dropzone {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    border: 2px dashed #ccc;
-    border-radius: 8px;
-    color: #999;
-    font-size: 0.9rem;
-    transition: border-color 0.15s, background 0.15s;
-  }
-
-  .canvas-dropzone.hovering {
-    border-color: #666;
-    background: #eef;
   }
 
   .no-selection {

@@ -190,6 +190,20 @@ export function addChild(parentId, paramName, childNode) {
 }
 
 /**
+ * Insert a child node at a specific index in a parent's param slot.
+ */
+export function insertChild(parentId, paramName, index, childNode) {
+  const parent = getNode(parentId);
+  if (!parent) return;
+  if (!parent.children[paramName]) {
+    parent.children[paramName] = [];
+  }
+  const kids = [...parent.children[paramName]];
+  kids.splice(index, 0, childNode);
+  parent.children[paramName] = kids;
+}
+
+/**
  * Remove a child node at a given index from a parent's param slot.
  */
 export function removeChild(parentId, paramName, index) {

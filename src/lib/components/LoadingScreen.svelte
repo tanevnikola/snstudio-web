@@ -12,6 +12,7 @@
       loaded = l;
       total = t;
     })
+      .then(() => new Promise(r => setTimeout(r, 300)))
       .then(() => onready?.())
       .catch((e) => {
         error = e.message;

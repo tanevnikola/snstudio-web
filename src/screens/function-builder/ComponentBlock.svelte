@@ -1,13 +1,58 @@
 <script>
   import DropZone from '../../lib/components/DropZone.svelte';
   import ComponentBlock from './ComponentBlock.svelte';
-  import { isNestedParam, fetchSpec, createNode, getNode, addChild, removeChild, detachNode, moveChild } from '../../lib/specApi.js';
+  import { isNestedParam, fetchSpec, createNode, getNode, addChild, insertChild, removeChild, detachNode, moveChild } from '../../lib/specApi.js';
 
-  let { nodeId, selectedId, onselect, onchange, treeTick = 0, listIndex = -1, listSize = 0, onmoveup, onmovedown, onremove } = $props();
+  let { nodeId, selectedId, onselect, onchange, treeTick = 0, listIndex = -1, listSize = 0, onmoveup, onmovedown, onremove, listParentId = null, listParamName = null } = $props();
 
   let inList = $derived(listIndex >= 0 && listSize > 1);
   let canMoveUp = $derived(listIndex > 0);
   let canMoveDown = $derived(listIndex < listSize - 1);
+
+  // Drag-to-reorder state
+  let dropIndicator = $state(null); // 'before' | 'after' | null
+  let dragging = $state(false);
+
+  function handleReorderDragOver(e) {
+    if (!inList) return;
+    if (!e.dataTransfer.types.includes('application/x-node-id')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'move';
+    const rect = e.currentTarget.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    dropIndicator = e.clientY < midY ? 'before' : 'after';
+  }
+
+  function handleReorderDragLeave(e) {
+    if (e.currentTarget.contains(e.relatedTarget)) return;
+    dropIndicator = null;
+  }
+
+  function handleReorderDrop(e) {
+    if (!inList || !listParentId || !listParamName) return;
+    const sourceNodeId = e.dataTransfer.getData('application/x-node-id');
+    if (!sourceNodeId || sourceNodeId === nodeId) {
+      dropIndicator = null;
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    const position = dropIndicator;
+    dropIndicator = null;
+
+    const movedNode = getNode(sourceNodeId);
+    if (!movedNode) return;
+
+    detachNode(sourceNodeId);
+    const parent = getNode(listParentId);
+    const kids = parent?.children[listParamName] || [];
+    let targetIdx = kids.findIndex(k => k.id === nodeId);
+    if (targetIdx === -1) targetIdx = kids.length;
+    const insertIdx = position === 'after' ? targetIdx + 1 : targetIdx;
+    insertChild(listParentId, listParamName, insertIdx, movedNode);
+    onchange?.();
+  }
 
   let collapsed = $state(false);
 
@@ -25,7 +70,7 @@
   });
 
   // Does this DF use `tasks` (chain sugar) instead of singular `task`?
-  let hasTasks = $derived(isDomainFunction && (getNode(nodeId)?.children['tasks']?.length ?? 0) > 0);
+  let hasTasks = $derived(isDomainFunction && 'tasks' in (getNode(nodeId)?.children ?? {}));
 
   let nestedParams = $derived.by(() => {
     if (!displayNode) return [];
@@ -143,13 +188,33 @@
   function onBlockDragStart(e) {
     e.dataTransfer.setData('text/plain', node.mnemonic);
     e.dataTransfer.setData('application/x-node-id', nodeId);
+    // Store the block-row height for drop indicator sizing
+    const blockRow = e.currentTarget.closest('.block-row');
+    if (blockRow) {
+      const h = blockRow.getBoundingClientRect().height;
+      e.dataTransfer.setData('application/x-drag-height', String(h));
+      document.documentElement.style.setProperty('--drag-height', h + 'px');
+    }
     e.dataTransfer.effectAllowed = 'move';
     e.stopPropagation();
+    requestAnimationFrame(() => { dragging = true; });
+  }
+
+  function onBlockDragEnd() {
+    dragging = false;
   }
 </script>
 
 {#if node}
-<div class="component">
+<div
+  class="component"
+  class:dragging
+  class:drop-before={dropIndicator === 'before'}
+  class:drop-after={dropIndicator === 'after'}
+  ondragover={handleReorderDragOver}
+  ondragleave={handleReorderDragLeave}
+  ondrop={handleReorderDrop}
+>
   {#if isDomainFunction && !displayNode && !hasTasks}
     <!-- DomainFunction with no task yet — show drop zone for task -->
     <div class="block-row">
@@ -182,6 +247,7 @@
         class:selected
         draggable="true"
         ondragstart={onBlockDragStart}
+        ondragend={onBlockDragEnd}
         onclick={() => onselect?.(nodeId)}
       >
         {#if onremove}
@@ -218,6 +284,8 @@
               onmoveup={() => handleMoveChild('tasks', i, -1)}
               onmovedown={() => handleMoveChild('tasks', i, 1)}
               onremove={() => handleRemoveChild('tasks', i)}
+              listParentId={nodeId}
+              listParamName="tasks"
             />
           {/each}
         {/if}
@@ -246,6 +314,7 @@
         class:selected
         draggable="true"
         ondragstart={onBlockDragStart}
+        ondragend={onBlockDragEnd}
         onclick={() => onselect?.(nodeId)}
       >
         {#if onremove}
@@ -275,17 +344,21 @@
           {/if}
           {#if childrenSnapshot[param.name]?.length}
             {#each childrenSnapshot[param.name] as child, i (child.id)}
+              {@const isColl = param.injectionStrategy === 'COLLECTION'}
+              {@const resolvedParentId = isDomainFunction ? displayNode?.id : nodeId}
               <ComponentBlock
                 nodeId={child.id}
                 {selectedId}
                 {onselect}
                 {treeTick}
                 onchange={handleChildChange}
-                listIndex={param.injectionStrategy === 'COLLECTION' ? i : -1}
-                listSize={param.injectionStrategy === 'COLLECTION' ? childrenSnapshot[param.name].length : 0}
+                listIndex={isColl ? i : -1}
+                listSize={isColl ? childrenSnapshot[param.name].length : 0}
                 onmoveup={() => handleMoveChild(param.name, i, -1)}
                 onmovedown={() => handleMoveChild(param.name, i, 1)}
                 onremove={() => handleRemoveChild(param.name, i)}
+                listParentId={isColl ? resolvedParentId : null}
+                listParamName={isColl ? param.name : null}
               />
             {/each}
           {/if}
@@ -475,6 +548,47 @@
   .order-btn:disabled {
     opacity: 0.25;
     cursor: default;
+  }
+
+  .component.dragging {
+    opacity: 0.25;
+    pointer-events: none;
+  }
+
+  .component.drop-before {
+    position: relative;
+    margin-top: var(--drag-height, 2.5rem);
+  }
+
+  .component.drop-before::before {
+    content: '';
+    position: absolute;
+    top: calc(-1 * var(--drag-height, 2.5rem));
+    left: 1.45rem;
+    right: 0;
+    height: var(--drag-height, 2.5rem);
+    border: 2px dashed #4a90d9;
+    border-radius: 6px;
+    background: rgba(74, 144, 217, 0.04);
+    box-sizing: border-box;
+  }
+
+  .component.drop-after {
+    position: relative;
+    margin-bottom: var(--drag-height, 2.5rem);
+  }
+
+  .component.drop-after::after {
+    content: '';
+    position: absolute;
+    bottom: calc(-1 * var(--drag-height, 2.5rem));
+    left: 1.45rem;
+    right: 0;
+    height: var(--drag-height, 2.5rem);
+    border: 2px dashed #4a90d9;
+    border-radius: 6px;
+    background: rgba(74, 144, 217, 0.04);
+    box-sizing: border-box;
   }
 
 </style>
