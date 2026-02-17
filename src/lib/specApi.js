@@ -154,6 +154,24 @@ export function removeChild(parentId, paramName, index) {
   parent.children[paramName] = (parent.children[paramName] || []).filter((_, i) => i !== index);
 }
 
+/**
+ * Detach a node from its current parent WITHOUT unregistering it.
+ * Used for move operations (drag-drop reorder).
+ * Returns { parentId, paramName, index } if found, or null.
+ */
+export function detachNode(nodeId) {
+  for (const [pid, parent] of nodeRegistry) {
+    for (const [paramName, kids] of Object.entries(parent.children)) {
+      const index = kids.findIndex((k) => k.id === nodeId);
+      if (index !== -1) {
+        parent.children[paramName] = kids.filter((_, i) => i !== index);
+        return { parentId: pid, paramName, index };
+      }
+    }
+  }
+  return null;
+}
+
 export function clearAllNodes() {
   nodeRegistry.clear();
 }

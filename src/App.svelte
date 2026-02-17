@@ -15,10 +15,11 @@
   let error = $state(null);
   let paletteWidth = $state(260);
   let propsWidth = $state(280);
-  let yamlHeight = $state(220);
   let resizingLeft = $state(false);
   let resizingRight = $state(false);
   let resizingYaml = $state(false);
+  let yamlCollapsed = $state(false);
+  let yamlHeight = $state(null); // null = use default 1/3 flex, number = user-resized px
   let copyLabel = $state('Copy');
 
   // YAML editor state
@@ -134,11 +135,13 @@
   function startResizeYaml(e) {
     e.preventDefault();
     resizingYaml = true;
+    // If first resize, measure current rendered height as starting point
+    const panel = e.target.nextElementSibling;
+    const startHeight = yamlHeight ?? panel?.offsetHeight ?? 250;
     const startY = e.clientY;
-    const startHeight = yamlHeight;
 
     function onMove(ev) {
-      yamlHeight = Math.max(80, Math.min(600, startHeight - (ev.clientY - startY)));
+      yamlHeight = Math.max(80, Math.min(800, startHeight - (ev.clientY - startY)));
     }
     function onUp() {
       resizingYaml = false;
@@ -211,6 +214,7 @@
               selectedId={selectedNodeId}
               onselect={(id) => (selectedNodeId = id)}
               onchange={bumpTree}
+              {treeTick}
             />
           {/key}
         {:else}
@@ -227,28 +231,37 @@
           </div>
         {/if}
       </div>
-      <div class="resize-handle horizontal" class:active={resizingYaml} onmousedown={startResizeYaml} role="separator" aria-label="Resize YAML panel"></div>
-      <div class="yaml-panel" style="height: {yamlHeight}px">
-        <div class="yaml-header">
+      {#if !yamlCollapsed}
+        <div class="resize-handle horizontal" class:active={resizingYaml} onmousedown={startResizeYaml} role="separator" aria-label="Resize YAML panel"></div>
+      {/if}
+      <div
+        class="yaml-panel"
+        class:collapsed={yamlCollapsed}
+        style={!yamlCollapsed && yamlHeight ? `flex: 0 0 ${yamlHeight}px` : ''}
+      >
+        <button class="yaml-header" onclick={() => (yamlCollapsed = !yamlCollapsed)}>
+          <span class="yaml-collapse-arrow">{yamlCollapsed ? '▶' : '▼'}</span>
           <span class="yaml-title">YAML</span>
           {#if yamlError}
             <span class="yaml-error">{yamlError}</span>
           {/if}
-          <button class="copy-btn" onclick={copyYaml}>{copyLabel}</button>
-        </div>
-        <div class="yaml-editor">
-          <pre class="yaml-highlight" aria-hidden="true"><code>{@html yamlHtml}&nbsp;</code></pre>
-          <textarea
-            class="yaml-textarea"
-            value={yamlText}
-            oninput={onYamlInput}
-            onscroll={onYamlScroll}
-            spellcheck="false"
-            autocomplete="off"
-            autocorrect="off"
-            autocapitalize="off"
-          ></textarea>
-        </div>
+          <span class="copy-btn" role="button" onclick={(e) => { e.stopPropagation(); copyYaml(); }}>{copyLabel}</span>
+        </button>
+        {#if !yamlCollapsed}
+          <div class="yaml-editor">
+            <pre class="yaml-highlight" aria-hidden="true"><code>{@html yamlHtml}&nbsp;</code></pre>
+            <textarea
+              class="yaml-textarea"
+              value={yamlText}
+              oninput={onYamlInput}
+              onscroll={onYamlScroll}
+              spellcheck="false"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+            ></textarea>
+          </div>
+        {/if}
       </div>
     </div>
     <div class="resize-handle vertical" class:active={resizingRight} onmousedown={startResizeRight} role="separator" aria-label="Resize properties"></div>
@@ -329,7 +342,7 @@
   }
 
   .canvas {
-    flex: 1;
+    flex: 2;
     padding: 1.5rem;
     overflow-y: auto;
     min-height: 0;
@@ -368,8 +381,12 @@
     display: flex;
     flex-direction: column;
     background: #1e1e2e;
-    flex-shrink: 0;
+    flex: 1;
     min-height: 0;
+  }
+
+  .yaml-panel.collapsed {
+    flex: 0 0 auto;
   }
 
   .yaml-header {
@@ -379,6 +396,20 @@
     padding: 0.4rem 0.75rem;
     background: #181825;
     flex-shrink: 0;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .yaml-header:hover {
+    background: #1e1e30;
+  }
+
+  .yaml-collapse-arrow {
+    font-size: 0.55rem;
+    color: #6c7086;
+    width: 0.65rem;
   }
 
   .yaml-title {
@@ -401,12 +432,10 @@
 
   .copy-btn {
     margin-left: auto;
-    background: none;
     border: 1px solid #45475a;
     border-radius: 4px;
     padding: 0.15rem 0.5rem;
     font-size: 0.65rem;
-    font-family: inherit;
     color: #6c7086;
     cursor: pointer;
     transition: color 0.15s, border-color 0.15s;

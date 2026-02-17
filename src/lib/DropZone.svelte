@@ -4,7 +4,8 @@
 
   function handleDragOver(e) {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = e.dataTransfer.types.includes('application/x-node-id') ? 'move' : 'copy';
     hovering = true;
   }
 
@@ -14,10 +15,12 @@
 
   function handleDrop(e) {
     e.preventDefault();
+    e.stopPropagation();
     hovering = false;
     const mnemonic = e.dataTransfer.getData('text/plain');
+    const sourceNodeId = e.dataTransfer.getData('application/x-node-id') || null;
     if (mnemonic && ondrop) {
-      ondrop(mnemonic, paramName);
+      ondrop(mnemonic, paramName, sourceNodeId);
     }
   }
 </script>

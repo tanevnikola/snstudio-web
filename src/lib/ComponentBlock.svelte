@@ -1,9 +1,9 @@
 <script>
   import DropZone from './DropZone.svelte';
   import ComponentBlock from './ComponentBlock.svelte';
-  import { isNestedParam, fetchSpec, createNode, getNode, addChild, removeChild } from './specApi.js';
+  import { isNestedParam, fetchSpec, createNode, getNode, addChild, removeChild, detachNode } from './specApi.js';
 
-  let { nodeId, selectedId, onselect, onchange } = $props();
+  let { nodeId, selectedId, onselect, onchange, treeTick = 0 } = $props();
 
   let collapsed = $state(false);
 
@@ -30,30 +30,24 @@
 
   let selected = $derived(selectedId === nodeId);
 
-  // Reactive snapshot of children — from the display node (the inner task)
-  let childrenSnapshot = $state({});
-
-  function refreshChildren() {
-    // Re-read display node's children from registry
+  // Reactive snapshot of children — refreshes when treeTick changes
+  let childrenSnapshot = $derived.by(() => {
+    void treeTick; // re-run when treeTick changes
     const n = getNode(nodeId);
     if (isDomainFunction) {
       const taskKids = n?.children['task'];
       const innerTask = taskKids?.[0];
-      // Merge inner task's children + DomainFunction's own `tasks` children
       const inner = innerTask ? { ...innerTask.children } : {};
       if (n?.children['tasks']?.length) {
         inner['tasks'] = n.children['tasks'];
       }
-      childrenSnapshot = inner;
+      return inner;
     } else {
-      childrenSnapshot = n ? { ...n.children } : {};
+      return n ? { ...n.children } : {};
     }
-  }
+  });
 
-  // Initialize
-  refreshChildren();
-
-  async function handleDrop(droppedMnemonic, paramName) {
+  async function handleDrop(droppedMnemonic, paramName, sourceNodeId) {
     try {
       // `tasks` param lives on the DomainFunction itself, not the inner task
       const targetNodeId = (isDomainFunction && paramName !== 'tasks')
@@ -61,37 +55,51 @@
         : nodeId;
       if (!targetNodeId) return;
 
-      const targetNode = getNode(targetNodeId);
-      const param = targetNode?.spec.parameters[paramName];
-
-      // If the drop zone expects DomainFunction but a task was dropped, auto-wrap
-      if (param?.mnemonic === 'DomainFunction' && droppedMnemonic !== 'DomainFunction') {
-        const dfSpec = await fetchSpec('DomainFunction');
-        const dfNode = createNode('DomainFunction', dfSpec);
-        const taskSpec = await fetchSpec(droppedMnemonic);
-        const taskNode = createNode(droppedMnemonic, taskSpec);
-        addChild(dfNode.id, 'task', taskNode);
-        addChild(targetNodeId, paramName, dfNode);
+      if (sourceNodeId) {
+        // Move existing node — prevent dropping onto self or own descendant
+        if (sourceNodeId === targetNodeId) return;
+        const movedNode = getNode(sourceNodeId);
+        if (!movedNode) return;
+        detachNode(sourceNodeId);
+        addChild(targetNodeId, paramName, movedNode);
       } else {
-        const spec = await fetchSpec(droppedMnemonic);
-        const child = createNode(droppedMnemonic, spec);
-        addChild(targetNodeId, paramName, child);
+        const targetNode = getNode(targetNodeId);
+        const param = targetNode?.spec.parameters[paramName];
+
+        // If the drop zone expects DomainFunction but a task was dropped, auto-wrap
+        if (param?.mnemonic === 'DomainFunction' && droppedMnemonic !== 'DomainFunction') {
+          const dfSpec = await fetchSpec('DomainFunction');
+          const dfNode = createNode('DomainFunction', dfSpec);
+          const taskSpec = await fetchSpec(droppedMnemonic);
+          const taskNode = createNode(droppedMnemonic, taskSpec);
+          addChild(dfNode.id, 'task', taskNode);
+          addChild(targetNodeId, paramName, dfNode);
+        } else {
+          const spec = await fetchSpec(droppedMnemonic);
+          const child = createNode(droppedMnemonic, spec);
+          addChild(targetNodeId, paramName, child);
+        }
       }
-      refreshChildren();
-      queueMicrotask(() => onchange?.());
+      onchange?.();
     } catch (e) {
       console.error('Failed to drop component:', e);
     }
   }
 
-  async function handleTaskDrop(droppedMnemonic) {
+  async function handleTaskDrop(droppedMnemonic, _paramName, sourceNodeId) {
     // Drop a task onto a DomainFunction that has no task yet
     try {
-      const spec = await fetchSpec(droppedMnemonic);
-      const child = createNode(droppedMnemonic, spec);
-      addChild(nodeId, 'task', child);
-      refreshChildren();
-      queueMicrotask(() => onchange?.());
+      if (sourceNodeId) {
+        const movedNode = getNode(sourceNodeId);
+        if (!movedNode) return;
+        detachNode(sourceNodeId);
+        addChild(nodeId, 'task', movedNode);
+      } else {
+        const spec = await fetchSpec(droppedMnemonic);
+        const child = createNode(droppedMnemonic, spec);
+        addChild(nodeId, 'task', child);
+      }
+      onchange?.();
     } catch (e) {
       console.error('Failed to drop task:', e);
     }
@@ -104,13 +112,18 @@
     if (!targetNodeId) return;
 
     removeChild(targetNodeId, paramName, index);
-    refreshChildren();
-    queueMicrotask(() => onchange?.());
+    onchange?.();
   }
 
   function handleChildChange() {
-    refreshChildren();
     onchange?.();
+  }
+
+  function onBlockDragStart(e) {
+    e.dataTransfer.setData('text/plain', node.mnemonic);
+    e.dataTransfer.setData('application/x-node-id', nodeId);
+    e.dataTransfer.effectAllowed = 'move';
+    e.stopPropagation();
   }
 </script>
 
@@ -131,7 +144,7 @@
     <DropZone
       paramName="task"
       acceptedMnemonic="DomainTask"
-      ondrop={(mnemonic, _param) => handleTaskDrop(mnemonic)}
+      ondrop={(mnemonic, _param, sourceNodeId) => handleTaskDrop(mnemonic, _param, sourceNodeId)}
     />
   {:else if isDomainFunction && !displayNode && hasTasks}
     <!-- DomainFunction with tasks → render as Task.Chain -->
@@ -148,6 +161,13 @@
         class:selected
         onclick={() => onselect?.(nodeId)}
       >
+        <span
+          class="drag-handle"
+          draggable="true"
+          ondragstart={onBlockDragStart}
+          role="img"
+          aria-label="Drag to move"
+        >⠿</span>
         <span class="mnemonic">Task.Chain</span>
         <span class="stereotype">FlowTask</span>
         {#if getNode(nodeId)?.values['trace']}
@@ -165,6 +185,7 @@
                 nodeId={child.id}
                 {selectedId}
                 {onselect}
+                {treeTick}
                 onchange={handleChildChange}
               />
               <button class="remove-child" onclick={() => handleRemoveChild('tasks', i)}>✕</button>
@@ -188,12 +209,21 @@
         >
           {collapsed ? '▶' : '▼'}
         </button>
+      {:else}
+        <span class="collapse-btn placeholder" aria-hidden="true"></span>
       {/if}
       <button
         class="block"
         class:selected
         onclick={() => onselect?.(nodeId)}
       >
+        <span
+          class="drag-handle"
+          draggable="true"
+          ondragstart={onBlockDragStart}
+          role="img"
+          aria-label="Drag to move"
+        >⠿</span>
         <span class="mnemonic">{displayNode.mnemonic}</span>
         <span class="stereotype">{displayNode.spec.implementsStereotype}</span>
         {#if isDomainFunction}
@@ -217,6 +247,7 @@
                   nodeId={child.id}
                   {selectedId}
                   {onselect}
+                  {treeTick}
                   onchange={handleChildChange}
                 />
                 <button class="remove-child" onclick={() => handleRemoveChild(param.name, i)}>✕</button>
@@ -257,10 +288,17 @@
     padding: 0.3rem;
     line-height: 1;
     flex-shrink: 0;
+    width: 1.2rem;
+    text-align: center;
+    box-sizing: border-box;
   }
 
   .collapse-btn:hover {
     color: #333;
+  }
+
+  .collapse-btn.placeholder {
+    visibility: hidden;
   }
 
   .block {
@@ -290,6 +328,23 @@
   .block.empty-df {
     border-style: dashed;
     color: #999;
+  }
+
+  .drag-handle {
+    cursor: grab;
+    color: #bbb;
+    font-size: 0.85rem;
+    line-height: 1;
+    user-select: none;
+    flex-shrink: 0;
+  }
+
+  .drag-handle:hover {
+    color: #666;
+  }
+
+  .drag-handle:active {
+    cursor: grabbing;
   }
 
   .mnemonic {
