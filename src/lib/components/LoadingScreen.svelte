@@ -12,7 +12,6 @@
       loaded = l;
       total = t;
     })
-      .then(() => new Promise(r => setTimeout(r, 300)))
       .then(() => onready?.())
       .catch((e) => {
         error = e.message;
@@ -84,7 +83,7 @@
     height: 100%;
     background: #4a90d9;
     border-radius: 2px;
-    transition: width 0.2s ease;
+    transition: none;
   }
 
   .progress-text {
