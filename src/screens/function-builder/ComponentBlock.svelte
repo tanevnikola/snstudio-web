@@ -1,7 +1,7 @@
 <script>
-  import DropZone from './DropZone.svelte';
+  import DropZone from '../../lib/components/DropZone.svelte';
   import ComponentBlock from './ComponentBlock.svelte';
-  import { isNestedParam, fetchSpec, createNode, getNode, addChild, removeChild, detachNode, moveChild } from './specApi.js';
+  import { isNestedParam, fetchSpec, createNode, getNode, addChild, removeChild, detachNode, moveChild } from '../../lib/specApi.js';
 
   let { nodeId, selectedId, onselect, onchange, treeTick = 0, listIndex = -1, listSize = 0, onmoveup, onmovedown, onremove } = $props();
 

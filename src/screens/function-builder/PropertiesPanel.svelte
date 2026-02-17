@@ -5,7 +5,7 @@
 </script>
 
 <script>
-  import { isNestedParam, getNode } from './specApi.js';
+  import { isNestedParam, getNode } from '../../lib/specApi.js';
   import ParamField from './ParamField.svelte';
 
   let { nodeId, onchange } = $props();

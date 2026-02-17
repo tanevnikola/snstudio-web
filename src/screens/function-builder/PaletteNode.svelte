@@ -1,6 +1,6 @@
 <script>
   import PaletteNode from './PaletteNode.svelte';
-  import { fetchSpec } from './specApi.js';
+  import { fetchSpec } from '../../lib/specApi.js';
 
   let { mnemonic, depth = 0, defaultCollapsed = true } = $props();
 

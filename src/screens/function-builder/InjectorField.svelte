@@ -1,5 +1,5 @@
 <script>
-  import { fetchSpec, fetchConcreteInjectors, createNode, getNode, isInjectorRef, isInjectionPoint, isNestedParam, unregisterInjectorDeep } from './specApi.js';
+  import { fetchSpec, fetchConcreteInjectors, createNode, getNode, isInjectorRef, isInjectionPoint, isNestedParam, unregisterInjectorDeep } from '../../lib/specApi.js';
   import ParamField from './ParamField.svelte';
 
   let { value, param, onchange } = $props();
