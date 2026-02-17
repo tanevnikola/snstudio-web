@@ -7,8 +7,14 @@
   const STRING_LIKE = ['String', 'Object'];
   const isStringLike = STRING_LIKE.includes(param.mnemonic);
 
-  // Multiline toggle
+  // Multiline toggle – auto-enable when value contains newlines
   let multiline = $state(false);
+
+  $effect(() => {
+    if (isStringLike && typeof value === 'string' && value.includes('\n')) {
+      multiline = true;
+    }
+  });
 
   // Enum resolution
   let enumValues = $state(null);
@@ -48,6 +54,26 @@
     onchange(current);
   }
 
+  // Compute uniform key width from the widest key text across all entries
+  const MAP_KEY_MIN = 32;   // px – minimum width (fits ~2-3 chars)
+  const MAP_KEY_MAX = 120;  // px – maximum width (same ballpark as old 40%)
+  const MAP_KEY_PAD = 18;   // px – padding inside the input (0.5rem * 2 ≈ 16 + buffer)
+
+  let mapKeyMeasurer = $state(null);
+
+  let mapKeyWidth = $derived.by(() => {
+    const entries = getMapEntries();
+    if (!mapKeyMeasurer || entries.length === 0) return MAP_KEY_MIN;
+    // measure each key string
+    let widest = 0;
+    for (const entry of entries) {
+      mapKeyMeasurer.textContent = entry.key || 'key'; // placeholder text as min
+      const w = mapKeyMeasurer.scrollWidth;
+      if (w > widest) widest = w;
+    }
+    return Math.max(MAP_KEY_MIN, Math.min(MAP_KEY_MAX, widest + MAP_KEY_PAD));
+  });
+
   // COLLECTION helpers
   function addCollectionEntry() {
     onchange([...(value || []), '']);
@@ -64,6 +90,8 @@
 </script>
 
 {#if param.injectionStrategy === 'MAP'}
+  <!-- hidden measurer for uniform key width -->
+  <span class="map-key-measurer" bind:this={mapKeyMeasurer}></span>
   <div class="map-entries">
     {#each getMapEntries() as entry, i (i)}
       <div class="map-row">
@@ -72,6 +100,7 @@
           class="map-key"
           placeholder="key"
           value={entry.key}
+          style="width:{mapKeyWidth}px"
           oninput={(e) => updateMapEntry(i, 'key', e.target.value)}
         />
         {#if isInjectionPoint(param)}
@@ -189,8 +218,18 @@
     align-items: center;
   }
 
+  .map-key-measurer {
+    position: absolute;
+    visibility: hidden;
+    white-space: pre;
+    font-size: 0.8rem;
+    font-family: inherit;
+    pointer-events: none;
+  }
+
   .map-key {
-    width: 40% !important;
+    flex-shrink: 0;
+    flex-grow: 0;
   }
 
   .map-value {

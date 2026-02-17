@@ -121,7 +121,7 @@
     const startWidth = propsWidth;
 
     function onMove(ev) {
-      propsWidth = Math.max(180, Math.min(500, startWidth - (ev.clientX - startX)));
+      propsWidth = Math.max(180, Math.min(Math.floor(window.innerWidth / 2), startWidth - (ev.clientX - startX)));
     }
     function onUp() {
       resizingRight = false;
