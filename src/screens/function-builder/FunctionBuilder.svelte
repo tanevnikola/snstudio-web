@@ -31,6 +31,53 @@
   let treeTick = $state(0); // bumped by tree changes (canvas/properties)
   let skipNextSerialize = false; // skip re-serialize after YAML→tree parse
 
+  // Undo/redo history
+  const HISTORY_LIMIT = 10;
+  let yamlHistory = $state([]);
+  let historyIndex = $state(-1);
+  let isUndoRedo = false; // prevent history push during undo/redo apply
+
+  function pushHistory(text) {
+    if (isUndoRedo) return;
+    if (historyIndex >= 0 && yamlHistory[historyIndex] === text) return;
+    // Truncate any forward history
+    yamlHistory = yamlHistory.slice(0, historyIndex + 1);
+    yamlHistory.push(text);
+    if (yamlHistory.length > HISTORY_LIMIT) {
+      yamlHistory = yamlHistory.slice(yamlHistory.length - HISTORY_LIMIT);
+    }
+    historyIndex = yamlHistory.length - 1;
+  }
+
+  async function applyHistoryEntry(text) {
+    isUndoRedo = true;
+    yamlText = text;
+    yamlEditing = false;
+    yamlError = null;
+    try {
+      const newRootId = await yamlToNodeTree(text);
+      skipNextSerialize = true;
+      rootNodeId = newRootId;
+      selectedNodeId = null;
+    } catch (err) {
+      yamlError = err.message;
+    } finally {
+      isUndoRedo = false;
+    }
+  }
+
+  async function undo() {
+    if (historyIndex <= 0) return;
+    historyIndex--;
+    await applyHistoryEntry(yamlHistory[historyIndex]);
+  }
+
+  async function redo() {
+    if (historyIndex >= yamlHistory.length - 1) return;
+    historyIndex++;
+    await applyHistoryEntry(yamlHistory[historyIndex]);
+  }
+
   // Highlighted HTML from current yamlText
   let yamlHtml = $derived(
     yamlText ? hljs.highlight(yamlText, { language: 'yaml' }).value : ''
@@ -60,6 +107,7 @@
       const result = nodeToYaml(rootNodeId);
       yamlText = result.text;
       yamlLineMap = result.lineMap;
+      pushHistory(result.text);
     } catch {
       yamlText = '# Error generating YAML';
       yamlLineMap = new Map();
@@ -110,12 +158,25 @@
         rootNodeId = newRootId;
         selectedNodeId = null;
         yamlError = null;
+        pushHistory(yamlText);
       } catch (err) {
         yamlError = err.message;
       } finally {
         yamlEditing = false;
       }
     }, 600);
+  }
+
+  function onYamlKeydown(e) {
+    const ctrl = e.ctrlKey || e.metaKey;
+    if (!ctrl) return;
+    if (e.key === 'z') {
+      e.preventDefault();
+      if (e.shiftKey) redo(); else undo();
+    } else if (e.key === 'y') {
+      e.preventDefault();
+      redo();
+    }
   }
 
   function onYamlScroll(e) {
@@ -242,14 +303,20 @@
         class:collapsed={yamlCollapsed}
         style={!yamlCollapsed && yamlHeight ? `flex: 0 0 ${yamlHeight}px` : ''}
       >
-        <button class="yaml-header" onclick={() => (yamlCollapsed = !yamlCollapsed)}>
-          <span class="yaml-collapse-arrow">{yamlCollapsed ? '▶' : '▼'}</span>
-          <span class="yaml-title">YAML</span>
+        <div class="yaml-header">
+          <button type="button" class="yaml-collapse-btn" onclick={() => (yamlCollapsed = !yamlCollapsed)}>
+            <span class="yaml-collapse-arrow">{yamlCollapsed ? '▶' : '▼'}</span>
+            <span class="yaml-title">YAML</span>
+          </button>
           {#if yamlError}
             <span class="yaml-error">{yamlError}</span>
           {/if}
-          <span class="copy-btn" role="button" onclick={(e) => { e.stopPropagation(); copyYaml(); }}>{copyLabel}</span>
-        </button>
+          <span class="yaml-actions">
+            <button type="button" class="yaml-action-btn" title="Undo (Ctrl+Z)" disabled={historyIndex <= 0} onclick={undo}>↩</button>
+            <button type="button" class="yaml-action-btn" title="Redo (Ctrl+Shift+Z)" disabled={historyIndex >= yamlHistory.length - 1} onclick={redo}>↪</button>
+            <button type="button" class="copy-btn" onclick={copyYaml}>{copyLabel}</button>
+          </span>
+        </div>
         {#if !yamlCollapsed}
           <div class="yaml-editor">
             <pre class="yaml-highlight" aria-hidden="true"><code>{@html yamlHtml}&nbsp;</code></pre>
@@ -258,6 +325,7 @@
               value={yamlText}
               oninput={onYamlInput}
               onscroll={onYamlScroll}
+              onkeydown={onYamlKeydown}
               spellcheck="false"
               autocomplete="off"
               autocorrect="off"
@@ -371,14 +439,22 @@
     padding: 0.4rem 0.75rem;
     background: #181825;
     flex-shrink: 0;
-    border: none;
-    width: 100%;
-    cursor: pointer;
-    font-family: inherit;
   }
 
-  .yaml-header:hover {
-    background: #1e1e30;
+  .yaml-collapse-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+  }
+
+  .yaml-collapse-btn:hover .yaml-title,
+  .yaml-collapse-btn:hover .yaml-collapse-arrow {
+    color: #cdd6f4;
   }
 
   .yaml-collapse-arrow {
@@ -405,8 +481,38 @@
     min-width: 0;
   }
 
-  .copy-btn {
+  .yaml-actions {
     margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-shrink: 0;
+  }
+
+  .yaml-action-btn {
+    background: none;
+    border: 1px solid #45475a;
+    border-radius: 4px;
+    padding: 0.15rem 0.4rem;
+    font-size: 0.75rem;
+    color: #6c7086;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    line-height: 1;
+  }
+
+  .yaml-action-btn:hover:not(:disabled) {
+    color: #cdd6f4;
+    border-color: #6c7086;
+  }
+
+  .yaml-action-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+
+  .copy-btn {
+    background: none;
     border: 1px solid #45475a;
     border-radius: 4px;
     padding: 0.15rem 0.5rem;
@@ -414,7 +520,7 @@
     color: #6c7086;
     cursor: pointer;
     transition: color 0.15s, border-color 0.15s;
-    flex-shrink: 0;
+    font-family: inherit;
   }
 
   .copy-btn:hover {
