@@ -2,11 +2,12 @@
   import FunctionBuilder from '../function-builder/FunctionBuilder.svelte';
   import SettingsScreen from '../settings/SettingsScreen.svelte';
   import ProjectScreen from '../project/ProjectScreen.svelte';
-  import { getServiceYaml, updateServiceYaml } from '../../lib/projectStore.svelte.js';
+  import ProjectsScreen from '../projects/ProjectsScreen.svelte';
+  import { getServiceYaml, updateServiceYaml, loadProject, unloadProject } from '../../lib/projectStore.svelte.js';
 
   // ── Navigation stack ────────────────────────────────────────
-  // Each entry: { screen, actorId?, serviceId? }
-  let navStack = $state([{ screen: 'projectScreen' }]);
+  // Each entry: { screen, projectId?, actorId?, serviceId? }
+  let navStack = $state([{ screen: 'projectsScreen' }]);
 
   let current = $derived(navStack[navStack.length - 1]);
   let canGoBack = $derived(navStack.length > 1);
@@ -25,6 +26,11 @@
     navStack = [...navStack, { screen }];
   }
 
+  function openProject(projectId) {
+    loadProject(projectId);
+    navStack = [...navStack, { screen: 'projectScreen', projectId }];
+  }
+
   function openService(actorId, serviceId) {
     navStack = [...navStack, { screen: 'functionBuilder', actorId, serviceId }];
   }
@@ -34,6 +40,10 @@
     // Save FunctionBuilder YAML before navigating away
     if (leaving.screen === 'functionBuilder' && leaving.actorId && leaving.serviceId) {
       updateServiceYaml(leaving.actorId, leaving.serviceId, fbYamlRef.current);
+    }
+    // Unload project data when leaving ProjectScreen
+    if (leaving.screen === 'projectScreen') {
+      unloadProject();
     }
     if (navStack.length > 1) navStack = navStack.slice(0, -1);
   }
@@ -66,6 +76,12 @@
   </header>
 
   <main class="content">
+    {#if current.screen === 'projectsScreen'}
+      <div class="screen">
+        <ProjectsScreen onOpenProject={openProject} />
+      </div>
+    {/if}
+
     {#if current.screen === 'projectScreen'}
       <div class="screen">
         <ProjectScreen {openService} />

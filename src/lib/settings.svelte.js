@@ -8,7 +8,7 @@ const defaults = {
 
 function load() {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       return {
@@ -25,7 +25,7 @@ export const settings = $state(load());
 
 export function persistSettings() {
   try {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
   } catch {
     // ignore write errors (e.g. private browsing quota)
   }

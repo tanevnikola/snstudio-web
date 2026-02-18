@@ -1,5 +1,3 @@
-const STORAGE_KEY = 'snstudio_project';
-
 function createDefaultProject() {
   return {
     actors: [
@@ -17,9 +15,9 @@ function createDefaultProject() {
   };
 }
 
-function load() {
+function loadFromStorage(projectId) {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(`snstudio_project_${projectId}`);
     if (raw) return JSON.parse(raw);
   } catch {
     // ignore parse errors, fall back to defaults
@@ -27,11 +25,29 @@ function load() {
   return createDefaultProject();
 }
 
-export const project = $state(load());
+let _currentProjectId = $state(null);
+export const project = $state(createDefaultProject());
+
+export function getCurrentProjectId() {
+  return _currentProjectId;
+}
+
+export function loadProject(projectId) {
+  _currentProjectId = projectId;
+  const data = loadFromStorage(projectId);
+  Object.assign(project, data);
+}
+
+export function unloadProject() {
+  _currentProjectId = null;
+  const defaults = createDefaultProject();
+  Object.assign(project, defaults);
+}
 
 export function persistProject() {
+  if (!_currentProjectId) return;
   try {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(project));
+    localStorage.setItem(`snstudio_project_${_currentProjectId}`, JSON.stringify(project));
   } catch {
     // ignore write errors (e.g. private browsing quota)
   }
