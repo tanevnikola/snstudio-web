@@ -1,5 +1,5 @@
 <script>
-  import { isInjectionPoint, isNestedParam, isPrimitive, isMnemonicType, fetchSpec } from '../specApi.js';
+  import { isInjectionPoint, isNestedParam, isPrimitive, isMnemonicType, fetchSpec, isInjectOnly } from '../specApi.js';
   import InjectorField from './InjectorField.svelte';
   import MnemonicField from './MnemonicField.svelte';
 
@@ -168,7 +168,7 @@
 {:else if isMnemonicType(param)}
   <MnemonicField {param} {value} {onchange} />
 
-{:else if isInjectionPoint(param)}
+{:else if isInjectionPoint(param) && !param.eager || isInjectOnly(param)}
   <InjectorField
     value={getVal()}
     {param}
