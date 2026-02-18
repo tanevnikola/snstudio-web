@@ -3,20 +3,17 @@
   import ActorDetail from './ActorDetail.svelte';
   import ServiceDetail from './ServiceDetail.svelte';
   import { project } from '../../lib/projectStore.svelte.js';
-
-  let { openService } = $props();
 </script>
 
 <div class="project-screen">
   <div class="tree-panel">
-    <ProjectTree onOpenService={openService} />
+    <ProjectTree />
   </div>
-  <div class="detail-panel">
+  <div class="detail-panel" class:no-padding={project.selectedServiceId && project.selectedActorId}>
     {#if project.selectedServiceId && project.selectedActorId}
       <ServiceDetail
         actorId={project.selectedActorId}
         serviceId={project.selectedServiceId}
-        onOpenService={openService}
       />
     {:else if project.selectedActorId}
       <ActorDetail actorId={project.selectedActorId} />
@@ -50,6 +47,11 @@
     overflow-y: auto;
     background: white;
     min-width: 0;
+  }
+
+  .detail-panel.no-padding {
+    padding: 0;
+    overflow: hidden;
   }
 
   .empty-state {

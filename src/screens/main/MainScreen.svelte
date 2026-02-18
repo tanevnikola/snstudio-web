@@ -1,25 +1,15 @@
 <script>
-  import FunctionBuilder from '../function-builder/FunctionBuilder.svelte';
   import SettingsScreen from '../settings/SettingsScreen.svelte';
   import ProjectScreen from '../project/ProjectScreen.svelte';
   import ProjectsScreen from '../projects/ProjectsScreen.svelte';
-  import { getServiceYaml, updateServiceYaml, loadProject, unloadProject } from '../../lib/projectStore.svelte.js';
+  import { loadProject, unloadProject } from '../../lib/projectStore.svelte.js';
 
   // ── Navigation stack ────────────────────────────────────────
-  // Each entry: { screen, projectId?, actorId?, serviceId? }
+  // Each entry: { screen, projectId? }
   let navStack = $state([{ screen: 'projectsScreen' }]);
 
   let current = $derived(navStack[navStack.length - 1]);
   let canGoBack = $derived(navStack.length > 1);
-
-  // Mutable ref — FunctionBuilder keeps this in sync via $effect
-  let fbYamlRef = { current: '' };
-
-  // Derived YAML for the service being edited (null = fresh DomainFunction)
-  let currentServiceYaml = $derived.by(() => {
-    if (current.screen !== 'functionBuilder') return null;
-    return getServiceYaml(current.actorId, current.serviceId);
-  });
 
   function navigate(screen) {
     if (current.screen === screen) return;
@@ -31,16 +21,8 @@
     navStack = [...navStack, { screen: 'projectScreen', projectId }];
   }
 
-  function openService(actorId, serviceId) {
-    navStack = [...navStack, { screen: 'functionBuilder', actorId, serviceId }];
-  }
-
   function back() {
     const leaving = navStack[navStack.length - 1];
-    // Save FunctionBuilder YAML before navigating away
-    if (leaving.screen === 'functionBuilder' && leaving.actorId && leaving.serviceId) {
-      updateServiceYaml(leaving.actorId, leaving.serviceId, fbYamlRef.current);
-    }
     // Unload project data when leaving ProjectScreen
     if (leaving.screen === 'projectScreen') {
       unloadProject();
@@ -84,15 +66,7 @@
 
     {#if current.screen === 'projectScreen'}
       <div class="screen">
-        <ProjectScreen {openService} />
-      </div>
-    {/if}
-
-    {#if current.screen === 'functionBuilder'}
-      <div class="screen">
-        {#key current.serviceId}
-          <FunctionBuilder initialYaml={currentServiceYaml} yamlRef={fbYamlRef} />
-        {/key}
+        <ProjectScreen />
       </div>
     {/if}
 

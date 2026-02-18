@@ -1,10 +1,12 @@
 <script>
   import { project, renameActor, removeActor } from '../../lib/projectStore.svelte.js';
+  import ConfirmDialog from '../../lib/components/ConfirmDialog.svelte';
 
   let { actorId } = $props();
 
   let actor = $derived(project.actors.find(a => a.id === actorId));
   let serviceCount = $derived(actor?.sections.services.items.length ?? 0);
+  let showConfirm = $state(false);
 
   function onNameInput(e) {
     renameActor(actorId, e.target.value);
@@ -24,9 +26,18 @@
     </div>
 
     <div class="actions">
-      <button type="button" class="delete-btn" onclick={() => removeActor(actorId)}>Delete Actor</button>
+      <button type="button" class="delete-btn" onclick={() => { showConfirm = true; }}>Delete Actor</button>
     </div>
   </div>
+{/if}
+
+{#if showConfirm && actor}
+  <ConfirmDialog
+    message={`Delete actor "${actor.name}"? This cannot be undone.`}
+    confirmLabel="Delete"
+    onConfirm={() => { removeActor(actorId); showConfirm = false; }}
+    onCancel={() => { showConfirm = false; }}
+  />
 {/if}
 
 <style>

@@ -1,5 +1,8 @@
 function createDefaultProject() {
   return {
+    sections: {
+      actors: { collapsed: false },
+    },
     actors: [
       {
         id: crypto.randomUUID(),
@@ -160,6 +163,13 @@ export function toggleSectionCollapsed(actorId, sectionName) {
   const actor = project.actors.find(a => a.id === actorId);
   if (actor && actor.sections[sectionName]) {
     actor.sections[sectionName].collapsed = !actor.sections[sectionName].collapsed;
+    persistProject();
+  }
+}
+
+export function toggleProjectSectionCollapsed(sectionName) {
+  if (project.sections[sectionName]) {
+    project.sections[sectionName].collapsed = !project.sections[sectionName].collapsed;
     persistProject();
   }
 }

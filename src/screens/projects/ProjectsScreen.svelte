@@ -1,5 +1,6 @@
 <script>
   import { projectsList, addProject, removeProject, renameProject } from '../../lib/projectsStore.svelte.js';
+  import ConfirmDialog from '../../lib/components/ConfirmDialog.svelte';
 
   let { onOpenProject } = $props();
 
@@ -7,6 +8,10 @@
   let renamingId = $state(null);
   let renameValue = $state('');
   let renameInput = $state(null);
+
+  // Confirm delete state
+  let confirmDeleteId = $state(null);
+  let confirmDeleteName = $state('');
 
   function startRename(id, currentName) {
     renamingId = id;
@@ -68,7 +73,7 @@
             <button
               type="button"
               class="delete-btn"
-              onclick={(e) => { e.stopPropagation(); removeProject(project.id); }}
+              onclick={(e) => { e.stopPropagation(); confirmDeleteId = project.id; confirmDeleteName = project.name; }}
               title="Delete project"
               aria-label="Delete project"
             >&times;</button>
@@ -78,6 +83,15 @@
     </div>
   {/if}
 </div>
+
+{#if confirmDeleteId}
+  <ConfirmDialog
+    message={`Delete project "${confirmDeleteName}"? This cannot be undone.`}
+    confirmLabel="Delete"
+    onConfirm={() => { removeProject(confirmDeleteId); confirmDeleteId = null; }}
+    onCancel={() => { confirmDeleteId = null; }}
+  />
+{/if}
 
 <style>
   .projects-screen {

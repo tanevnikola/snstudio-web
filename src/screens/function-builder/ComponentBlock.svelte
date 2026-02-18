@@ -5,6 +5,8 @@
 
   let { nodeId, selectedId, onselect, onchange, treeTick = 0, listIndex = -1, listSize = 0, onmoveup, onmovedown, onremove, listParentId = null, listParamName = null } = $props();
 
+  let showRemoveConfirm = $state(false);
+
   let inList = $derived(listIndex >= 0 && listSize > 1);
   let canMoveUp = $derived(listIndex > 0);
   let canMoveDown = $derived(listIndex < listSize - 1);
@@ -205,7 +207,28 @@
   function onBlockDragEnd() {
     dragging = false;
   }
+
+  function onCloseClick(e) {
+    e.stopPropagation();
+    if (showRemoveConfirm) {
+      onremove?.();
+      showRemoveConfirm = false;
+    } else {
+      showRemoveConfirm = true;
+    }
+  }
+
+  function onBlockClick() {
+    showRemoveConfirm = false;
+    onselect?.(nodeId);
+  }
+
+  function onWindowKeydown(e) {
+    if (e.key === 'Escape' && showRemoveConfirm) showRemoveConfirm = false;
+  }
 </script>
+
+<svelte:window onkeydown={onWindowKeydown} />
 
 {#if node}
 <div
@@ -250,10 +273,10 @@
         draggable="true"
         ondragstart={onBlockDragStart}
         ondragend={onBlockDragEnd}
-        onclick={() => onselect?.(nodeId)}
+        onclick={onBlockClick}
       >
         {#if onremove}
-          <button class="close-btn" onclick={(e) => { e.stopPropagation(); onremove?.(); }} title="Remove">✕</button>
+          <button class="close-btn" class:confirm-mode={showRemoveConfirm} onclick={onCloseClick} onmouseleave={() => { showRemoveConfirm = false; }} title={showRemoveConfirm ? 'Confirm remove' : 'Remove'}>{showRemoveConfirm ? '✓' : '✕'}</button>
         {/if}
         <span class="block-content">
           {#if inList}
@@ -317,10 +340,10 @@
         draggable="true"
         ondragstart={onBlockDragStart}
         ondragend={onBlockDragEnd}
-        onclick={() => onselect?.(nodeId)}
+        onclick={onBlockClick}
       >
         {#if onremove}
-          <button class="close-btn" onclick={(e) => { e.stopPropagation(); onremove?.(); }} title="Remove">✕</button>
+          <button class="close-btn" class:confirm-mode={showRemoveConfirm} onclick={onCloseClick} onmouseleave={() => { showRemoveConfirm = false; }} title={showRemoveConfirm ? 'Confirm remove' : 'Remove'}>{showRemoveConfirm ? '✓' : '✕'}</button>
         {/if}
         <span class="block-content">
           {#if inList}
@@ -478,6 +501,23 @@
   .close-btn:hover {
     color: #d32f2f;
     background: #fef2f2;
+  }
+
+  .close-btn.confirm-mode {
+    background: #d32f2f;
+    color: white;
+    border-right-color: #b71c1c;
+    animation: confirm-pulse 0.15s ease-out;
+  }
+
+  .close-btn.confirm-mode:hover {
+    background: #b71c1c;
+    color: white;
+  }
+
+  @keyframes confirm-pulse {
+    0% { transform: scale(0.6); }
+    100% { transform: scale(1); }
   }
 
   .mnemonic {

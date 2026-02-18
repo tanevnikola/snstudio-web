@@ -11,7 +11,7 @@
 
   hljs.registerLanguage('yaml', yamlLang);
 
-  let { initialYaml = null, yamlRef = null } = $props();
+  let { initialYaml = null, yamlRef = null, onYamlChange = null } = $props();
 
   let rootNodeId = $state(null);
   let selectedNodeId = $state(null);
@@ -269,9 +269,10 @@
     initRoot();
   }
 
-  // Keep yamlRef in sync so MainScreen can read current YAML on back-navigation
+  // Keep yamlRef in sync and notify parent of YAML changes
   $effect(() => {
     if (yamlRef) yamlRef.current = yamlText;
+    if (onYamlChange) onYamlChange(yamlText);
   });
 
   // Init: load external YAML or create a fresh DomainFunction
