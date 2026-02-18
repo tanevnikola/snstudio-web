@@ -7,6 +7,7 @@
   import { yamlToNodeTree } from '../../lib/yamlDeserializer.js';
   import hljs from 'highlight.js/lib/core';
   import yamlLang from 'highlight.js/lib/languages/yaml';
+  import { settings } from '../../lib/settings.svelte.js';
 
   hljs.registerLanguage('yaml', yamlLang);
 
@@ -32,7 +33,6 @@
   let skipNextSerialize = false; // skip re-serialize after YAML→tree parse
 
   // Undo/redo history
-  const HISTORY_LIMIT = 10;
   let yamlHistory = $state([]);
   let historyIndex = $state(-1);
   let isUndoRedo = false; // prevent history push during undo/redo apply
@@ -43,8 +43,9 @@
     // Truncate any forward history
     yamlHistory = yamlHistory.slice(0, historyIndex + 1);
     yamlHistory.push(text);
-    if (yamlHistory.length > HISTORY_LIMIT) {
-      yamlHistory = yamlHistory.slice(yamlHistory.length - HISTORY_LIMIT);
+    const limit = settings.codeEditor.maxCodeHistory;
+    if (yamlHistory.length > limit) {
+      yamlHistory = yamlHistory.slice(yamlHistory.length - limit);
     }
     historyIndex = yamlHistory.length - 1;
   }
