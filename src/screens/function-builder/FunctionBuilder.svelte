@@ -11,6 +11,8 @@
 
   hljs.registerLanguage('yaml', yamlLang);
 
+  let { initialYaml = null, yamlRef = null } = $props();
+
   let rootNodeId = $state(null);
   let selectedNodeId = $state(null);
   let error = $state(null);
@@ -267,8 +269,28 @@
     initRoot();
   }
 
-  // Auto-init on mount
-  initRoot();
+  // Keep yamlRef in sync so MainScreen can read current YAML on back-navigation
+  $effect(() => {
+    if (yamlRef) yamlRef.current = yamlText;
+  });
+
+  // Init: load external YAML or create a fresh DomainFunction
+  async function init() {
+    if (initialYaml) {
+      try {
+        const newRootId = await yamlToNodeTree(initialYaml);
+        rootNodeId = newRootId;
+        selectedNodeId = newRootId;
+        bumpTree();
+      } catch {
+        await initRoot();
+      }
+    } else {
+      await initRoot();
+    }
+  }
+
+  init();
 </script>
 
 <div class="function-builder">

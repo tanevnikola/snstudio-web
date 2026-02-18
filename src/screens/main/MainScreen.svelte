@@ -1,28 +1,46 @@
 <script>
   import FunctionBuilder from '../function-builder/FunctionBuilder.svelte';
   import SettingsScreen from '../settings/SettingsScreen.svelte';
+  import ProjectScreen from '../project/ProjectScreen.svelte';
+  import { getServiceYaml, updateServiceYaml } from '../../lib/projectStore.svelte.js';
 
   // ── Navigation stack ────────────────────────────────────────
-  // Each entry: { screen: string }
-  // 'screen' values: 'functionBuilder' | 'settings'
-  let navStack = $state([{ screen: 'functionBuilder' }]);
+  // Each entry: { screen, actorId?, serviceId? }
+  let navStack = $state([{ screen: 'projectScreen' }]);
 
   let current = $derived(navStack[navStack.length - 1]);
   let canGoBack = $derived(navStack.length > 1);
 
+  // Mutable ref — FunctionBuilder keeps this in sync via $effect
+  let fbYamlRef = { current: '' };
+
+  // Derived YAML for the service being edited (null = fresh DomainFunction)
+  let currentServiceYaml = $derived.by(() => {
+    if (current.screen !== 'functionBuilder') return null;
+    return getServiceYaml(current.actorId, current.serviceId);
+  });
+
   function navigate(screen) {
-    if (current.screen === screen) return; // already here
+    if (current.screen === screen) return;
     navStack = [...navStack, { screen }];
   }
 
+  function openService(actorId, serviceId) {
+    navStack = [...navStack, { screen: 'functionBuilder', actorId, serviceId }];
+  }
+
   function back() {
+    const leaving = navStack[navStack.length - 1];
+    // Save FunctionBuilder YAML before navigating away
+    if (leaving.screen === 'functionBuilder' && leaving.actorId && leaving.serviceId) {
+      updateServiceYaml(leaving.actorId, leaving.serviceId, fbYamlRef.current);
+    }
     if (navStack.length > 1) navStack = navStack.slice(0, -1);
   }
 </script>
 
 <div class="main-screen">
   <header class="topbar">
-    <!-- Left slot: back button when there is history -->
     <div class="topbar-left">
       {#if canGoBack}
         <button type="button" class="icon-btn back-btn" onclick={back} title="Back" aria-label="Go back">
@@ -35,7 +53,6 @@
 
     <span class="app-title">SNStudio</span>
 
-    <!-- Right slot: settings cog (hidden when already on settings) -->
     <div class="topbar-right">
       {#if current.screen !== 'settings'}
         <button type="button" class="icon-btn" onclick={() => navigate('settings')} title="Settings" aria-label="Settings">
@@ -49,18 +66,20 @@
   </header>
 
   <main class="content">
-    <!--
-      FunctionBuilder is always mounted so its in-memory state (node tree, YAML,
-      selections) survives navigation away and back. CSS hides it when not active.
-    -->
-    <div class="screen" class:screen-hidden={current.screen !== 'functionBuilder'}>
-      <FunctionBuilder />
-    </div>
+    {#if current.screen === 'projectScreen'}
+      <div class="screen">
+        <ProjectScreen {openService} />
+      </div>
+    {/if}
 
-    <!--
-      Screens whose state lives entirely in the store can be conditionally
-      rendered — they are cheap to recreate and don't need preservation.
-    -->
+    {#if current.screen === 'functionBuilder'}
+      <div class="screen">
+        {#key current.serviceId}
+          <FunctionBuilder initialYaml={currentServiceYaml} yamlRef={fbYamlRef} />
+        {/key}
+      </div>
+    {/if}
+
     {#if current.screen === 'settings'}
       <div class="screen">
         <SettingsScreen />
@@ -77,7 +96,6 @@
     font-family: system-ui, -apple-system, sans-serif;
   }
 
-  /* ── Topbar ─────────────────────────────────────────────── */
   .topbar {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
@@ -122,11 +140,9 @@
   }
 
   .back-btn {
-    /* Slightly more prominent than the settings cog */
     color: #555;
   }
 
-  /* ── Content area ───────────────────────────────────────── */
   .content {
     flex: 1;
     overflow: hidden;
@@ -134,18 +150,10 @@
     flex-direction: column;
   }
 
-  /*
-   * Each screen fills the content area.
-   * FunctionBuilder in particular relies on flex layout to size its panels.
-   */
   .screen {
     flex: 1;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-  }
-
-  .screen-hidden {
-    display: none;
   }
 </style>
