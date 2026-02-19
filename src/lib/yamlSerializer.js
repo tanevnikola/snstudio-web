@@ -1,5 +1,5 @@
 import yaml from 'js-yaml';
-import { isNestedParam, isInjectorRef, isMnemonicRef, getNode } from './specApi.js';
+import { isNestedParam, isInjectorRef, isMnemonicType, getNode } from './specApi.js';
 
 /**
  * Convert a node tree into the t:/v: YAML notation.
@@ -14,7 +14,7 @@ export function nodeToYaml(nodeId) {
   if (!node) return { text: '', lineMap: new Map() };
 
   const markers = new Map(); // marker string → nodeId
-  const obj = nodeToObject(node, node.mnemonic, markers);
+  const obj = nodeToObject(node, null, markers);
   const raw = yaml.dump(obj, {
     indent: 2,
     lineWidth: -1,
@@ -105,20 +105,17 @@ function nodeToObject(node, expectedMnemonic, markers) {
     }
   }
 
+  // Factory: use 'factory' key instead of 'v'
+  const valKey = node.factory ? 'factory' : 'v';
+
   if (inline) {
-    // Inline: just output the properties directly (no t:/v: wrapper)
-    // Inject marker as first key
     if (Object.keys(v).length > 0) {
       return { [marker]: null, ...v };
     }
     return { [marker]: null };
   }
 
-  // Wrapped: { t: mnemonic, v: { ...properties } }
-  if (Object.keys(v).length === 0) {
-    return { [marker]: null, t: node.mnemonic };
-  }
-  return { [marker]: null, t: node.mnemonic, v };
+  return { [marker]: null, t: node.mnemonic, [valKey]: v };
 }
 
 /**
@@ -127,10 +124,11 @@ function nodeToObject(node, expectedMnemonic, markers) {
 function buildProperties(node, params, markers) {
   const v = {};
 
-  // Add property values (non-nested params)
+  // Add property values (non-nested, non-mnemonic params)
   for (const [name, param] of Object.entries(params)) {
     if (name === '@delegating@') continue;
     if (isNestedParam(param)) continue;
+    if (isMnemonicType(param)) continue;
 
     const val = node.values[name];
     if (val === undefined || val === '') continue;
@@ -142,19 +140,11 @@ function buildProperties(node, params, markers) {
       continue;
     }
 
-    // Check if the value is a mnemonic-type reference
-    if (isMnemonicRef(val)) {
-      const serialized = serializeMnemonicRef(val);
-      if (serialized != null) v[name] = serialized;
-      continue;
-    }
-
     if (param.injectionStrategy === 'MAP') {
       if (Array.isArray(val) && val.length > 0) {
         const map = {};
         for (const entry of val) {
           if (entry.key) {
-            // Each map value may be an injector ref
             if (isInjectorRef(entry.value)) {
               const s = serializeInjectorRef(entry.value, markers);
               if (s != null) map[entry.key] = s;
@@ -175,6 +165,30 @@ function buildProperties(node, params, markers) {
       }
     } else {
       v[name] = coerceValue(val, param.mnemonic);
+    }
+  }
+
+  // Add mnemonic-type children (real nodes stored in children)
+  for (const [name, param] of Object.entries(params)) {
+    if (name === '@delegating@') continue;
+    if (isNestedParam(param)) continue;
+    if (!isMnemonicType(param)) continue;
+
+    const kids = node.children[name];
+    if (!kids || kids.length === 0) continue;
+
+    if (param.injectionStrategy === 'MAP') {
+      const map = {};
+      for (const child of kids) {
+        if (child.mapKey) {
+          map[child.mapKey] = nodeToObject(child, param.mnemonic, markers);
+        }
+      }
+      if (Object.keys(map).length) v[name] = map;
+    } else if (param.injectionStrategy === 'COLLECTION') {
+      v[name] = kids.map((child) => nodeToObject(child, param.mnemonic, markers));
+    } else {
+      v[name] = nodeToObject(kids[0], param.mnemonic, markers);
     }
   }
 
@@ -205,37 +219,6 @@ function serializeInjectorRef(ref, markers) {
   const injNode = getNode(ref.__injectorNodeId);
   if (!injNode) return null;
   return nodeToObject(injNode, null, markers);
-}
-
-/**
- * Serialize a mnemonic-type value { __mnemonicType, __mnemonicValues, __mnemonicFactory? }
- * to { t, v } or { t, factory } when factory flag is set.
- */
-function serializeMnemonicRef(ref) {
-  if (!ref?.__mnemonicType) return null;
-  const isFactory = ref.__mnemonicFactory === true;
-  const valKey = isFactory ? 'factory' : 'v';
-  const vals = ref.__mnemonicValues;
-  if (!vals || Object.keys(vals).length === 0) {
-    return { t: ref.__mnemonicType };
-  }
-  // Recursively serialize nested mnemonic/injector refs in the values
-  const v = {};
-  for (const [k, val] of Object.entries(vals)) {
-    if (isMnemonicRef(val)) {
-      const s = serializeMnemonicRef(val);
-      if (s != null) v[k] = s;
-    } else if (isInjectorRef(val)) {
-      const s = serializeInjectorRef(val, null);
-      if (s != null) v[k] = s;
-    } else if (val !== undefined && val !== '') {
-      v[k] = val;
-    }
-  }
-  if (Object.keys(v).length === 0) {
-    return { t: ref.__mnemonicType };
-  }
-  return { t: ref.__mnemonicType, [valKey]: v };
 }
 
 function coerceValue(val, mnemonic) {

@@ -32,7 +32,7 @@
       <span class="section-label">Function Builder</span>
       <div class="fb-container">
         {#key functionId}
-          <FunctionBuilder initialYaml={yaml} {onYamlChange} />
+          <FunctionBuilder initialYaml={yaml} {onYamlChange} functionName={fn.name} />
         {/key}
       </div>
     </div>

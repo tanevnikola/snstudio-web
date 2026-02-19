@@ -49,20 +49,6 @@ export function isInjectorRef(value) {
 }
 
 /**
- * Check if a value stored in node.values is a mnemonic-type reference.
- */
-export function isMnemonicRef(value) {
-  return value != null && typeof value === 'object' && '__mnemonicType' in value;
-}
-
-/**
- * Check if a mnemonic ref has the factory flag set.
- */
-export function isMnemonicFactory(value) {
-  return isMnemonicRef(value) && value.__mnemonicFactory === true;
-}
-
-/**
  * Get a spec from cache synchronously (returns null if not cached).
  * Use after loading screen has warmed the cache.
  */
@@ -252,7 +238,7 @@ export function clearAllNodes() {
   nodeRegistry.clear();
 }
 
-function unregisterDeep(node) {
+export function unregisterDeep(node) {
   unregisterNode(node.id);
   for (const kids of Object.values(node.children)) {
     for (const kid of kids) {

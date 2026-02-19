@@ -1,7 +1,11 @@
+<script module>
+  // Shared collapse state — persists across component instances
+  let _mapCollapsed = {};
+</script>
+
 <script>
-  import { isInjectionPoint, isNestedParam, isPrimitive, isMnemonicType, fetchSpec, isInjectOnly } from '../specApi.js';
+  import { isInjectionPoint, isPrimitive, fetchSpec, isInjectOnly } from '../specApi.js';
   import InjectorField from './InjectorField.svelte';
-  import MnemonicField from './MnemonicField.svelte';
 
   let { param, value, onchange } = $props();
 
@@ -41,6 +45,11 @@
     return value || [];
   }
 
+  // MAP collapse per entry — initialized from module-level, synced back
+  let mapCollapsed = $state({ ..._mapCollapsed });
+  function toggleMapEntry(i) { mapCollapsed = { ...mapCollapsed, [i]: !mapCollapsed[i] }; }
+  $effect(() => { _mapCollapsed = { ...mapCollapsed }; });
+
   // MAP helpers
   function addMapEntry() {
     onchange([...(value || []), { key: '', value: '' }]);
@@ -54,26 +63,6 @@
     current[index] = { ...current[index], [field]: val };
     onchange(current);
   }
-
-  // Compute uniform key width from the widest key text across all entries
-  const MAP_KEY_MIN = 32;   // px – minimum width (fits ~2-3 chars)
-  const MAP_KEY_MAX = 170;  // px – maximum width
-  const MAP_KEY_PAD = 18;   // px – padding inside the input (0.5rem * 2 ≈ 16 + buffer)
-
-  let mapKeyMeasurer = $state(null);
-
-  let mapKeyWidth = $derived.by(() => {
-    const entries = getMapEntries();
-    if (!mapKeyMeasurer || entries.length === 0) return MAP_KEY_MIN;
-    // measure each key string
-    let widest = 0;
-    for (const entry of entries) {
-      mapKeyMeasurer.textContent = entry.key || 'key'; // placeholder text as min
-      const w = mapKeyMeasurer.scrollWidth;
-      if (w > widest) widest = w;
-    }
-    return Math.max(MAP_KEY_MIN, Math.min(MAP_KEY_MAX, widest + MAP_KEY_PAD));
-  });
 
   // Auto-resize textarea to fit content, capped at 25vh
   function autoResize(el) {
@@ -107,35 +96,43 @@
 </script>
 
 {#if param.injectionStrategy === 'MAP'}
-  <!-- hidden measurer for uniform key width -->
-  <span class="map-key-measurer" bind:this={mapKeyMeasurer}></span>
   <div class="map-entries">
     {#each getMapEntries() as entry, i (i)}
-      <div class="map-row">
-        <input
-          type="text"
-          class="map-key"
-          placeholder="key"
-          value={entry.key}
-          style="width:{mapKeyWidth}px"
-          oninput={(e) => updateMapEntry(i, 'key', e.target.value)}
-        />
-        {#if isInjectionPoint(param)}
-          <InjectorField
-            value={entry.value}
-            param={{ ...param, injectionStrategy: 'DIRECT' }}
-            onchange={(v) => updateMapEntry(i, 'value', v)}
-          />
-        {:else}
-          <input
-            type="text"
-            class="map-value"
-            placeholder="value"
-            value={entry.value}
-            oninput={(e) => updateMapEntry(i, 'value', e.target.value)}
-          />
+      <div class="map-entry">
+        <div class="map-entry-header">
+          <button class="entry-toggle" onclick={() => toggleMapEntry(i)}>
+            <span class="entry-arrow">{mapCollapsed[i] ? '▶' : '▼'}</span>
+          </button>
+          {#if mapCollapsed[i]}
+            <span class="entry-label">{entry.key || 'key'} <span class="entry-label-hint">({entry.value || 'value'})</span></span>
+          {:else}
+            <input
+              type="text"
+              class="map-key"
+              placeholder="key"
+              value={entry.key}
+              oninput={(e) => updateMapEntry(i, 'key', e.target.value)}
+            />
+          {/if}
+          <button class="remove-btn" onclick={() => removeMapEntry(i)}>✕</button>
+        </div>
+        {#if !mapCollapsed[i]}
+          {#if isInjectionPoint(param)}
+            <InjectorField
+              value={entry.value}
+              param={{ ...param, injectionStrategy: 'DIRECT' }}
+              onchange={(v) => updateMapEntry(i, 'value', v)}
+            />
+          {:else}
+            <input
+              type="text"
+              class="map-value"
+              placeholder="value"
+              value={entry.value}
+              oninput={(e) => updateMapEntry(i, 'value', e.target.value)}
+            />
+          {/if}
         {/if}
-        <button class="remove-btn" onclick={() => removeMapEntry(i)}>✕</button>
       </div>
     {/each}
     <button class="add-btn" onclick={addMapEntry}>+ add entry</button>
@@ -164,9 +161,6 @@
     {/each}
     <button class="add-btn" onclick={addCollectionEntry}>+ add</button>
   </div>
-
-{:else if isMnemonicType(param)}
-  <MnemonicField {param} {value} {onchange} />
 
 {:else if isInjectionPoint(param) && !param.eager || isInjectOnly(param)}
   <InjectorField
@@ -232,24 +226,62 @@
     gap: 0.25rem;
   }
 
-  .map-row {
+  .map-entry {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background: white;
+  }
+
+  .map-entry-header {
     display: flex;
     gap: 0.25rem;
     align-items: center;
   }
 
-  .map-key-measurer {
-    position: absolute;
-    visibility: hidden;
-    white-space: pre;
+  .entry-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+  }
+
+  .entry-arrow {
+    font-size: 0.55rem;
+    color: #999;
+  }
+
+  .entry-toggle:hover .entry-arrow {
+    color: #555;
+  }
+
+  .entry-label {
+    flex: 1;
     font-size: 0.8rem;
-    font-family: inherit;
-    pointer-events: none;
+    font-weight: 500;
+    color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .entry-label-hint {
+    font-weight: 400;
+    color: #999;
   }
 
   .map-key {
-    flex-shrink: 0;
-    flex-grow: 0;
+    flex: 1;
+    font-weight: 500;
   }
 
   .map-value {

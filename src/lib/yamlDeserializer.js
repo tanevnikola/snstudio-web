@@ -1,5 +1,5 @@
 import yaml from 'js-yaml';
-import { fetchSpec, createNode, isNestedParam, isMnemonicType, isInjectionPoint, clearAllNodes } from './specApi.js';
+import { fetchSpec, createNode, isNestedParam, isMnemonicType, clearAllNodes } from './specApi.js';
 
 /**
  * Parse t:/v: YAML text and rebuild the node tree in the registry.
@@ -14,7 +14,7 @@ export async function yamlToNodeTree(yamlText) {
   // Clear old tree before rebuilding
   clearAllNodes();
 
-  // Root is always an inlined DomainFunction (no t:/v: wrapper)
+  // Root is a DomainFunction — supports both explicit t:/v: and legacy inlined format
   const root = await objectToNode(obj, 'DomainFunction');
   return root.id;
 }
@@ -24,38 +24,6 @@ export async function yamlToNodeTree(yamlText) {
  */
 function looksLikeTypedObject(val) {
   return val != null && typeof val === 'object' && !Array.isArray(val) && typeof val.t === 'string';
-}
-
-/**
- * Parse a mnemonic-type YAML value { t, v } or { t, factory } into
- * { __mnemonicType, __mnemonicValues, __mnemonicFactory? }.
- * Recursively handles nested mnemonic refs in values.
- */
-async function parseMnemonicValue(val, param) {
-  const mnemonicType = val.t;
-  const isFactory = val.factory !== undefined;
-  const rawValues = isFactory ? val.factory : val.v;
-  if (!rawValues || typeof rawValues !== 'object' || Array.isArray(rawValues)) {
-    const result = { __mnemonicType: mnemonicType, __mnemonicValues: {} };
-    if (isFactory) result.__mnemonicFactory = true;
-    return result;
-  }
-  // Fetch the spec for the chosen type to understand its params
-  const spec = await fetchSpec(mnemonicType);
-  const values = {};
-  for (const [k, v] of Object.entries(rawValues)) {
-    const innerParam = spec.parameters[k];
-    if (innerParam && isMnemonicType(innerParam) && looksLikeTypedObject(v)) {
-      values[k] = await parseMnemonicValue(v, innerParam);
-    } else if (innerParam && isInjectionPoint(innerParam) && looksLikeTypedObject(v)) {
-      values[k] = await parseInjectorValue(v);
-    } else {
-      values[k] = v;
-    }
-  }
-  const result = { __mnemonicType: mnemonicType, __mnemonicValues: values };
-  if (isFactory) result.__mnemonicFactory = true;
-  return result;
 }
 
 /**
@@ -78,11 +46,13 @@ async function objectToNode(obj, expectedMnemonic) {
   // Determine if this is a wrapped { t, v } object or an inlined properties object
   let mnemonic;
   let properties;
+  let isFactory = false;
 
   if (obj.t && typeof obj.t === 'string') {
     // Wrapped: { t: 'Task.REST', v: { ... } } or { t: ..., factory: { ... } }
     mnemonic = obj.t;
-    properties = obj.factory !== undefined ? obj.factory : obj.v;
+    isFactory = obj.factory !== undefined;
+    properties = isFactory ? obj.factory : obj.v;
   } else if (expectedMnemonic) {
     // Inlined: properties directly (type is known from parent param)
     mnemonic = expectedMnemonic;
@@ -93,6 +63,7 @@ async function objectToNode(obj, expectedMnemonic) {
 
   const spec = await fetchSpec(mnemonic);
   const node = createNode(mnemonic, spec);
+  if (isFactory) node.factory = true;
 
   if (properties === undefined || properties === null) return node;
 
@@ -127,7 +98,7 @@ async function objectToNode(obj, expectedMnemonic) {
     if (!param) continue;
 
     if (isNestedParam(param)) {
-      // Nested children
+      // Nested children (DomainFunction/DomainTask)
       if (param.injectionStrategy === 'COLLECTION' && Array.isArray(val)) {
         node.children[name] = await Promise.all(
           val.map((item) => objectToNode(item, param.mnemonic))
@@ -135,9 +106,27 @@ async function objectToNode(obj, expectedMnemonic) {
       } else if (typeof val === 'object' && val !== null) {
         node.children[name] = [await objectToNode(val, param.mnemonic)];
       }
+    } else if (isMnemonicType(param)) {
+      // Mnemonic-type param — create real child nodes
+      if (param.injectionStrategy === 'MAP' && typeof val === 'object' && !Array.isArray(val)) {
+        const kids = [];
+        for (const [k, v] of Object.entries(val)) {
+          if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
+            const child = await objectToNode(v, param.mnemonic);
+            child.mapKey = k;
+            kids.push(child);
+          }
+        }
+        node.children[name] = kids;
+      } else if (param.injectionStrategy === 'COLLECTION' && Array.isArray(val)) {
+        node.children[name] = await Promise.all(
+          val.map((item) => objectToNode(item, param.mnemonic))
+        );
+      } else if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
+        node.children[name] = [await objectToNode(val, param.mnemonic)];
+      }
     } else if (param.injectionStrategy === 'MAP' && typeof val === 'object' && !Array.isArray(val)) {
-      // MAP — convert { key: value } back to [{ key, value }]
-      // Each value may be a literal or an injector { t: ..., v: ... }
+      // MAP of primitives/injectors
       const entries = [];
       for (const [k, v] of Object.entries(val)) {
         if (looksLikeTypedObject(v)) {
@@ -157,9 +146,6 @@ async function objectToNode(obj, expectedMnemonic) {
           return item;
         })
       );
-    } else if (isMnemonicType(param) && looksLikeTypedObject(val)) {
-      // Mnemonic-type param — reconstruct as __mnemonicType ref
-      node.values[name] = await parseMnemonicValue(val, param);
     } else if (looksLikeTypedObject(val)) {
       // DIRECT param with an injector value
       node.values[name] = await parseInjectorValue(val);

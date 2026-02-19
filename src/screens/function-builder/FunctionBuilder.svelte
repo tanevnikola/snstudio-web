@@ -11,7 +11,7 @@
 
   hljs.registerLanguage('yaml', yamlLang);
 
-  let { initialYaml = null, yamlRef = null, onYamlChange = null } = $props();
+  let { initialYaml = null, yamlRef = null, onYamlChange = null, functionName = null } = $props();
 
   let rootNodeId = $state(null);
   let selectedNodeId = $state(null);
@@ -253,6 +253,18 @@
     });
   }
 
+  function downloadYaml() {
+    if (!yamlText) return;
+    const name = functionName || 'function';
+    const blob = new Blob([yamlText], { type: 'text/yaml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${name}.yaml`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   // Create a fresh DomainFunction chain as root
   async function initRoot() {
     clearAllNodes();
@@ -339,6 +351,7 @@
             <button type="button" class="yaml-action-btn" title="Undo (Ctrl+Z)" disabled={historyIndex <= 0} onclick={undo}>↩</button>
             <button type="button" class="yaml-action-btn" title="Redo (Ctrl+Shift+Z)" disabled={historyIndex >= yamlHistory.length - 1} onclick={redo}>↪</button>
             <button type="button" class="copy-btn" onclick={copyYaml}>{copyLabel}</button>
+            <button type="button" class="copy-btn" onclick={downloadYaml} title="Download YAML">↓</button>
           </span>
         </div>
         {#if !yamlCollapsed}
