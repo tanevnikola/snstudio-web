@@ -3,7 +3,8 @@
     project, persistProject, getCurrentProjectId,
     addActor, removeActor, renameActor,
     addService, removeService, renameService,
-    selectActor, selectService,
+    addFunction, removeFunction, renameFunction,
+    selectActor, selectService, selectFunction,
     toggleActorCollapsed, toggleSectionCollapsed,
     toggleProjectSectionCollapsed,
   } from '../../lib/projectStore.svelte.js';
@@ -14,7 +15,7 @@
   let projectEntry = $derived(projectsList.projects.find(p => p.id === currentProjectId));
 
   // Confirm delete state
-  let confirmDelete = $state(null); // { type: 'actor'|'service', actorId, serviceId?, name }
+  let confirmDelete = $state(null); // { type: 'actor'|'service'|'function', actorId?, serviceId?, functionId?, name }
 
   // Inline rename state
   let renamingId = $state(null);
@@ -28,24 +29,26 @@
     setTimeout(() => renameInput?.focus(), 0);
   }
 
-  function commitRename(type, actorId, serviceId) {
+  function commitRename(type, id1, id2) {
     const trimmed = renameValue.trim();
     if (trimmed) {
       if (type === 'project') renameProject(currentProjectId, trimmed);
-      else if (type === 'actor') renameActor(actorId, trimmed);
-      else renameService(actorId, serviceId, trimmed);
+      else if (type === 'actor') renameActor(id1, trimmed);
+      else if (type === 'function') renameFunction(id1, trimmed);
+      else renameService(id1, id2, trimmed);
     }
     renamingId = null;
   }
 
-  function onRenameKeydown(e, type, actorId, serviceId) {
-    if (e.key === 'Enter') commitRename(type, actorId, serviceId);
+  function onRenameKeydown(e, type, id1, id2) {
+    if (e.key === 'Enter') commitRename(type, id1, id2);
     else if (e.key === 'Escape') renamingId = null;
   }
 
   function selectProjectRoot() {
     project.selectedActorId = null;
     project.selectedServiceId = null;
+    project.selectedFunctionId = null;
     persistProject();
   }
 
@@ -69,6 +72,16 @@
     selectActor(actor.id);
     startRename(actor.id, actor.name);
   }
+
+  function handleAddFunction() {
+    const fn = addFunction();
+    if (project.sections.functions?.collapsed) {
+      project.sections.functions.collapsed = false;
+      persistProject();
+    }
+    selectFunction(fn.id);
+    startRename(fn.id, fn.name);
+  }
 </script>
 
 <div class="tree">
@@ -76,7 +89,7 @@
   {#if projectEntry}
     <div
       class="tree-row project-row"
-      class:selected={!project.selectedActorId && !project.selectedServiceId}
+      class:selected={!project.selectedActorId && !project.selectedServiceId && !project.selectedFunctionId}
     >
       <span class="project-icon">&#9670;</span>
 
@@ -108,7 +121,6 @@
         class="tree-row project-section-row"
         onclick={() => toggleProjectSectionCollapsed('actors')}
       >
-        <span class="arrow">{project.sections.actors?.collapsed ? '▶' : '▼'}</span>
         <span class="section-label">Actors</span>
         <span class="section-count">{project.actors.length}</span>
       </button>
@@ -160,7 +172,6 @@
                     class="tree-row section-row"
                     onclick={() => toggleSectionCollapsed(actor.id, 'services')}
                   >
-                    <span class="arrow">{actor.sections.services.collapsed ? '▶' : '▼'}</span>
                     <span class="section-label">Services</span>
                     <span class="section-count">{actor.sections.services.items.length}</span>
                   </button>
@@ -203,6 +214,48 @@
         <button type="button" class="add-btn add-actor-btn" onclick={handleAddActor}>+ Actor</button>
       {/if}
     </div>
+
+    <!-- Functions section -->
+    <div class="tree-section">
+      <button
+        type="button"
+        class="tree-row project-section-row"
+        onclick={() => toggleProjectSectionCollapsed('functions')}
+      >
+        <span class="section-label">Functions</span>
+        <span class="section-count">{project.functions.length}</span>
+      </button>
+
+      {#if !project.sections.functions?.collapsed}
+        {#each project.functions as fn (fn.id)}
+          <div
+            class="tree-row function-row"
+            class:selected={project.selectedFunctionId === fn.id}
+          >
+            {#if renamingId === fn.id}
+              <input
+                class="rename-input"
+                bind:this={renameInput}
+                bind:value={renameValue}
+                onblur={() => commitRename('function', fn.id)}
+                onkeydown={(e) => onRenameKeydown(e, 'function', fn.id)}
+              />
+            {:else}
+              <button
+                type="button"
+                class="name-btn function-name"
+                onclick={() => selectFunction(fn.id)}
+                ondblclick={() => startRename(fn.id, fn.name)}
+              >{fn.name}</button>
+            {/if}
+
+            <button type="button" class="action-btn delete-btn" onclick={() => { confirmDelete = { type: 'function', functionId: fn.id, name: fn.name }; }} title="Delete function" aria-label="Delete function">&times;</button>
+          </div>
+        {/each}
+
+        <button type="button" class="add-btn add-function-btn" onclick={handleAddFunction}>+ Function</button>
+      {/if}
+    </div>
   </div>
 </div>
 
@@ -213,6 +266,7 @@
     onConfirm={() => {
       if (confirmDelete.type === 'actor') removeActor(confirmDelete.actorId);
       else if (confirmDelete.type === 'service') removeService(confirmDelete.actorId, confirmDelete.serviceId);
+      else if (confirmDelete.type === 'function') removeFunction(confirmDelete.functionId);
       confirmDelete = null;
     }}
     onCancel={() => { confirmDelete = null; }}
@@ -290,16 +344,17 @@
   .project-section-row {
     padding-left: 1.1rem;
     border: none;
-    background: none;
+    background: #eaeaea;
     width: 100%;
     cursor: pointer;
     font-family: inherit;
     font-size: inherit;
     color: inherit;
+    margin-top: 0.15rem;
   }
 
   .project-section-row:hover {
-    background: #eee;
+    background: #e0e0e0;
   }
 
   /* ── Actor / Section / Service rows ─────────────────────── */
@@ -311,7 +366,7 @@
   .section-row {
     padding-left: 3.1rem;
     border: none;
-    background: none;
+    background: #f0f0f0;
     width: 100%;
     cursor: pointer;
     font-family: inherit;
@@ -320,15 +375,20 @@
   }
 
   .section-row:hover {
-    background: #eee;
+    background: #e8e8e8;
   }
 
   .service-row {
     padding-left: 4.1rem;
   }
 
-  .service-row:hover:not(.selected) {
+  .service-row:hover:not(.selected),
+  .function-row:hover:not(.selected) {
     background: #eee;
+  }
+
+  .function-row {
+    padding-left: 2.1rem;
   }
 
   /* ── Arrow + name buttons ──────────────────────────────── */
@@ -379,7 +439,8 @@
     text-decoration: underline;
   }
 
-  .service-name {
+  .service-name,
+  .function-name {
     font-weight: 400;
   }
 
@@ -468,6 +529,10 @@
     margin-top: 0.25rem;
     border-top: 1px solid #eee;
     padding-top: 0.5rem;
+  }
+
+  .add-function-btn {
+    padding-left: 2.35rem;
   }
 
   /* ── Children indentation ──────────────────────────────── */

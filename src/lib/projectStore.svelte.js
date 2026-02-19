@@ -2,6 +2,7 @@ function createDefaultProject() {
   return {
     sections: {
       actors: { collapsed: false },
+      functions: { collapsed: false },
     },
     actors: [
       {
@@ -13,8 +14,10 @@ function createDefaultProject() {
         },
       },
     ],
+    functions: [],
     selectedActorId: null,
     selectedServiceId: null,
+    selectedFunctionId: null,
   };
 }
 
@@ -38,6 +41,10 @@ export function getCurrentProjectId() {
 export function loadProject(projectId) {
   _currentProjectId = projectId;
   const data = loadFromStorage(projectId);
+  // Migration: ensure functions collection exists for older projects
+  if (!data.functions) data.functions = [];
+  if (!data.selectedFunctionId) data.selectedFunctionId = null;
+  if (!data.sections.functions) data.sections.functions = { collapsed: false };
   Object.assign(project, data);
 }
 
@@ -92,7 +99,7 @@ export function renameActor(actorId, newName) {
 export function addService(actorId, name = 'newService') {
   const actor = project.actors.find(a => a.id === actorId);
   if (!actor) return null;
-  const service = { id: crypto.randomUUID(), name, yaml: null };
+  const service = { id: crypto.randomUUID(), name, functionId: null };
   actor.sections.services.items = [...actor.sections.services.items, service];
   persistProject();
   return service;
@@ -118,19 +125,58 @@ export function renameService(actorId, serviceId, newName) {
   }
 }
 
-export function getServiceYaml(actorId, serviceId) {
-  const actor = project.actors.find(a => a.id === actorId);
-  if (!actor) return null;
-  const service = actor.sections.services.items.find(s => s.id === serviceId);
-  return service?.yaml ?? null;
-}
-
-export function updateServiceYaml(actorId, serviceId, yaml) {
+export function setServiceFunction(actorId, serviceId, functionId) {
   const actor = project.actors.find(a => a.id === actorId);
   if (!actor) return;
   const service = actor.sections.services.items.find(s => s.id === serviceId);
   if (service) {
-    service.yaml = yaml;
+    service.functionId = functionId;
+    persistProject();
+  }
+}
+
+// ── Function CRUD ─────────────────────────────────────────────
+
+export function addFunction(name = 'New Function') {
+  const fn = { id: crypto.randomUUID(), name, yaml: null };
+  project.functions = [...project.functions, fn];
+  persistProject();
+  return fn;
+}
+
+export function removeFunction(functionId) {
+  if (project.selectedFunctionId === functionId) {
+    project.selectedFunctionId = null;
+  }
+  // Clear any service references to this function
+  for (const actor of project.actors) {
+    for (const service of actor.sections.services.items) {
+      if (service.functionId === functionId) {
+        service.functionId = null;
+      }
+    }
+  }
+  project.functions = project.functions.filter(f => f.id !== functionId);
+  persistProject();
+}
+
+export function renameFunction(functionId, newName) {
+  const fn = project.functions.find(f => f.id === functionId);
+  if (fn) {
+    fn.name = newName;
+    persistProject();
+  }
+}
+
+export function getFunctionYaml(functionId) {
+  const fn = project.functions.find(f => f.id === functionId);
+  return fn?.yaml ?? null;
+}
+
+export function updateFunctionYaml(functionId, yaml) {
+  const fn = project.functions.find(f => f.id === functionId);
+  if (fn) {
+    fn.yaml = yaml;
     persistProject();
   }
 }
@@ -140,12 +186,21 @@ export function updateServiceYaml(actorId, serviceId, yaml) {
 export function selectActor(actorId) {
   project.selectedActorId = actorId;
   project.selectedServiceId = null;
+  project.selectedFunctionId = null;
   persistProject();
 }
 
 export function selectService(actorId, serviceId) {
   project.selectedActorId = actorId;
   project.selectedServiceId = serviceId;
+  project.selectedFunctionId = null;
+  persistProject();
+}
+
+export function selectFunction(functionId) {
+  project.selectedFunctionId = functionId;
+  project.selectedActorId = null;
+  project.selectedServiceId = null;
   persistProject();
 }
 

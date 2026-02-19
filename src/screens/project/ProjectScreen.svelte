@@ -2,6 +2,7 @@
   import ProjectTree from './ProjectTree.svelte';
   import ActorDetail from './ActorDetail.svelte';
   import ServiceDetail from './ServiceDetail.svelte';
+  import FunctionDetail from './FunctionDetail.svelte';
   import { project } from '../../lib/projectStore.svelte.js';
 </script>
 
@@ -9,8 +10,10 @@
   <div class="tree-panel">
     <ProjectTree />
   </div>
-  <div class="detail-panel" class:no-padding={project.selectedServiceId && project.selectedActorId}>
-    {#if project.selectedServiceId && project.selectedActorId}
+  <div class="detail-panel" class:no-padding={!!project.selectedFunctionId}>
+    {#if project.selectedFunctionId}
+      <FunctionDetail functionId={project.selectedFunctionId} />
+    {:else if project.selectedServiceId && project.selectedActorId}
       <ServiceDetail
         actorId={project.selectedActorId}
         serviceId={project.selectedServiceId}
@@ -19,7 +22,7 @@
       <ActorDetail actorId={project.selectedActorId} />
     {:else}
       <div class="empty-state">
-        <span class="empty-text">Select an actor or service</span>
+        <span class="empty-text">Select an actor, service, or function</span>
       </div>
     {/if}
   </div>
