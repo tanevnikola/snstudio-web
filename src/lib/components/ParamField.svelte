@@ -1,6 +1,6 @@
 <script module>
   // Shared collapse state — persists across component instances
-  let _mapCollapsed = {};
+  let _mapExpanded = {};
 </script>
 
 <script>
@@ -45,14 +45,16 @@
     return value || [];
   }
 
-  // MAP collapse per entry — initialized from module-level, synced back
-  let mapCollapsed = $state({ ..._mapCollapsed });
-  function toggleMapEntry(i) { mapCollapsed = { ...mapCollapsed, [i]: !mapCollapsed[i] }; }
-  $effect(() => { _mapCollapsed = { ...mapCollapsed }; });
+  // MAP expand per entry — entries default to collapsed; new entries explicitly expanded
+  let mapExpanded = $state({ ..._mapExpanded });
+  function toggleMapEntry(i) { mapExpanded = { ...mapExpanded, [i]: !mapExpanded[i] }; }
+  $effect(() => { _mapExpanded = { ...mapExpanded }; });
 
   // MAP helpers
   function addMapEntry() {
-    onchange([...(value || []), { key: '', value: '' }]);
+    const entries = value || [];
+    mapExpanded = { ...mapExpanded, [entries.length]: true };
+    onchange([...entries, { key: '', value: '' }]);
   }
   function removeMapEntry(index) {
     const updated = (value || []).filter((_, i) => i !== index);
@@ -101,9 +103,9 @@
       <div class="map-entry">
         <div class="map-entry-header">
           <button class="entry-toggle" onclick={() => toggleMapEntry(i)}>
-            <span class="entry-arrow">{mapCollapsed[i] ? '▶' : '▼'}</span>
+            <span class="entry-arrow">{mapExpanded[i] ? '▼' : '▶'}</span>
           </button>
-          {#if mapCollapsed[i]}
+          {#if !mapExpanded[i]}
             <span class="entry-label">{entry.key || 'key'} <span class="entry-label-hint">({entry.value || 'value'})</span></span>
           {:else}
             <input
@@ -116,7 +118,7 @@
           {/if}
           <button class="remove-btn" onclick={() => removeMapEntry(i)}>✕</button>
         </div>
-        {#if !mapCollapsed[i]}
+        {#if mapExpanded[i]}
           {#if isInjectionPoint(param)}
             <InjectorField
               value={entry.value}

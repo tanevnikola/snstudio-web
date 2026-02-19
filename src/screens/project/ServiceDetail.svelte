@@ -15,6 +15,10 @@
   function onFunctionChange(e) {
     const value = e.target.value;
     setServiceFunction(actorId, serviceId, value || null);
+    if (value) {
+      const fn = project.functions.find(f => f.id === value);
+      if (fn) renameService(actorId, serviceId, fn.name);
+    }
   }
 </script>
 

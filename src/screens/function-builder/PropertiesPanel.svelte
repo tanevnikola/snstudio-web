@@ -3,7 +3,7 @@
   let _dfExpanded = false;
   let _taskExpanded = true;
   let _collapsed = {};
-  let _entryCollapsed = {};
+  let _entryExpanded = {};
 </script>
 
 <script>
@@ -60,15 +60,14 @@
   });
 
   // Per-param collapse — initialized from module-level, synced back
-  const COLLAPSIBLE = new Set(['MAP', 'COLLECTION']);
   let collapsed = $state({ ..._collapsed });
   function toggleParam(name) { collapsed = { ...collapsed, [name]: !collapsed[name] }; }
   $effect(() => { _collapsed = { ...collapsed }; });
 
-  // Per-entry collapse — initialized from module-level, synced back
-  let entryCollapsed = $state({ ..._entryCollapsed });
-  function toggleEntry(id) { entryCollapsed = { ...entryCollapsed, [id]: !entryCollapsed[id] }; }
-  $effect(() => { _entryCollapsed = { ...entryCollapsed }; });
+  // Per-entry expand — entries default to collapsed; explicitly expanded entries tracked here
+  let entryExpanded = $state({ ..._entryExpanded });
+  function toggleEntry(id) { entryExpanded = { ...entryExpanded, [id]: !entryExpanded[id] }; }
+  $effect(() => { _entryExpanded = { ...entryExpanded }; });
 
   function setVal(which, name, value) {
     if (which === 'df') {
@@ -125,15 +124,12 @@
   {@const store = which === 'df' ? dfValues : taskValues}
   {@const target = getTargetNode(which)}
   {@const isMnemonic = isMnemonicType(param)}
-  {@const isCollapsible = isMnemonic || COLLAPSIBLE.has(param.injectionStrategy)}
-  {@const isCollapsed = isCollapsible && collapsed[param.name]}
+  {@const isCollapsed = collapsed[param.name]}
   <div class="param">
     <span class="param-name">
-      {#if isCollapsible}
-        <button class="param-toggle" onclick={() => toggleParam(param.name)}>
-          <span class="param-arrow">{isCollapsed ? '▶' : '▼'}</span>
-        </button>
-      {/if}
+      <button class="param-toggle" onclick={() => toggleParam(param.name)}>
+        <span class="param-arrow">{isCollapsed ? '▶' : '▼'}</span>
+      </button>
       {param.name}
       {#if param.required}<span class="required">*</span>{/if}
     </span>
@@ -147,9 +143,9 @@
             <div class="map-mnemonic-entry">
               <div class="map-mnemonic-header">
                 <button class="entry-toggle" onclick={() => toggleEntry(child.id)}>
-                  <span class="entry-arrow">{entryCollapsed[child.id] ? '▶' : '▼'}</span>
+                  <span class="entry-arrow">{entryExpanded[child.id] ? '▼' : '▶'}</span>
                 </button>
-                {#if entryCollapsed[child.id]}
+                {#if !entryExpanded[child.id]}
                   <span class="entry-label">{child.mapKey || 'key'} <span class="entry-label-hint">({child.mnemonic || param.mnemonic})</span></span>
                 {:else}
                   <input
@@ -165,7 +161,7 @@
                   setChildren(which, param.name, getKids(target, param.name).filter((_, idx) => idx !== i));
                 }}>✕</button>
               </div>
-              {#if !entryCollapsed[child.id]}
+              {#if entryExpanded[child.id]}
                 <MnemonicField
                   {param}
                   value={child}
@@ -188,6 +184,7 @@
           {/each}
           <button class="add-btn" onclick={() => {
             const placeholder = createNode('', { parameters: {} });
+            entryExpanded = { ...entryExpanded, [placeholder.id]: true };
             setChildren(which, param.name, [...getKids(target, param.name), placeholder]);
           }}>+ add entry</button>
         </div>

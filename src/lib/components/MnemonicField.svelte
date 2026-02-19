@@ -1,7 +1,7 @@
 <script module>
   // Shared collapse state — persists across component instances
   let _collapsed = {};
-  let _entryCollapsed = {};
+  let _entryExpanded = {};
 </script>
 
 <script>
@@ -61,15 +61,14 @@
   }
 
   // Per-param collapse — initialized from module-level, synced back
-  const COLLAPSIBLE = new Set(['MAP', 'COLLECTION']);
   let collapsed = $state({ ..._collapsed });
   function toggleCollapse(name) { collapsed = { ...collapsed, [name]: !collapsed[name] }; }
   $effect(() => { _collapsed = { ...collapsed }; });
 
-  // Per-entry collapse — initialized from module-level, synced back
-  let entryCollapsed = $state({ ..._entryCollapsed });
-  function toggleEntry(id) { entryCollapsed = { ...entryCollapsed, [id]: !entryCollapsed[id] }; }
-  $effect(() => { _entryCollapsed = { ...entryCollapsed }; });
+  // Per-entry expand — entries default to collapsed; explicitly expanded entries tracked here
+  let entryExpanded = $state({ ..._entryExpanded });
+  function toggleEntry(id) { entryExpanded = { ...entryExpanded, [id]: !entryExpanded[id] }; }
+  $effect(() => { _entryExpanded = { ...entryExpanded }; });
 
   function onTypeChange(e) {
     const mnemonic = e.target.value;
@@ -124,15 +123,12 @@
   {#if selectedSpec && selectedParams.length > 0}
     <div class="mnemonic-params">
       {#each selectedParams as p (p.name)}
-        {@const isCollapsible = COLLAPSIBLE.has(p.injectionStrategy) || isMnemonicType(p)}
-        {@const isCollapsed = isCollapsible && collapsed[p.name]}
+        {@const isCollapsed = collapsed[p.name]}
         <div class="mnemonic-param">
           <span class="param-name">
-            {#if isCollapsible}
-              <button class="param-toggle" onclick={() => toggleCollapse(p.name)}>
-                <span class="param-arrow">{isCollapsed ? '▶' : '▼'}</span>
-              </button>
-            {/if}
+            <button class="param-toggle" onclick={() => toggleCollapse(p.name)}>
+              <span class="param-arrow">{isCollapsed ? '▶' : '▼'}</span>
+            </button>
             {p.name}
             {#if p.required}<span class="required">*</span>{/if}
           </span>
@@ -146,9 +142,9 @@
                     <div class="map-mnemonic-entry">
                       <div class="map-mnemonic-header">
                         <button class="entry-toggle" onclick={() => toggleEntry(child.id)}>
-                          <span class="entry-arrow">{entryCollapsed[child.id] ? '▶' : '▼'}</span>
+                          <span class="entry-arrow">{entryExpanded[child.id] ? '▼' : '▶'}</span>
                         </button>
-                        {#if entryCollapsed[child.id]}
+                        {#if !entryExpanded[child.id]}
                           <span class="entry-label">{child.mapKey || 'key'} <span class="entry-label-hint">({child.mnemonic || p.mnemonic})</span></span>
                         {:else}
                           <input
@@ -164,7 +160,7 @@
                           setInnerChildren(p.name, getInnerKids(p.name).filter((_, idx) => idx !== i));
                         }}>✕</button>
                       </div>
-                      {#if !entryCollapsed[child.id]}
+                      {#if entryExpanded[child.id]}
                         <svelte:self
                           param={p}
                           value={child}
@@ -186,7 +182,9 @@
                     </div>
                   {/each}
                   <button class="add-btn" onclick={() => {
-                    setInnerChildren(p.name, [...getInnerKids(p.name), createNode('', { parameters: {} })]);
+                    const placeholder = createNode('', { parameters: {} });
+                    entryExpanded = { ...entryExpanded, [placeholder.id]: true };
+                    setInnerChildren(p.name, [...getInnerKids(p.name), placeholder]);
                   }}>+ add entry</button>
                 </div>
               {:else if p.injectionStrategy === 'COLLECTION'}
