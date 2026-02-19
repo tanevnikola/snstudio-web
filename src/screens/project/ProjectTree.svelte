@@ -167,14 +167,18 @@
               <div class="tree-children">
                 <!-- Services section -->
                 <div class="tree-section">
-                  <button
-                    type="button"
-                    class="tree-row section-row"
-                    onclick={() => toggleSectionCollapsed(actor.id, 'services')}
-                  >
-                    <span class="section-label">Services</span>
+                  <div class="tree-row subsection-row">
+                    <button
+                      type="button"
+                      class="arrow-btn"
+                      onclick={() => toggleSectionCollapsed(actor.id, 'services')}
+                      aria-label={actor.sections.services.collapsed ? 'Expand' : 'Collapse'}
+                    >
+                      <span class="arrow">{actor.sections.services.collapsed ? '▶' : '▼'}</span>
+                    </button>
+                    <span class="subsection-label">Services</span>
                     <span class="section-count">{actor.sections.services.items.length}</span>
-                  </button>
+                  </div>
 
                   {#if !actor.sections.services.collapsed}
                     {#each actor.sections.services.items as service (service.id)}
@@ -363,19 +367,15 @@
     padding-left: 1.85rem;
   }
 
-  .section-row {
+  .subsection-row {
     padding-left: 3.1rem;
-    border: none;
-    background: #f0f0f0;
-    width: 100%;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: inherit;
-    color: inherit;
   }
 
-  .section-row:hover {
-    background: #e8e8e8;
+  .subsection-label {
+    font-size: inherit;
+    font-weight: 500;
+    color: inherit;
+    flex: 1;
   }
 
   .service-row {
