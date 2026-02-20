@@ -3,10 +3,10 @@
     project, persistProject, getCurrentProjectId,
     addActor, removeActor, renameActor,
     addService, removeService, renameService,
-    addFunction, removeFunction, renameFunction,
+    addFunction, addDirectory, removeFunction, renameFunction,
     selectActor, selectService, selectFunction,
     toggleActorCollapsed, toggleSectionCollapsed,
-    toggleProjectSectionCollapsed,
+    toggleProjectSectionCollapsed, toggleDirectoryCollapsed,
   } from '../../lib/projectStore.svelte.js';
   import { projectsList, renameProject } from '../../lib/projectsStore.svelte.js';
   import ConfirmDialog from '../../lib/components/ConfirmDialog.svelte';
@@ -73,8 +73,8 @@
     startRename(actor.id, actor.name);
   }
 
-  function handleAddFunction() {
-    const fn = addFunction();
+  function handleAddFunction(parentDirId = null) {
+    const fn = addFunction('New Function', parentDirId);
     if (project.sections.functions?.collapsed) {
       project.sections.functions.collapsed = false;
       persistProject();
@@ -82,6 +82,44 @@
     selectFunction(fn.id);
     startRename(fn.id, fn.name);
   }
+
+  function handleAddDirectory(parentDirId = null) {
+    const dir = addDirectory('New Directory', parentDirId);
+    if (project.sections.functions?.collapsed) {
+      project.sections.functions.collapsed = false;
+      persistProject();
+    }
+    startRename(dir.id, dir.name);
+  }
+
+  // Add menu dropdown state
+  let addMenu = $state(null); // { type, actorId?, dirId?, x, y }
+
+  function openAddMenu(e, type, contextId) {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    addMenu = { type, contextId, x: rect.left, y: rect.bottom + 2 };
+  }
+
+  function closeAddMenu() {
+    addMenu = null;
+  }
+
+  function addMenuSelect(action) {
+    const ctx = addMenu;
+    closeAddMenu();
+    if (action === 'actor') handleAddActor();
+    else if (action === 'service') handleAddService(ctx.contextId);
+    else if (action === 'function') handleAddFunction(ctx.contextId || null);
+    else if (action === 'directory') handleAddDirectory(ctx.contextId || null);
+  }
+
+  const addMenuItems = {
+    actors: [{ action: 'actor', label: 'Actor' }],
+    services: [{ action: 'service', label: 'Service' }],
+    functions: [{ action: 'function', label: 'Function' }, { action: 'directory', label: 'Directory' }],
+    directory: [{ action: 'function', label: 'Function' }, { action: 'directory', label: 'Directory' }],
+  };
 </script>
 
 <div class="tree">
@@ -116,14 +154,17 @@
   <div class="project-children">
     <!-- Actors section -->
     <div class="tree-section">
-      <button
-        type="button"
-        class="tree-row project-section-row"
-        onclick={() => toggleProjectSectionCollapsed('actors')}
-      >
-        <span class="section-label">Actors</span>
-        <span class="section-count">{project.actors.length}</span>
-      </button>
+      <div class="tree-row project-section-row">
+        <button
+          type="button"
+          class="section-toggle"
+          onclick={() => toggleProjectSectionCollapsed('actors')}
+        >
+          <span class="section-label">Actors</span>
+          <span class="section-count">{project.actors.length}</span>
+        </button>
+        <button type="button" class="section-add-btn" onclick={(e) => openAddMenu(e, 'actors')} title="Add actor">+</button>
+      </div>
 
       {#if !project.sections.actors?.collapsed}
         {#each project.actors as actor (actor.id)}
@@ -178,6 +219,7 @@
                     </button>
                     <span class="subsection-label">Services</span>
                     <span class="section-count">{actor.sections.services.items.length}</span>
+                    <button type="button" class="section-add-btn" onclick={(e) => openAddMenu(e, 'services', actor.id)} title="Add service">+</button>
                   </div>
 
                   {#if !actor.sections.services.collapsed}
@@ -186,6 +228,7 @@
                         class="tree-row service-row"
                         class:selected={project.selectedServiceId === service.id}
                       >
+                        <span class="arrow-spacer"></span>
                         {#if renamingId === service.id}
                           <input
                             class="rename-input"
@@ -207,7 +250,6 @@
                       </div>
                     {/each}
 
-                    <button type="button" class="add-btn add-service-btn" onclick={() => handleAddService(actor.id)}>+ Service</button>
                   {/if}
                 </div>
               </div>
@@ -215,53 +257,109 @@
           </div>
         {/each}
 
-        <button type="button" class="add-btn add-actor-btn" onclick={handleAddActor}>+ Actor</button>
       {/if}
     </div>
 
     <!-- Functions section -->
     <div class="tree-section">
-      <button
-        type="button"
-        class="tree-row project-section-row"
-        onclick={() => toggleProjectSectionCollapsed('functions')}
-      >
-        <span class="section-label">Functions</span>
-        <span class="section-count">{project.functions.length}</span>
-      </button>
+      <div class="tree-row project-section-row">
+        <button
+          type="button"
+          class="section-toggle"
+          onclick={() => toggleProjectSectionCollapsed('functions')}
+        >
+          <span class="section-label">Functions</span>
+          <span class="section-count">{project.functions.length}</span>
+        </button>
+        <button type="button" class="section-add-btn" onclick={(e) => openAddMenu(e, 'functions')} title="Add function">+</button>
+      </div>
 
       {#if !project.sections.functions?.collapsed}
-        {#each project.functions as fn (fn.id)}
-          <div
-            class="tree-row function-row"
-            class:selected={project.selectedFunctionId === fn.id}
-          >
-            {#if renamingId === fn.id}
-              <input
-                class="rename-input"
-                bind:this={renameInput}
-                bind:value={renameValue}
-                onblur={() => commitRename('function', fn.id)}
-                onkeydown={(e) => onRenameKeydown(e, 'function', fn.id)}
-              />
+        {#snippet functionItems(items, depth)}
+          {#each [...items].sort((a, b) => (a.type === 'directory' ? 0 : 1) - (b.type === 'directory' ? 0 : 1)) as item (item.id)}
+            {#if item.type === 'directory'}
+              <div class="tree-group">
+                <div class="tree-row directory-row" style="padding-left: {2.1 + depth * 1.0}rem">
+                  <button
+                    type="button"
+                    class="arrow-btn"
+                    onclick={() => toggleDirectoryCollapsed(item.id)}
+                    aria-label={item.collapsed ? 'Expand' : 'Collapse'}
+                  >
+                    <span class="arrow">{item.collapsed ? '▶' : '▼'}</span>
+                  </button>
+
+                  {#if renamingId === item.id}
+                    <input
+                      class="rename-input"
+                      bind:this={renameInput}
+                      bind:value={renameValue}
+                      onblur={() => commitRename('function', item.id)}
+                      onkeydown={(e) => onRenameKeydown(e, 'function', item.id)}
+                    />
+                  {:else}
+                    <button
+                      type="button"
+                      class="name-btn"
+                      ondblclick={() => startRename(item.id, item.name)}
+                    >{item.name}</button>
+                  {/if}
+
+                  <button type="button" class="section-add-btn" onclick={(e) => openAddMenu(e, 'directory', item.id)} title="Add to directory">+</button>
+                  <button type="button" class="action-btn delete-btn" onclick={() => { confirmDelete = { type: 'function', functionId: item.id, name: item.name }; }} title="Delete directory" aria-label="Delete directory">&times;</button>
+                </div>
+
+                {#if !item.collapsed}
+                  <div class="tree-children">
+                    {@render functionItems(item.children || [], depth + 1)}
+                  </div>
+                {/if}
+              </div>
             {:else}
-              <button
-                type="button"
-                class="name-btn function-name"
-                onclick={() => selectFunction(fn.id)}
-                ondblclick={() => startRename(fn.id, fn.name)}
-              >{fn.name}</button>
+              <div
+                class="tree-row function-row"
+                class:selected={project.selectedFunctionId === item.id}
+                style="padding-left: {2.1 + depth * 1.0}rem"
+              >
+                <span class="arrow-spacer"></span>
+                {#if renamingId === item.id}
+                  <input
+                    class="rename-input"
+                    bind:this={renameInput}
+                    bind:value={renameValue}
+                    onblur={() => commitRename('function', item.id)}
+                    onkeydown={(e) => onRenameKeydown(e, 'function', item.id)}
+                  />
+                {:else}
+                  <button
+                    type="button"
+                    class="name-btn function-name"
+                    onclick={() => selectFunction(item.id)}
+                    ondblclick={() => startRename(item.id, item.name)}
+                  >{item.name}</button>
+                {/if}
+
+                <button type="button" class="action-btn delete-btn" onclick={() => { confirmDelete = { type: 'function', functionId: item.id, name: item.name }; }} title="Delete function" aria-label="Delete function">&times;</button>
+              </div>
             {/if}
+          {/each}
+        {/snippet}
 
-            <button type="button" class="action-btn delete-btn" onclick={() => { confirmDelete = { type: 'function', functionId: fn.id, name: fn.name }; }} title="Delete function" aria-label="Delete function">&times;</button>
-          </div>
-        {/each}
-
-        <button type="button" class="add-btn add-function-btn" onclick={handleAddFunction}>+ Function</button>
+        {@render functionItems(project.functions, 0)}
       {/if}
     </div>
   </div>
 </div>
+
+{#if addMenu}
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div class="add-dropdown-backdrop" onclick={closeAddMenu} onkeydown={(e) => e.key === 'Escape' && closeAddMenu()}></div>
+  <div class="add-dropdown" style="left: {addMenu.x}px; top: {addMenu.y}px">
+    {#each addMenuItems[addMenu.type] as item}
+      <button type="button" class="add-dropdown-item" onclick={() => addMenuSelect(item.action)}>{item.label}</button>
+    {/each}
+  </div>
+{/if}
 
 {#if confirmDelete}
   <ConfirmDialog
@@ -347,13 +445,7 @@
 
   .project-section-row {
     padding-left: 1.1rem;
-    border: none;
     background: #eaeaea;
-    width: 100%;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: inherit;
-    color: inherit;
     margin-top: 0.15rem;
   }
 
@@ -379,15 +471,20 @@
   }
 
   .service-row {
-    padding-left: 4.1rem;
+    padding-left: 3.85rem;
   }
 
   .service-row:hover:not(.selected),
-  .function-row:hover:not(.selected) {
+  .function-row:hover:not(.selected),
+  .directory-row:hover {
     background: #eee;
   }
 
   .function-row {
+    padding-left: 2.1rem;
+  }
+
+  .directory-row {
     padding-left: 2.1rem;
   }
 
@@ -411,6 +508,11 @@
     font-size: 0.5rem;
     line-height: 1;
     color: #999;
+  }
+
+  .arrow-spacer {
+    width: 18px;
+    flex-shrink: 0;
   }
 
   .tree-row.selected .arrow {
@@ -503,36 +605,83 @@
     color: #111;
   }
 
-  /* ── Add buttons ───────────────────────────────────────── */
+  /* ── Section add button ───────────────────────────────── */
 
-  .add-btn {
+  .section-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
     background: none;
     border: none;
     cursor: pointer;
     font-family: inherit;
-    font-size: 0.72rem;
+    font-size: inherit;
+    color: inherit;
+    padding: 0;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .section-add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: none;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    color: transparent;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color 0.1s;
+  }
+
+  .tree-row:hover .section-add-btn {
     color: #007aff;
-    padding: 0.3rem 0.5rem;
+  }
+
+  .tree-row:hover .section-add-btn:hover {
+    background: rgba(0, 122, 255, 0.08);
+  }
+
+  /* ── Add dropdown ────────────────────────────────────── */
+
+  .add-dropdown-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+  }
+
+  .add-dropdown {
+    position: fixed;
+    z-index: 100;
+    background: white;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    padding: 0.25rem 0;
+    min-width: 120px;
+  }
+
+  .add-dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 0.35rem 0.75rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.8rem;
+    color: #333;
     text-align: left;
   }
 
-  .add-btn:hover {
-    text-decoration: underline;
-  }
-
-  .add-service-btn {
-    padding-left: 4.35rem;
-  }
-
-  .add-actor-btn {
-    padding-left: 2.6rem;
-    margin-top: 0.25rem;
-    border-top: 1px solid #eee;
-    padding-top: 0.5rem;
-  }
-
-  .add-function-btn {
-    padding-left: 2.35rem;
+  .add-dropdown-item:hover {
+    background: #f0f0f0;
   }
 
   /* ── Children indentation ──────────────────────────────── */

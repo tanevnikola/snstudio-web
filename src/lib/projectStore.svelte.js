@@ -135,48 +135,170 @@ export function setServiceFunction(actorId, serviceId, functionId) {
   }
 }
 
-// ── Function CRUD ─────────────────────────────────────────────
+// ── Function & Directory CRUD ──────────────────────────────────
 
-export function addFunction(name = 'New Function') {
+// Find an item (function or directory) by id in a nested tree.
+// Returns { item, parent } where parent is the containing array.
+function findInTree(items, id) {
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].id === id) return { item: items[i], parent: items };
+    if (items[i].type === 'directory' && items[i].children) {
+      const found = findInTree(items[i].children, id);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+// Collect all function ids in a subtree (for cleanup on directory delete)
+function collectFunctionIds(items) {
+  const ids = [];
+  for (const item of items) {
+    if (item.type === 'directory') ids.push(...collectFunctionIds(item.children || []));
+    else ids.push(item.id);
+  }
+  return ids;
+}
+
+// Get all functions (flat) across the whole tree
+export function getAllFunctions(items = project.functions) {
+  const result = [];
+  for (const item of items) {
+    if (item.type === 'directory') result.push(...getAllFunctions(item.children || []));
+    else result.push(item);
+  }
+  return result;
+}
+
+export function addFunction(name = 'New Function', parentDirId = null) {
   const fn = { id: crypto.randomUUID(), name, yaml: null };
-  project.functions = [...project.functions, fn];
+  if (parentDirId) {
+    const found = findInTree(project.functions, parentDirId);
+    if (found && found.item.type === 'directory') {
+      found.item.children = [...(found.item.children || []), fn];
+    }
+  } else {
+    project.functions = [...project.functions, fn];
+  }
   persistProject();
   return fn;
 }
 
+export function addDirectory(name = 'New Directory', parentDirId = null) {
+  const dir = { id: crypto.randomUUID(), name, type: 'directory', collapsed: false, children: [] };
+  if (parentDirId) {
+    const found = findInTree(project.functions, parentDirId);
+    if (found && found.item.type === 'directory') {
+      found.item.children = [...(found.item.children || []), dir];
+    }
+  } else {
+    project.functions = [...project.functions, dir];
+  }
+  persistProject();
+  return dir;
+}
+
 export function removeFunction(functionId) {
-  if (project.selectedFunctionId === functionId) {
+  const found = findInTree(project.functions, functionId);
+  if (!found) return;
+
+  // Collect all function ids being removed (handles directory with children)
+  const removedIds = found.item.type === 'directory'
+    ? collectFunctionIds(found.item.children || [])
+    : [functionId];
+
+  if (removedIds.includes(project.selectedFunctionId)) {
     project.selectedFunctionId = null;
   }
-  // Clear any service references to this function
-  for (const actor of project.actors) {
-    for (const service of actor.sections.services.items) {
-      if (service.functionId === functionId) {
-        service.functionId = null;
+
+  // Clear any service references to removed functions
+  for (const id of removedIds) {
+    for (const actor of project.actors) {
+      for (const service of actor.sections.services.items) {
+        if (service.functionId === id) {
+          service.functionId = null;
+        }
       }
     }
   }
-  project.functions = project.functions.filter(f => f.id !== functionId);
+
+  const idx = found.parent.indexOf(found.item);
+  found.parent.splice(idx, 1);
+  // Trigger reactivity
+  project.functions = [...project.functions];
   persistProject();
 }
 
 export function renameFunction(functionId, newName) {
-  const fn = project.functions.find(f => f.id === functionId);
-  if (fn) {
-    fn.name = newName;
+  const found = findInTree(project.functions, functionId);
+  if (found) {
+    found.item.name = newName;
     persistProject();
   }
 }
 
 export function getFunctionYaml(functionId) {
-  const fn = project.functions.find(f => f.id === functionId);
-  return fn?.yaml ?? null;
+  const found = findInTree(project.functions, functionId);
+  return found?.item?.yaml ?? null;
 }
 
 export function updateFunctionYaml(functionId, yaml) {
-  const fn = project.functions.find(f => f.id === functionId);
-  if (fn) {
-    fn.yaml = yaml;
+  const found = findInTree(project.functions, functionId);
+  if (found && !found.item.type) {
+    found.item.yaml = yaml;
+    persistProject();
+  }
+}
+
+// Get all directories (flat) with their path for display
+export function getAllDirectories(items = project.functions, path = '') {
+  const result = [];
+  for (const item of items) {
+    if (item.type === 'directory') {
+      const fullPath = path ? `${path}/${item.name}` : item.name;
+      result.push({ id: item.id, name: item.name, path: fullPath });
+      result.push(...getAllDirectories(item.children || [], fullPath));
+    }
+  }
+  return result;
+}
+
+// Move a function or directory to a different parent (null = root)
+export function moveFunction(itemId, targetDirId) {
+  const found = findInTree(project.functions, itemId);
+  if (!found) return;
+  // Detach from current parent
+  const idx = found.parent.indexOf(found.item);
+  found.parent.splice(idx, 1);
+  // Attach to target
+  if (targetDirId) {
+    const target = findInTree(project.functions, targetDirId);
+    if (target && target.item.type === 'directory') {
+      target.item.children = [...(target.item.children || []), found.item];
+    }
+  } else {
+    project.functions = [...project.functions, found.item];
+  }
+  project.functions = [...project.functions];
+  persistProject();
+}
+
+// Find which directory contains a given item (null = root)
+export function getParentDirId(itemId, items = project.functions) {
+  for (const item of items) {
+    if (item.type === 'directory' && item.children) {
+      if (item.children.some(c => c.id === itemId)) return item.id;
+      const found = getParentDirId(itemId, item.children);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+export function toggleDirectoryCollapsed(dirId) {
+  const found = findInTree(project.functions, dirId);
+  if (found && found.item.type === 'directory') {
+    found.item.collapsed = !found.item.collapsed;
     persistProject();
   }
 }

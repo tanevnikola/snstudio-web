@@ -20,7 +20,7 @@
     const mnemonic = e.dataTransfer.getData('text/plain');
     const sourceNodeId = e.dataTransfer.getData('application/x-node-id') || null;
     if (mnemonic && ondrop) {
-      ondrop(mnemonic, paramName, sourceNodeId);
+      ondrop(mnemonic, paramName, sourceNodeId, e.dataTransfer);
     }
   }
 </script>

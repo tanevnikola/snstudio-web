@@ -1,16 +1,22 @@
 <script>
-  import { project, renameFunction, removeFunction, getFunctionYaml, updateFunctionYaml } from '../../lib/projectStore.svelte.js';
+  import { renameFunction, removeFunction, getFunctionYaml, updateFunctionYaml, getAllFunctions, getAllDirectories, moveFunction, getParentDirId } from '../../lib/projectStore.svelte.js';
   import FunctionBuilder from '../function-builder/FunctionBuilder.svelte';
   import ConfirmDialog from '../../lib/components/ConfirmDialog.svelte';
 
   let { functionId } = $props();
 
-  let fn = $derived(project.functions.find(f => f.id === functionId));
+  let fn = $derived(getAllFunctions().find(f => f.id === functionId));
   let yaml = $derived(getFunctionYaml(functionId));
   let showConfirm = $state(false);
+  let directories = $derived(getAllDirectories());
+  let currentDirId = $derived(getParentDirId(functionId));
 
   function onNameInput(e) {
     renameFunction(functionId, e.target.value);
+  }
+
+  function onDirectoryChange(e) {
+    moveFunction(functionId, e.target.value || null);
   }
 
   function onYamlChange(newYaml) {
@@ -21,9 +27,18 @@
 {#if fn}
   <div class="function-detail">
     <div class="function-header">
-      <label class="field">
+      <label class="field name-field">
         <span class="field-label">Name</span>
         <input class="field-input" type="text" value={fn.name} oninput={onNameInput} />
+      </label>
+      <label class="field dir-field">
+        <span class="field-label">Directory</span>
+        <select class="field-select" value={currentDirId ?? ''} onchange={onDirectoryChange}>
+          <option value="">/ (root)</option>
+          {#each directories as dir (dir.id)}
+            <option value={dir.id}>{dir.path}</option>
+          {/each}
+        </select>
       </label>
       <button type="button" class="delete-btn" onclick={() => { showConfirm = true; }}>Delete</button>
     </div>
@@ -68,8 +83,16 @@
     display: flex;
     flex-direction: column;
     gap: 0.3rem;
-    flex: 1;
     min-width: 0;
+  }
+
+  .name-field {
+    flex: 1;
+  }
+
+  .dir-field {
+    flex: 0 0 auto;
+    min-width: 8rem;
   }
 
   .field-label {
@@ -90,10 +113,21 @@
     background: white;
   }
 
-  .field-input:focus {
+  .field-input:focus,
+  .field-select:focus {
     outline: none;
     border-color: #007aff;
     box-shadow: 0 0 0 2.5px rgba(0, 122, 255, 0.18);
+  }
+
+  .field-select {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    color: #111;
+    background: white;
   }
 
   .fb-section {

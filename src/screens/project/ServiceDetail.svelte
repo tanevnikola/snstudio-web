@@ -1,5 +1,5 @@
 <script>
-  import { project, renameService, removeService, setServiceFunction } from '../../lib/projectStore.svelte.js';
+  import { project, renameService, removeService, setServiceFunction, getAllFunctions } from '../../lib/projectStore.svelte.js';
   import ConfirmDialog from '../../lib/components/ConfirmDialog.svelte';
 
   let { actorId, serviceId } = $props();
@@ -16,7 +16,7 @@
     const value = e.target.value;
     setServiceFunction(actorId, serviceId, value || null);
     if (value) {
-      const fn = project.functions.find(f => f.id === value);
+      const fn = getAllFunctions().find(f => f.id === value);
       if (fn) renameService(actorId, serviceId, fn.name);
     }
   }
@@ -33,7 +33,7 @@
       <span class="field-label">Function</span>
       <select class="field-select" value={service.functionId ?? ''} onchange={onFunctionChange}>
         <option value="">— None —</option>
-        {#each project.functions as fn (fn.id)}
+        {#each getAllFunctions() as fn (fn.id)}
           <option value={fn.id}>{fn.name}</option>
         {/each}
       </select>
