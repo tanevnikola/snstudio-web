@@ -198,19 +198,21 @@
           title="Switch to literal value"
         >&#x26A1;</button>
       {/if}
-      <select
-        class="injector-select"
-        value={injectorNode?.mnemonic ?? ''}
-        onchange={(e) => selectInjectorType(e.target.value)}
-      >
-        <option value="">-- select injector --</option>
-        {#each injectorTypes as type (type)}
-          <option value={type}>{type}</option>
-        {/each}
-      </select>
-      {#if injectorNode}
-        <span class="info-icon" role="button" tabindex="-1" onmouseenter={() => onDocsEnter(injectorNode.mnemonic)} onmouseleave={onDocsLeave} onclick={(e) => onDocsClick(e, injectorNode.mnemonic)}>i</span>
-      {/if}
+      <div class="select-with-icon">
+        <select
+          class="injector-select"
+          value={injectorNode?.mnemonic ?? ''}
+          onchange={(e) => selectInjectorType(e.target.value)}
+        >
+          <option value="">-- select injector --</option>
+          {#each injectorTypes as type (type)}
+            <option value={type}>{type}</option>
+          {/each}
+        </select>
+        {#if injectorNode}
+          <span class="info-icon" role="button" tabindex="-1" onmouseenter={() => onDocsEnter(injectorNode.mnemonic)} onmouseleave={onDocsLeave} onclick={(e) => onDocsClick(e, injectorNode.mnemonic)}>i</span>
+        {/if}
+      </div>
     </div>
 
     <!-- Injector params (inline expanded) -->
@@ -416,9 +418,28 @@
     vertical-align: middle;
   }
 
-  .injector-param:hover .info-icon,
-  .field-row .info-icon {
+  .injector-param:hover .info-icon {
     opacity: 1;
+  }
+
+  .select-with-icon {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .select-with-icon select {
+    width: 100%;
+    padding-right: 2rem;
+  }
+
+  .select-with-icon .info-icon {
+    position: absolute;
+    right: 1.4rem;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 1;
+    margin-left: 0;
   }
 
   .info-icon:hover {

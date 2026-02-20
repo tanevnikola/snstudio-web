@@ -19,7 +19,6 @@ import { walkDown } from './nodeService.js';
 // Constants
 // ────────────────────────────────────────────
 
-const ARRAY_TYPE_RE = /\[\]$/;
 const STRING_LIKE = ['String', 'Object'];
 
 // ────────────────────────────────────────────
@@ -105,7 +104,7 @@ function _defaultState() {
  * No override. No exception. This rule wins over everything.
  */
 function R1_arrayInjectOnly(param, _ctx, state) {
-  if (isInjectionPoint(param) && ARRAY_TYPE_RE.test(param.mnemonic)) {
+  if (isInjectionPoint(param) && getSpecSync(param.mnemonic)?.category === 'ARRAY') {
     state._injectOnly = true;
     state._canInject = true;
   }

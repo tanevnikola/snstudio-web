@@ -9,7 +9,11 @@ import { fetchSpec } from './specApi.js';
  * @param {(loaded: number, total: number) => void} [onProgress] - Progress callback
  * @returns {Promise<number>} Total number of specs loaded
  */
-export async function loadAllSpecs(roots = ['Speck', 'Object'], onProgress) {
+export async function loadAllSpecs(roots = [
+  'Speck', 'Object',
+  'int', 'long', 'double', 'float', 'boolean', 'byte',
+  'int[]', 'long[]', 'double[]', 'float[]', 'boolean[]', 'byte[]',
+], onProgress) {
   const seedList = Array.isArray(roots) ? roots : [roots];
   const visited = new Set();
   const queue = [...seedList];

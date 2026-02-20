@@ -8,7 +8,7 @@
   let error = $state(null);
 
   $effect(() => {
-    loadAllSpecs(['Speck', 'Object'], (l, t) => {
+    loadAllSpecs(undefined, (l, t) => {
       loaded = l;
       total = t;
     })

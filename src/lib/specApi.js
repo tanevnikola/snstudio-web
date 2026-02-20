@@ -20,8 +20,7 @@ export async function fetchSpec(mnemonic) {
   return spec;
 }
 
-const KNOWN_PRIMITIVES = ['String', 'Boolean', 'Integer', 'Long', 'Double', 'Float', `Object`];
-const INJECT_ONLY_RE = /\[\]$/; // byte[], int[], boolean[] etc.
+const KNOWN_PRIMITIVES = ['String', 'Boolean', 'Integer', 'Long', 'Double', 'Float', 'Object'];
 const NESTED_MNEMONICS = ['DomainFunction', 'DomainTask'];
 
 export function isNestedParam(param) {
@@ -41,11 +40,13 @@ export function isInjectionPoint(param) {
 }
 
 /**
- * True for injection-point params whose mnemonic is an array type (byte[], int[], etc.)
+ * True for injection-point params whose mnemonic is an array type.
  * These can only be meaningfully set via injection — no literal input.
  */
 export function isInjectOnly(param) {
-  return isInjectionPoint(param) && INJECT_ONLY_RE.test(param.mnemonic);
+  if (!isInjectionPoint(param)) return false;
+  const spec = getSpecSync(param.mnemonic);
+  return spec?.category === 'ARRAY';
 }
 
 /**
