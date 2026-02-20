@@ -4,32 +4,18 @@
 </script>
 
 <script>
-  import { isInjectionPoint, isPrimitive, fetchSpec, isInjectOnly } from '../specApi.js';
   import InjectorField from './InjectorField.svelte';
 
-  let { param, value, onchange, insideFactory = false } = $props();
-
-  const STRING_LIKE = ['String', 'Object'];
-  const isStringLike = STRING_LIKE.includes(param.mnemonic);
+  let { param, value, onchange, facts = null } = $props();
 
   // Multiline toggle – auto-enable when value contains newlines
   let multiline = $state(false);
 
   $effect(() => {
-    if (isStringLike && typeof value === 'string' && value.includes('\n')) {
+    if (facts?.canMultiline && typeof value === 'string' && value.includes('\n')) {
       multiline = true;
     }
   });
-
-  // Enum resolution
-  let enumValues = $state(null);
-  //if (param.mnemonic && !isPrimitive(param.mnemonic) && !isInjectionPoint(param)) {
-    fetchSpec(param.mnemonic).then((spec) => {
-      if (spec.category === 'ENUM' && spec.constraints?.values) {
-        enumValues = spec.constraints.values;
-      }
-    }).catch(() => {});
-  //}
 
   // Value helpers
   function getVal() {
@@ -97,7 +83,7 @@
   }
 </script>
 
-{#if param.injectionStrategy === 'MAP'}
+{#if facts?.strategy === 'MAP'}
   <div class="map-entries">
     {#each getMapEntries() as entry, i (i)}
       <div class="map-entry">
@@ -119,7 +105,7 @@
           <button class="remove-btn" onclick={() => removeMapEntry(i)}>✕</button>
         </div>
         {#if mapExpanded[i]}
-          {#if isInjectionPoint(param)}
+          {#if facts.editor === 'injection' || facts.editor === 'inject-only'}
             <InjectorField
               value={entry.value}
               param={{ ...param, injectionStrategy: 'DIRECT' }}
@@ -140,11 +126,11 @@
     <button class="add-btn" onclick={addMapEntry}>+ add entry</button>
   </div>
 
-{:else if param.injectionStrategy === 'COLLECTION'}
+{:else if facts?.strategy === 'COLLECTION'}
   <div class="collection-entries">
     {#each getCollectionEntries() as entry, i (i)}
       <div class="collection-row">
-        {#if isInjectionPoint(param)}
+        {#if facts.editor === 'injection' || facts.editor === 'inject-only'}
           <InjectorField
             value={entry}
             param={{ ...param, injectionStrategy: 'DIRECT' }}
@@ -164,16 +150,22 @@
     <button class="add-btn" onclick={addCollectionEntry}>+ add</button>
   </div>
 
-{:else if isInjectionPoint(param) && (!param.eager || insideFactory) || isInjectOnly(param)}
+{:else if facts?.editor === 'inject-only'}
   <InjectorField
     value={getVal()}
     {param}
-    injectOnly={isInjectOnly(param) || (param.eager && insideFactory)}
+    injectOnly={true}
     onchange={(v) => onchange(v)}
   />
 
+{:else if facts?.editor === 'injection'}
+  <InjectorField
+    value={getVal()}
+    {param}
+    onchange={(v) => onchange(v)}
+  />
 
-{:else if param.mnemonic === 'Boolean'}
+{:else if facts?.editor === 'boolean'}
   <label class="checkbox-label">
     <input
       type="checkbox"
@@ -183,20 +175,20 @@
     {getBool() ? 'true' : 'false'}
   </label>
 
-{:else if enumValues}
+{:else if facts?.editor === 'enum'}
   <select
     value={getVal()}
     onchange={(e) => onchange(e.target.value)}
   >
     <option value="">-- select --</option>
-    {#each enumValues as val (val)}
+    {#each facts.enumValues as val (val)}
       <option value={val}>{val}</option>
     {/each}
   </select>
 
 {:else}
   <div class="text-field-row">
-    {#if isStringLike}
+    {#if facts?.canMultiline}
       <button
         class="multiline-toggle"
         class:active={multiline}
@@ -204,11 +196,11 @@
         title={multiline ? 'Single line' : 'Multi line'}
       >&#x2261;</button>
     {/if}
-    {#if multiline && isStringLike}
+    {#if multiline && facts?.canMultiline}
       <textarea
         class="multiline-input"
         value={getVal()}
-        placeholder={param.defaultValue != null ? String(param.defaultValue) : ''}
+        placeholder={facts?.defaultValue != null ? String(facts.defaultValue) : ''}
         oninput={(e) => onchange(e.target.value)}
         use:autoResize
       ></textarea>
@@ -216,7 +208,7 @@
       <input
         type="text"
         value={getVal()}
-        placeholder={param.defaultValue != null ? String(param.defaultValue) : ''}
+        placeholder={facts?.defaultValue != null ? String(facts.defaultValue) : ''}
         oninput={(e) => onchange(e.target.value)}
       />
     {/if}

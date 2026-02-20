@@ -1,5 +1,6 @@
 <script>
-  import { fetchSpec, fetchConcreteInjectors, createNode, getNode, isInjectorRef, isInjectionPoint, isNestedParam, unregisterInjectorDeep } from '../specApi.js';
+  import { fetchSpec, fetchConcreteInjectors, createNode, getNode, isInjectorRef, isNestedParam, unregisterInjectorDeep } from '../specApi.js';
+  import { resolveParam } from '../rules.js';
   import ParamField from './ParamField.svelte';
 
   let { value, param, onchange, injectOnly = false } = $props();
@@ -103,9 +104,37 @@
     if (!injectorNode) return;
     injectorValues = { ...injectorValues, [paramName]: newVal };
     injectorNode.values = { ...injectorValues };
+    injectorVersion++;
     // Trigger parent re-render by re-emitting same ref
     onchange({ ...value });
   }
+
+  // Version counter for reactivity on injector param changes
+  let injectorVersion = $state(0);
+
+  function getInjectorParamFacts(paramName) {
+    void injectorVersion;
+    return injectorNode ? resolveParam(injectorNode.id, paramName) : null;
+  }
+
+  // Build literal-mode facts from the parent param's literalType
+  // (so ParamField knows to render boolean/enum/text without injection toggle)
+  let literalFacts = $derived.by(() => {
+    if (!param) return null;
+    // Resolve parent facts to get literalType
+    // For literal mode, we need a simple facts object
+    return {
+      editor: param.mnemonic === 'Boolean' ? 'boolean' : 'text',
+      literalType: null,
+      strategy: 'DIRECT',
+      canMultiline: ['String', 'Object'].includes(param.mnemonic),
+      enumValues: [],
+      concretes: [],
+      required: false,
+      defaultValue: param.defaultValue ?? null,
+      mnemonic: param.mnemonic ?? '',
+    };
+  });
 
   // Literal value helper
   function getLiteralValue() {
@@ -145,6 +174,7 @@
           {@const dp = injectorNode.spec.parameters['@delegating@']}
           <ParamField
             param={dp}
+            facts={getInjectorParamFacts('@delegating@')}
             value={injectorValues['@delegating@'] ?? ''}
             onchange={(v) => setInjectorParam('@delegating@', v)}
           />
@@ -155,6 +185,7 @@
             <span class="ip-label">{ip.name}{#if ip.injectionStrategy && ip.injectionStrategy !== 'DIRECT'} · {ip.injectionStrategy}{/if}</span>
             <ParamField
               param={ip}
+              facts={getInjectorParamFacts(ip.name)}
               value={injectorValues[ip.name] ?? ''}
               onchange={(v) => setInjectorParam(ip.name, v)}
             />
@@ -173,6 +204,7 @@
       <div class="literal-value">
         <ParamField
           param={{ ...param, injectionPoint: false }}
+          facts={literalFacts}
           value={getLiteralValue()}
           onchange={(v) => onchange(v)}
         />

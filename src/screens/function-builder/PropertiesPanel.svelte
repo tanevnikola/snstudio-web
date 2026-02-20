@@ -7,7 +7,8 @@
 </script>
 
 <script>
-  import { isNestedParam, isMnemonicType, getNode, createNode, unregisterDeep } from '../../lib/specApi.js';
+  import { isNestedParam, getNode, createNode, unregisterDeep } from '../../lib/specApi.js';
+  import { resolveParam } from '../../lib/rules.js';
   import ParamField from '../../lib/components/ParamField.svelte';
   import MnemonicField from '../../lib/components/MnemonicField.svelte';
 
@@ -118,12 +119,17 @@
     void childVersion;
     return target?.children[name]?.[0] ?? null;
   }
+
+  function getParamFacts(target, paramName) {
+    void childVersion;
+    return target ? resolveParam(target.id, paramName) : null;
+  }
 </script>
 
 {#snippet paramField(param, which)}
   {@const store = which === 'df' ? dfValues : taskValues}
   {@const target = getTargetNode(which)}
-  {@const isMnemonic = isMnemonicType(param)}
+  {@const facts = getParamFacts(target, param.name)}
   {@const isCollapsed = collapsed[param.name]}
   <div class="param">
     <span class="param-name">
@@ -136,8 +142,8 @@
     <span class="param-hint">{param.mnemonic}{param.injectionStrategy && param.injectionStrategy !== 'DIRECT' ? ` · ${param.injectionStrategy}` : ''}{param.injectionPoint ? ' · injectable' : ''}</span>
 
     {#if !isCollapsed}
-    {#if isMnemonic}
-      {#if param.injectionStrategy === 'MAP'}
+    {#if facts?.editor === 'mnemonic'}
+      {#if facts.strategy === 'MAP'}
         <!-- MAP of mnemonic children -->
         <div class="map-entries">
           {#each getKids(target, param.name) as child, i (child.id)}
@@ -165,6 +171,7 @@
               {#if entryExpanded[child.id]}
                 <MnemonicField
                   {param}
+                  {facts}
                   value={child}
                   onchange={(newChild) => {
                     if (newChild && newChild !== child) {
@@ -189,7 +196,7 @@
             setChildren(which, param.name, [...getKids(target, param.name), placeholder]);
           }}>+ add entry</button>
         </div>
-      {:else if param.injectionStrategy === 'COLLECTION'}
+      {:else if facts.strategy === 'COLLECTION'}
         <!-- COLLECTION of mnemonic children -->
         <div class="collection-entries">
           {#each getKids(target, param.name) as child, i (child.id)}
@@ -200,6 +207,7 @@
               }}>✕</button>
               <MnemonicField
                 {param}
+                {facts}
                 value={child}
                 onchange={(newChild) => {
                   if (newChild && newChild !== child) {
@@ -225,6 +233,7 @@
         <!-- DIRECT mnemonic child -->
         <MnemonicField
           {param}
+          {facts}
           value={getFirstChild(target, param.name)}
           onchange={(child) => setChild(which, param.name, child)}
         />
@@ -232,6 +241,7 @@
     {:else}
       <ParamField
         {param}
+        {facts}
         value={store[param.name] ?? ''}
         onchange={(v) => setVal(which, param.name, v)}
       />

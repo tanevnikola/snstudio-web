@@ -5,35 +5,18 @@
 </script>
 
 <script>
-  import { getSpecSync, isNestedParam, isMnemonicType, createNode, unregisterDeep } from '../specApi.js';
+  import { getSpecSync, isNestedParam, createNode, unregisterDeep } from '../specApi.js';
+  import { resolveParam, resolveNode } from '../rules.js';
   import ParamField from './ParamField.svelte';
 
-  let { param, value, onchange, insideFactory = false } = $props();
+  let { param, value, onchange, facts = null } = $props();
 
   // value IS the child node (or null)
   let selectedType = $derived(value?.mnemonic ?? '');
   let selectedSpec = $derived(selectedType ? getSpecSync(selectedType) : null);
-  let isFactory = $derived(value?.factory === true);
-  let inFactory = $derived(isFactory || insideFactory);
 
-  // Resolve the spec for this param's mnemonic (for the type dropdown)
-  let spec = $derived(getSpecSync(param.mnemonic));
-
-  // Collect all concrete implementations recursively (flattened)
-  function collectConcretes(mnemonic, seen = new Set()) {
-    if (seen.has(mnemonic)) return [];
-    seen.add(mnemonic);
-    const s = getSpecSync(mnemonic);
-    if (!s) return [];
-    if (s.category === 'CONCRETE') return [mnemonic];
-    const result = [];
-    for (const impl of s.implementations ?? []) {
-      result.push(...collectConcretes(impl, seen));
-    }
-    return result;
-  }
-
-  let concretes = $derived(spec ? collectConcretes(param.mnemonic) : []);
+  // Concretes from parent's facts (passed down from PropertiesPanel)
+  let concretes = $derived(facts?.concretes ?? []);
 
   // Get editable params for the selected concrete type (exclude nested/delegating)
   let selectedParams = $derived.by(() => {
@@ -46,6 +29,27 @@
   // Version counter — tracks mutations to plain JS objects (value.values, value.children)
   // so Svelte can re-evaluate template expressions that read them.
   let innerVersion = $state(0);
+
+  // Sub-param facts from rules engine — read innerVersion so Svelte re-evaluates
+  function getSubParamFacts(paramName) {
+    void innerVersion;
+    return value ? resolveParam(value.id, paramName) : null;
+  }
+
+  // Node facts for factory checkbox
+  function getNodeFacts() {
+    void innerVersion;
+    return value ? resolveNode(value.id) : null;
+  }
+
+  // Auto-enforce factory when rules require it
+  $effect(() => {
+    const nf = getNodeFacts();
+    if (nf?.mustFactory && value && !value.factory) {
+      value.factory = true;
+      onchange(value);
+    }
+  });
 
   // Reactive helpers — read innerVersion to create Svelte dependency
   function getInnerValue(name) {
@@ -114,10 +118,13 @@
       {/each}
     </select>
     {#if selectedType}
-      <label class="factory-toggle" title="Use factory pattern">
-        <input type="checkbox" checked={isFactory} onchange={toggleFactory} />
-        <span class="factory-label">factory</span>
-      </label>
+      {@const nf = getNodeFacts()}
+      {#if nf?.canFactory}
+        <label class="factory-toggle" title={nf.mustFactory ? 'Factory required (eager injection point)' : 'Use factory pattern'}>
+          <input type="checkbox" checked={value?.factory === true} disabled={nf.mustFactory} onchange={toggleFactory} />
+          <span class="factory-label">factory</span>
+        </label>
+      {/if}
     {/if}
   </div>
 
@@ -135,8 +142,9 @@
           </span>
           <span class="param-hint">{p.mnemonic}{p.injectionStrategy && p.injectionStrategy !== 'DIRECT' ? ` · ${p.injectionStrategy}` : ''}</span>
           {#if !isCollapsed}
-            {#if isMnemonicType(p)}
-              {#if p.injectionStrategy === 'MAP'}
+            {@const subFacts = getSubParamFacts(p.name)}
+            {#if subFacts?.editor === 'mnemonic'}
+              {#if subFacts.strategy === 'MAP'}
                 <!-- MAP of mnemonic children -->
                 <div class="map-entries">
                   {#each getInnerKids(p.name) as child, i (child.id)}
@@ -165,7 +173,7 @@
                         <svelte:self
                           param={p}
                           value={child}
-                          insideFactory={inFactory}
+                          facts={subFacts}
                           onchange={(newChild) => {
                             if (newChild && newChild !== child) {
                               newChild.mapKey = child.mapKey ?? '';
@@ -189,7 +197,7 @@
                     setInnerChildren(p.name, [...getInnerKids(p.name), placeholder]);
                   }}>+ add entry</button>
                 </div>
-              {:else if p.injectionStrategy === 'COLLECTION'}
+              {:else if subFacts.strategy === 'COLLECTION'}
                 <!-- COLLECTION of mnemonic children -->
                 <div class="collection-entries">
                   {#each getInnerKids(p.name) as child, i (child.id)}
@@ -226,7 +234,7 @@
                 <svelte:self
                   param={p}
                   value={getInnerFirstChild(p.name)}
-                  insideFactory={inFactory}
+                  facts={subFacts}
                   onchange={(child) => {
                     const old = value.children[p.name]?.[0];
                     if (old && old !== child) unregisterDeep(old);
@@ -237,8 +245,8 @@
             {:else}
               <ParamField
                 param={p}
+                facts={subFacts}
                 value={getInnerValue(p.name)}
-                insideFactory={inFactory}
                 onchange={(v) => setInnerValue(p.name, v)}
               />
             {/if}

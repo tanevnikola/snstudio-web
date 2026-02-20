@@ -5,6 +5,7 @@
   import { fetchSpec, createNode, getNode, addChild, clearAllNodes } from '../../lib/specApi.js';
   import { nodeToYaml } from '../../lib/yamlSerializer.js';
   import { yamlToNodeTree } from '../../lib/yamlDeserializer.js';
+  import { initialize as initRules } from '../../lib/rules.js';
   import hljs from 'highlight.js/lib/core';
   import yamlLang from 'highlight.js/lib/languages/yaml';
   import { settings } from '../../lib/settings.svelte.js';
@@ -62,6 +63,7 @@
       skipNextSerialize = true;
       rootNodeId = newRootId;
       selectedNodeId = null;
+      initRules(newRootId);
     } catch (err) {
       yamlError = err.message;
     } finally {
@@ -136,6 +138,7 @@
   });
 
   function bumpTree() {
+    if (rootNodeId) initRules(rootNodeId);
     treeTick++;
   }
 
@@ -161,6 +164,7 @@
         rootNodeId = newRootId;
         selectedNodeId = null;
         yamlError = null;
+        initRules(newRootId);
         pushHistory(yamlText);
       } catch (err) {
         yamlError = err.message;
@@ -294,6 +298,7 @@
         const newRootId = await yamlToNodeTree(initialYaml);
         rootNodeId = newRootId;
         selectedNodeId = newRootId;
+        initRules(newRootId);
         bumpTree();
       } catch {
         await initRoot();
