@@ -177,7 +177,7 @@
 
 {:else if facts?.editor === 'enum'}
   <select
-    value={getVal()}
+    value={getVal() || facts?.defaultValue || ''}
     onchange={(e) => onchange(e.target.value)}
   >
     <option value="">-- select --</option>

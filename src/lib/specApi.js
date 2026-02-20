@@ -8,8 +8,15 @@ export async function fetchSpec(mnemonic) {
   const data = await res.json();
   if (!data.length) throw new Error(`No spec found for "${mnemonic}"`);
 
-  const spec = data[0];
-  cache.set(mnemonic, spec);
+  // Cache all specs returned by the API (may include param type specs)
+  for (const spec of data) {
+    if (spec.mnemonic && !cache.has(spec.mnemonic)) {
+      cache.set(spec.mnemonic, spec);
+    }
+  }
+
+  const spec = cache.get(mnemonic) ?? data[0];
+  if (!cache.has(mnemonic)) cache.set(mnemonic, spec);
   return spec;
 }
 

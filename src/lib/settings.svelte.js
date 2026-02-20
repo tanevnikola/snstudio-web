@@ -4,6 +4,7 @@ const defaults = {
   codeEditor: {
     maxCodeHistory: 10,
   },
+  debug: false,
 };
 
 function load() {
@@ -13,6 +14,7 @@ function load() {
       const parsed = JSON.parse(raw);
       return {
         codeEditor: { ...defaults.codeEditor, ...parsed.codeEditor },
+        debug: parsed.debug ?? defaults.debug,
       };
     }
   } catch {
