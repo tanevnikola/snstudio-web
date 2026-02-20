@@ -1,11 +1,8 @@
 <script>
-  import { fetchSpec, fetchConcreteInjectors, createNode, getNode, isInjectorRef, isInjectionPoint, isInjectOnly, isNestedParam, unregisterInjectorDeep } from '../specApi.js';
+  import { fetchSpec, fetchConcreteInjectors, createNode, getNode, isInjectorRef, isInjectionPoint, isNestedParam, unregisterInjectorDeep } from '../specApi.js';
   import ParamField from './ParamField.svelte';
 
-  let { value, param, onchange } = $props();
-
-  // Inject-only params (byte[], int[], etc.) cannot have literal values
-  let injectOnly = isInjectOnly(param);
+  let { value, param, onchange, injectOnly = false } = $props();
 
   // Determine if currently in inject mode
   let injecting = $derived(isInjectorRef(value));

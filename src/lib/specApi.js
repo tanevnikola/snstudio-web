@@ -13,7 +13,7 @@ export async function fetchSpec(mnemonic) {
   return spec;
 }
 
-const KNOWN_PRIMITIVES = ['String', 'Boolean', 'Integer', 'Long', 'Double', 'Float', 'Object'];
+const KNOWN_PRIMITIVES = ['String', 'Boolean', 'Integer', 'Long', 'Double', 'Float', `Object`];
 const INJECT_ONLY_RE = /\[\]$/; // byte[], int[], boolean[] etc.
 const NESTED_MNEMONICS = ['DomainFunction', 'DomainTask'];
 
@@ -64,6 +64,7 @@ export function getSpecSync(mnemonic) {
  */
 export function isMnemonicType(param) {
   if (isNestedParam(param)) return false;
+  if (isInjectOnly(param)) return false;
   if (isPrimitive(param.mnemonic)) return false;
   const spec = getSpecSync(param.mnemonic);
   if (!spec) return false;

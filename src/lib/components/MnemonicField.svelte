@@ -8,12 +8,13 @@
   import { getSpecSync, isNestedParam, isMnemonicType, createNode, unregisterDeep } from '../specApi.js';
   import ParamField from './ParamField.svelte';
 
-  let { param, value, onchange } = $props();
+  let { param, value, onchange, insideFactory = false } = $props();
 
   // value IS the child node (or null)
   let selectedType = $derived(value?.mnemonic ?? '');
   let selectedSpec = $derived(selectedType ? getSpecSync(selectedType) : null);
   let isFactory = $derived(value?.factory === true);
+  let inFactory = $derived(isFactory || insideFactory);
 
   // Resolve the spec for this param's mnemonic (for the type dropdown)
   let spec = $derived(getSpecSync(param.mnemonic));
@@ -164,6 +165,7 @@
                         <svelte:self
                           param={p}
                           value={child}
+                          insideFactory={inFactory}
                           onchange={(newChild) => {
                             if (newChild && newChild !== child) {
                               newChild.mapKey = child.mapKey ?? '';
@@ -199,6 +201,7 @@
                       <svelte:self
                         param={p}
                         value={child}
+                        insideFactory={inFactory}
                         onchange={(newChild) => {
                           if (newChild && newChild !== child) {
                             const kids = getInnerKids(p.name);
@@ -223,6 +226,7 @@
                 <svelte:self
                   param={p}
                   value={getInnerFirstChild(p.name)}
+                  insideFactory={inFactory}
                   onchange={(child) => {
                     const old = value.children[p.name]?.[0];
                     if (old && old !== child) unregisterDeep(old);
@@ -234,6 +238,7 @@
               <ParamField
                 param={p}
                 value={getInnerValue(p.name)}
+                insideFactory={inFactory}
                 onchange={(v) => setInnerValue(p.name, v)}
               />
             {/if}

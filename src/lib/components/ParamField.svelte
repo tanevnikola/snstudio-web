@@ -7,7 +7,7 @@
   import { isInjectionPoint, isPrimitive, fetchSpec, isInjectOnly } from '../specApi.js';
   import InjectorField from './InjectorField.svelte';
 
-  let { param, value, onchange } = $props();
+  let { param, value, onchange, insideFactory = false } = $props();
 
   const STRING_LIKE = ['String', 'Object'];
   const isStringLike = STRING_LIKE.includes(param.mnemonic);
@@ -23,13 +23,13 @@
 
   // Enum resolution
   let enumValues = $state(null);
-  if (param.mnemonic && !isPrimitive(param.mnemonic) && !isInjectionPoint(param)) {
+  //if (param.mnemonic && !isPrimitive(param.mnemonic) && !isInjectionPoint(param)) {
     fetchSpec(param.mnemonic).then((spec) => {
       if (spec.category === 'ENUM' && spec.constraints?.values) {
         enumValues = spec.constraints.values;
       }
     }).catch(() => {});
-  }
+  //}
 
   // Value helpers
   function getVal() {
@@ -164,12 +164,14 @@
     <button class="add-btn" onclick={addCollectionEntry}>+ add</button>
   </div>
 
-{:else if isInjectionPoint(param) && !param.eager || isInjectOnly(param)}
+{:else if isInjectionPoint(param) && (!param.eager || insideFactory) || isInjectOnly(param)}
   <InjectorField
     value={getVal()}
     {param}
+    injectOnly={isInjectOnly(param) || (param.eager && insideFactory)}
     onchange={(v) => onchange(v)}
   />
+
 
 {:else if param.mnemonic === 'Boolean'}
   <label class="checkbox-label">
@@ -440,4 +442,5 @@
     outline: none;
     border-color: #666;
   }
+
 </style>

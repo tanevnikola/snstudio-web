@@ -70,7 +70,7 @@ export function nodeToYaml(nodeId) {
  */
 function nodeToObject(node, expectedMnemonic, markers) {
   const params = node.spec.parameters;
-  const inline = expectedMnemonic && node.mnemonic === expectedMnemonic;
+  const inline = expectedMnemonic && node.mnemonic === expectedMnemonic && !node.factory;
   const marker = `__node_${node.id}`;
   if (markers) markers.set(marker, node.id);
 

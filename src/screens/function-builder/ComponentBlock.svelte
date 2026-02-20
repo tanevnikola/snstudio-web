@@ -1,5 +1,6 @@
 <script>
   import DropZone from '../../lib/components/DropZone.svelte';
+  import DocsPopover from '../../lib/components/DocsPopover.svelte';
   import ComponentBlock from './ComponentBlock.svelte';
   import { isNestedParam, fetchSpec, createNode, getNode, addChild, insertChild, removeChild, detachNode, moveChild } from '../../lib/specApi.js';
 
@@ -108,7 +109,7 @@
     }
   });
 
-  async function handleDrop(droppedMnemonic, paramName, sourceNodeId) {
+  async function handleDrop(droppedMnemonic, paramName, sourceNodeId, dataTransfer) {
     try {
       // `tasks` param lives on the DomainFunction itself, not the inner task
       const targetNodeId = (isDomainFunction && paramName !== 'tasks')
@@ -127,8 +128,13 @@
         const targetNode = getNode(targetNodeId);
         const param = targetNode?.spec.parameters[paramName];
 
+        // Check if this is a function-ref drop (pre-configured Inject.Configuration)
+        const functionPath = dataTransfer?.getData('application/x-function-path');
+        if (functionPath && droppedMnemonic === 'Inject.Configuration') {
+          const child = await createFunctionRefNode(functionPath);
+          addChild(targetNodeId, paramName, child);
         // If the drop zone expects DomainFunction but a task was dropped, auto-wrap
-        if (param?.mnemonic === 'DomainFunction' && droppedMnemonic !== 'DomainFunction') {
+        } else if (param?.mnemonic === 'DomainFunction' && droppedMnemonic !== 'DomainFunction') {
           const dfSpec = await fetchSpec('DomainFunction');
           const dfNode = createNode('DomainFunction', dfSpec);
           const taskSpec = await fetchSpec(droppedMnemonic);
@@ -147,7 +153,22 @@
     }
   }
 
-  async function handleTaskDrop(droppedMnemonic, _paramName, sourceNodeId) {
+  async function createFunctionRefNode(filePath) {
+    // Create Inject.Configuration with data → Inject.TextFileContent → filePath
+    const configSpec = await fetchSpec('Inject.Configuration');
+    const configNode = createNode('Inject.Configuration', configSpec);
+
+    const textFileSpec = await fetchSpec('Inject.TextFileContent');
+    const textFileNode = createNode('Inject.TextFileContent', textFileSpec);
+    textFileNode.values['@delegating@'] = filePath;
+
+    // Set data as injector reference pointing to the TextFileContent node
+    configNode.values['data'] = { __injectorNodeId: textFileNode.id };
+
+    return configNode;
+  }
+
+  async function handleTaskDrop(droppedMnemonic, _paramName, sourceNodeId, dataTransfer) {
     // Drop a task onto a DomainFunction that has no task yet
     try {
       if (sourceNodeId) {
@@ -226,6 +247,46 @@
   function onWindowKeydown(e) {
     if (e.key === 'Escape' && showRemoveConfirm) showRemoveConfirm = false;
   }
+
+  // Docs popover state
+  let showDocs = $state(false);
+  let docsPinned = $state(false);
+  let docsHoverTimer = null;
+  let docsMnemonic = $derived(displayNode?.mnemonic || node?.mnemonic || '');
+
+  function onDocsEnter() {
+    clearTimeout(docsHoverTimer);
+    if (!docsPinned) showDocs = true;
+  }
+
+  function onDocsLeave() {
+    if (!docsPinned) {
+      docsHoverTimer = setTimeout(() => { showDocs = false; }, 200);
+    }
+  }
+
+  function onDocsPopoverEnter() {
+    clearTimeout(docsHoverTimer);
+  }
+
+  function onDocsPopoverLeave() {
+    if (!docsPinned) {
+      docsHoverTimer = setTimeout(() => { showDocs = false; }, 200);
+    }
+  }
+
+  function onDocsClick(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    docsPinned = true;
+    showDocs = true;
+  }
+
+  function closeDocs() {
+    showDocs = false;
+    docsPinned = false;
+    clearTimeout(docsHoverTimer);
+  }
 </script>
 
 <svelte:window onkeydown={onWindowKeydown} />
@@ -285,6 +346,7 @@
               <button class="order-btn" disabled={!canMoveDown} onclick={(e) => { e.stopPropagation(); onmovedown?.(); }} title="Move down">▼</button>
             </span>
           {/if}
+          <span class="info-icon" role="button" tabindex="-1" onmouseenter={onDocsEnter} onmouseleave={onDocsLeave} onclick={onDocsClick}>i</span>
           <span class="mnemonic">Task.Chain</span>
           <span class="stereotype">FlowTask</span>
           {#if trace}
@@ -352,6 +414,7 @@
               <button class="order-btn" disabled={!canMoveDown} onclick={(e) => { e.stopPropagation(); onmovedown?.(); }} title="Move down">▼</button>
             </span>
           {/if}
+          <span class="info-icon" role="button" tabindex="-1" onmouseenter={onDocsEnter} onmouseleave={onDocsLeave} onclick={onDocsClick}>i</span>
           <span class="mnemonic">{displayNode.mnemonic}</span>
           <span class="stereotype">{displayNode.spec.implementsStereotype}</span>
           {#if trace}
@@ -399,6 +462,16 @@
     {/if}
   {/if}
 </div>
+{#if showDocs && docsMnemonic}
+  <DocsPopover
+    url="/docs/autogen.md?target={docsMnemonic}"
+    title={docsMnemonic}
+    pinned={docsPinned}
+    onclose={closeDocs}
+    onmouseenter={onDocsPopoverEnter}
+    onmouseleave={onDocsPopoverLeave}
+  />
+{/if}
 {/if}
 
 <style>
@@ -518,6 +591,35 @@
   @keyframes confirm-pulse {
     0% { transform: scale(0.6); }
     100% { transform: scale(1); }
+  }
+
+  .info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: #ddd;
+    color: #777;
+    font-size: 0.5rem;
+    font-style: italic;
+    font-family: Georgia, serif;
+    font-weight: 700;
+    cursor: pointer;
+    line-height: 1;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.12s;
+  }
+
+  .block:hover .info-icon {
+    opacity: 1;
+  }
+
+  .info-icon:hover {
+    background: #ccc;
+    color: #444;
   }
 
   .mnemonic {

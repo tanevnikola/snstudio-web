@@ -135,7 +135,8 @@
     </span>
     <span class="param-hint">{param.mnemonic}{param.injectionStrategy && param.injectionStrategy !== 'DIRECT' ? ` · ${param.injectionStrategy}` : ''}{param.injectionPoint ? ' · injectable' : ''}</span>
 
-    {#if isMnemonic && !isCollapsed}
+    {#if !isCollapsed}
+    {#if isMnemonic}
       {#if param.injectionStrategy === 'MAP'}
         <!-- MAP of mnemonic children -->
         <div class="map-entries">
@@ -228,12 +229,13 @@
           onchange={(child) => setChild(which, param.name, child)}
         />
       {/if}
-    {:else if !isCollapsed}
+    {:else}
       <ParamField
         {param}
         value={store[param.name] ?? ''}
         onchange={(v) => setVal(which, param.name, v)}
       />
+    {/if}
     {/if}
   </div>
 {/snippet}
