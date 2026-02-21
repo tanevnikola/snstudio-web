@@ -1,24 +1,10 @@
 <script>
-  let { label = '', value = false, onchange = () => {} } = $props();
-
-  function toggle() {
-    onchange(!value);
-  }
+  let { value = false, onchange = () => {} } = $props();
 </script>
 
-<label class="bool-field" onclick={toggle}>
-  <input type="checkbox" checked={value} />
-  <span>{label}</span>
-</label>
+<input type="checkbox" checked={value} onchange={(e) => onchange(/** @type {HTMLInputElement} */ (e.target).checked)} />
 
 <style>
-  .bool-field {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    font-size: 13px;
-  }
   input[type="checkbox"] {
     margin: 0;
     cursor: pointer;

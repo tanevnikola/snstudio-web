@@ -81,6 +81,35 @@ export function isMnemonicType(param) {
 }
 
 /**
+ * Recursively collect all non-ABSTRACT implementations of a mnemonic.
+ * Uses the sync cache — call after loading screen has warmed specs.
+ * @param {string} mnemonic
+ * @returns {string[]} sorted list of concrete implementation mnemonics
+ */
+export function getConcreteImplementations(mnemonic) {
+  const result = [];
+  function collect(mn) {
+    const spec = getSpecSync(mn);
+    if (!spec) return;
+    if (spec.category !== 'ABSTRACT') {
+      result.push(mn);
+    }
+    if (spec.implementations?.length) {
+      for (const impl of spec.implementations) {
+        collect(impl);
+      }
+    }
+  }
+  const rootSpec = getSpecSync(mnemonic);
+  if (rootSpec?.implementations?.length) {
+    for (const impl of rootSpec.implementations) {
+      collect(impl);
+    }
+  }
+  return result.sort();
+}
+
+/**
  * Recursively collect all CONCRETE ResourceInjector mnemonics.
  * Cached after first call.
  */

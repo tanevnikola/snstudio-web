@@ -2,6 +2,7 @@
   // Shared collapse state — persists across component instances (node selections)
   let _dfExpanded = false;
   let _taskExpanded = true;
+  let _v2Expanded = true;
   let _collapsed = {};
   let _entryExpanded = {};
 </script>
@@ -13,6 +14,7 @@
   import ParamField from '../../lib/components/ParamField.svelte';
   import MnemonicField from '../../lib/components/MnemonicField.svelte';
   import DocsPopover from '../../lib/components/DocsPopover.svelte';
+  import ParameterField from '../../v2/components/ParameterField.svelte';
 
   let { nodeId, onchange } = $props();
 
@@ -49,10 +51,12 @@
   // Collapsible sections — initialized from module-level shared state
   let dfExpanded = $state(_dfExpanded);
   let taskExpanded = $state(_taskExpanded);
+  let v2Expanded = $state(_v2Expanded);
 
   // Sync back to module-level so next instance inherits the same state
   $effect(() => { _dfExpanded = dfExpanded; });
   $effect(() => { _taskExpanded = taskExpanded; });
+  $effect(() => { _v2Expanded = v2Expanded; });
 
   // Sync back to registry
   $effect(() => {
@@ -383,6 +387,22 @@
     </div>
   {:else if isDomainFunction}
     <div class="no-task">No task assigned yet</div>
+  {/if}
+
+  {#if taskNode}
+    <div class="section">
+      <button class="section-header" onclick={() => (v2Expanded = !v2Expanded)}>
+        <span class="section-arrow">{v2Expanded ? '▼' : '▶'}</span>
+        <span class="section-title">V2 — {taskNode.mnemonic}</span>
+      </button>
+      {#if v2Expanded}
+        <div class="section-body">
+          {#each taskParams as param (param.name)}
+            <ParameterField parameterSpec={param} />
+          {/each}
+        </div>
+      {/if}
+    </div>
   {/if}
 </div>
 
