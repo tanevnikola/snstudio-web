@@ -1,7 +1,7 @@
 <script>
-  import ParameterField from '../ParameterField.svelte';
+  import ParameterField from './ParameterField.svelte';
 
-  let { yaml = null, key = '', parameterSpec = null } = $props();
+  let { yaml = null, parameterSpec = null } = $props();
 
   let entrySpec = $derived({ ...parameterSpec, name: null, injectionStrategy: null });
   let entries = $state([]);
@@ -24,7 +24,7 @@
           value={entry.key}
           oninput={(e) => entry.key = /** @type {HTMLInputElement} */ (e.target).value} />
       </div>
-      <ParameterField parameterSpec={entrySpec} />
+      <ParameterField yaml={yaml} parameterSpec={entrySpec} />
     </div>
   {/each}
   <button class="add-btn" onclick={addEntry}>+ add entry</button>

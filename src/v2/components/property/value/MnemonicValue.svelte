@@ -4,18 +4,22 @@
   import DocsPopover from '../../../../lib/components/DocsPopover.svelte';
   import Self from './MnemonicValue.svelte';
 
-  let { mnemonic, yaml , key = null, parameterSpec } = $props();
+  let { yaml, parameterSpec } = $props();
 
-  let spec = $state(null);
-  let implementations = $derived(spec ? getConcreteImplementations(mnemonic) : []);
+  let mnemonic = $derived(parameterSpec?.mnemonic ?? null);
+  let parameterName = $derived(parameterSpec?.name ?? null);
+  let node = $derived(parameterName ? yaml?.[parameterName] : null);
+
+  let mnemonicSpec = $state(null);
+  let implementations = $derived(mnemonicSpec ? getConcreteImplementations(mnemonic) : []);
   let selectedType = $state(null);
 
   $effect(() => {
     const cached = getSpecSync(mnemonic);
     if (cached) {
-      spec = cached;
+      mnemonicSpec = cached;
     } else {
-      fetchSpec(mnemonic).then((fetched) => { spec = fetched; });
+      fetchSpec(mnemonic).then((fetched) => { mnemonicSpec = fetched; });
     }
   });
 
@@ -51,18 +55,9 @@
     clearTimeout(docsHoverTimer);
   }
 
-  const PRIMITIVE_MNEMONICS = [
-    'String', 'Boolean', 'boolean', 'Integer', 'int', 'Long', 'long',
-    'Double', 'double', 'Float', 'float', 'Character', 'char',
-    'Byte', 'byte', 'Short', 'short',
-  ];
-  let isPrimitive = $derived(
-    PRIMITIVE_MNEMONICS.includes(mnemonic) || spec?.category === 'ENUM'
-  );
-
   let params = $derived(
-    spec?.parameters
-      ? Object.values(spec.parameters)
+    mnemonicSpec?.parameters
+      ? Object.values(mnemonicSpec.parameters)
           .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
       : []
   );
@@ -87,18 +82,14 @@
     </div>
   {/if}
 
-  {#if isPrimitive}
-    <ParameterField parameterSpec={{ mnemonic }} />
-  {:else}
-    {#each params as param (param.name)}
-      <ParameterField parameterSpec={param} />
-    {/each}
+  {#each params as param (param.name)}
+    <ParameterField yaml={node} parameterSpec={param} />
+  {/each}
 
-    {#if selectedType}
-      {#key selectedType}
-        <Self mnemonic={selectedType} />
-      {/key}
-    {/if}
+  {#if selectedType}
+    {#key selectedType}
+      <Self yaml={node} parameterSpec={{ mnemonic: selectedType }} />
+    {/key}
   {/if}
 </div>
 {#if showDocs && docsMnemonic}

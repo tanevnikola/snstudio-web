@@ -1,9 +1,10 @@
 <script>
-  let { yaml = null, key = '', parameterSpec = null } = $props();
-  let value = $derived(yaml?.[key] ?? '');
+  let { yaml, parameterSpec } = $props();
+  let parameterName = $derived(parameterSpec?.name ?? null);
+  let value = $derived(yaml?.[parameterName] ?? '');
 </script>
 
-<input type="text" value={value} />
+<input type="text" value={value} oninput={(e) => yaml[parameterName] = /** @type {HTMLInputElement} */ (e.target).value} />
 
 <style>
   input {
