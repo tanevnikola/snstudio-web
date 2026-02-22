@@ -1,6 +1,6 @@
 <script>
   let { yaml = null, key = '', options = [], parameterSpec = null } = $props();
-  let value = $derived(yaml?.v?.[key] ?? '');
+  let value = $derived(yaml?.[key] ?? '');
 </script>
 
 <select value={value}>

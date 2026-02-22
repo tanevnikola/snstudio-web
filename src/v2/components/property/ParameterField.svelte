@@ -59,23 +59,24 @@
         {param.name}
         {#if param.required}<span class="required">*</span>{/if}
       </label>
+      
       <div class="value">
         {#if param.injectionStrategy === 'MAP'}
-          <MapField {yaml} key={param.name} parameterSpec={param} />
+          <MapField yaml={yaml.v} key={param.name} parameterSpec={param} />
         {:else if param.injectionStrategy === 'COLLECTION'}
-          <CollectionField {yaml} key={param.name} parameterSpec={param} />
+          <CollectionField yaml={yaml.v} key={param.name} parameterSpec={param} />
         {:else if isPrimitive(param)}
           {#if isEnum(param)}
-            <EnumValue {yaml} key={param.name} options={getEnumValues(param)} parameterSpec={param} />
+            <EnumValue yaml={yaml.v} key={param.name} options={getEnumValues(param)} parameterSpec={param} />
           {:else if BOOLEAN_TYPES.includes(param.mnemonic)}
-            <BooleanValue {yaml} key={param.name} parameterSpec={param} />
+            <BooleanValue yaml={yaml.v} key={param.name} parameterSpec={param} />
           {:else if NUMBER_TYPES.includes(param.mnemonic)}
-            <NumberValue {yaml} key={param.name} parameterSpec={param} />
+            <NumberValue yaml={yaml.v} key={param.name} parameterSpec={param} />
           {:else}
-            <StringValue {yaml} key={param.name} parameterSpec={param} />
+            <StringValue yaml={yaml.v} key={param.name} parameterSpec={param} />
           {/if}
         {:else}
-          <MnemonicValue {yaml} key={param.name} mnemonic={param.mnemonic} parameterSpec={param} />
+          <MnemonicValue yaml={yaml.v} key={param.name} mnemonic={param.mnemonic} parameterSpec={param} />
         {/if}
       </div>
     </div>

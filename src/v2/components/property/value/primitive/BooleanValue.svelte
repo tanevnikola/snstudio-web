@@ -1,6 +1,6 @@
 <script>
   let { yaml = null, key = '', parameterSpec = null } = $props();
-  let value = $derived(yaml?.v?.[key] ?? false);
+  let value = $derived(yaml?.[key] ?? false);
 </script>
 
 <input type="checkbox" checked={value} />
