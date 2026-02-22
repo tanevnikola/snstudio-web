@@ -80,11 +80,11 @@
     <div class="resize-handle vertical" class:active={resizingLeft} onmousedown={startResizeLeft} role="separator" aria-label="Resize palette"></div>
     <div class="center-column">
       <div class="composer">
-        <FunctionComposer yaml={composerYaml} />
+        <FunctionComposer yaml={composerYaml} onyamlchange={(text) => { composerYaml = text; }} />
       </div>
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <div class="resize-handle horizontal" class:active={resizingYaml} onmousedown={startResizeYaml} role="separator" aria-label="Resize YAML panel"></div>
-      <YamlContainer yamlText={yaml} style={yamlHeight ? `flex: 0 0 ${yamlHeight}px` : ''} onchange={(text) => { composerYaml = text; }} />
+      <YamlContainer yamlText={composerYaml} style={yamlHeight ? `flex: 0 0 ${yamlHeight}px` : ''} onchange={(text) => { composerYaml = text; }} />
     </div>
     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <div class="resize-handle vertical" class:active={resizingRight} onmousedown={startResizeRight} role="separator" aria-label="Resize properties"></div>

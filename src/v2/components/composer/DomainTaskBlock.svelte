@@ -4,9 +4,9 @@
   import DomainFunctionMapBlock from './DomainFunctionMapBlock.svelte';
   import DomainFunctionListBlock from './DomainFunctionListBlock.svelte';
   import { fetchSpec } from '../../../lib/specApi.js';
-  import { setDragHeight } from './dragState.js';
+  import { setDragHeight, setDragItem, setRemoveSource, clearDragItem } from './dragState.js';
 
-  let { yaml = {}, detail = '', ondelete = () => {}, ondragstart = (/** @type {DragEvent} */ _e) => {}, ondragend = (/** @type {DragEvent} */ _e) => {} } = $props();
+  let { yaml = {}, detail = '', parent = null, onremove = () => {}, ondelete = () => {}, ondragstart = (/** @type {DragEvent} */ _e) => {}, ondragend = (/** @type {DragEvent} */ _e) => {} } = $props();
 
   let taskEl;
 
@@ -14,6 +14,8 @@
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setDragImage(taskEl, 0, 0);
     setDragHeight(taskEl.offsetHeight);
+    setDragItem(parent ?? yaml);
+    setRemoveSource(onremove);
     ondragstart(e);
   }
 
@@ -44,6 +46,7 @@
     }
     return yaml?.v?.[param.name];
   }
+
 </script>
 
 <div
@@ -56,7 +59,7 @@
     class="header"
     draggable="true"
     ondragstart={handleDragStart}
-    ondragend={(e) => ondragend(e)}
+    ondragend={(e) => { clearDragItem(); ondragend(e); }}
     bind:this={taskEl}
   >
     {#if domainFunctionParams.length > 0}
@@ -85,7 +88,7 @@
         {/if}
         <div class="children-content">
           {#if param.injectionStrategy === 'DIRECT'}
-            <DomainFunctionBlock yaml={getParamYaml(param)} />
+            <DomainFunctionBlock yaml={getParamYaml(param)} onremove={() => { if (param.name === '@delegating@') { yaml.v = null; } else { delete yaml.v[param.name]; } }} />
           {:else if param.injectionStrategy === 'MAP'}
             <DomainFunctionMapBlock yaml={getParamYaml(param)} />
           {:else if param.injectionStrategy === 'COLLECTION'}

@@ -1,7 +1,7 @@
 <script>
   import DomainTaskBlock from './DomainTaskBlock.svelte';
 
-  let { yaml = {} } = $props();
+  let { yaml = {}, parent = null, onremove = () => {} } = $props();
 
   let v = $derived(yaml?.v ?? yaml ?? {});
   let hasTask = $derived(v != null && typeof v === 'object' && 'task' in v);
@@ -18,5 +18,5 @@
 </script>
 
 {#if valid && taskYaml}
-  <DomainTaskBlock yaml={taskYaml} {detail} />
+  <DomainTaskBlock yaml={taskYaml} {detail} parent={yaml} {onremove} />
 {/if}

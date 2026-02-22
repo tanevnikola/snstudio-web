@@ -1,6 +1,6 @@
 <script>
   import DomainFunctionBlock from './DomainFunctionBlock.svelte';
-  import { getDragHeight } from './dragState.js';
+  import { getDragHeight, getDragItem, removeSource, clearDragItem, flush } from './dragState.js';
 
   let { yaml = [] } = $props();
 
@@ -37,7 +37,14 @@
 
   function handleDrop(e) {
     e.preventDefault();
+    const item = getDragItem();
+    if (item && dropIndex >= 0) {
+      removeSource();
+      yaml.splice(dropIndex, 0, item);
+      flush();
+    }
     dropIndex = -1;
+    clearDragItem();
   }
 </script>
 
@@ -46,6 +53,7 @@
   <div
     class="list"
     bind:this={listEl}
+    ondragenter={(e) => e.preventDefault()}
     ondragover={handleDragOver}
     ondragleave={handleDragLeave}
     ondrop={handleDrop}
@@ -54,7 +62,7 @@
       {#if dropIndex === i}
         <div class="drop-placeholder" style="height: {dragHeight}px"></div>
       {/if}
-      <DomainFunctionBlock yaml={item} />
+      <DomainFunctionBlock yaml={item} onremove={() => { yaml.splice(i, 1); }} />
     {/each}
     {#if dropIndex === items.length}
       <div class="drop-placeholder" style="height: {dragHeight}px"></div>

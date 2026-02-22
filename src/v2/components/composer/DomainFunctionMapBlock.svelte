@@ -14,7 +14,7 @@
     {#each entries as [key, value] (key)}
       <div class="map-entry">
         <span class="map-key">{key}</span>
-        <DomainFunctionBlock yaml={value} />
+        <DomainFunctionBlock yaml={value} onremove={() => { delete yaml[key]; }} />
       </div>
     {/each}
   </div>
