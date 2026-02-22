@@ -1,7 +1,7 @@
 <script>
   import YamlEditor from './YamlEditor.svelte';
 
-  let { yamlText = '' } = $props();
+  let { yamlText = '', style = '' } = $props();
 
   let collapsed = $state(false);
   let copyLabel = $state('Copy');
@@ -14,7 +14,7 @@
   }
 </script>
 
-<div class="yaml-screen" class:collapsed>
+<div class="yaml-screen" class:collapsed {style}>
   <div class="header">
     <button class="collapse-btn" onclick={() => (collapsed = !collapsed)}>
       <span class="arrow">{collapsed ? '▶' : '▼'}</span>

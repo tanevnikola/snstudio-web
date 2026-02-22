@@ -82,9 +82,7 @@
       </div>
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <div class="resize-handle horizontal" class:active={resizingYaml} onmousedown={startResizeYaml} role="separator" aria-label="Resize YAML panel"></div>
-      <div class="yaml-section" style={yamlHeight ? `flex: 0 0 ${yamlHeight}px` : ''}>
-        <YamlContainer yamlText={yaml} />
-      </div>
+      <YamlContainer yamlText={yaml} style={yamlHeight ? `flex: 0 0 ${yamlHeight}px` : ''} />
     </div>
     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <div class="resize-handle vertical" class:active={resizingRight} onmousedown={startResizeRight} role="separator" aria-label="Resize properties"></div>
@@ -144,13 +142,6 @@
   .composer {
     flex: 2;
     overflow-y: auto;
-    min-height: 0;
-  }
-
-  .yaml-section {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
     min-height: 0;
   }
 

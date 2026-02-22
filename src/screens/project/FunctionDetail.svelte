@@ -1,6 +1,6 @@
 <script>
   import { renameFunction, removeFunction, getFunctionYaml, updateFunctionYaml, getAllFunctions, getAllDirectories, moveFunction, getParentDirId } from '../../lib/projectStore.svelte.js';
-  import FunctionBuilder from '../function-builder/FunctionBuilder.svelte';
+  import FunctionBuilderScreen from '../../v2/screens/FunctionBuilderScreen.svelte';
   import ConfirmDialog from '../../lib/components/ConfirmDialog.svelte';
 
   let { functionId } = $props();
@@ -47,7 +47,7 @@
       <span class="section-label">Function Builder</span>
       <div class="fb-container">
         {#key functionId}
-          <FunctionBuilder initialYaml={yaml} {onYamlChange} functionName={fn.name} />
+          <FunctionBuilderScreen {yaml} />
         {/key}
       </div>
     </div>
