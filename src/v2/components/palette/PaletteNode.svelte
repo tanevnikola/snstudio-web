@@ -100,6 +100,7 @@
         onmouseenter={onIconEnter}
         onmouseleave={onIconLeave}
         onclick={onIconClick}
+        onkeydown={onIconClick}
         ondragstart={(e) => e.stopPropagation()}
         draggable="false"
       >i</span>
