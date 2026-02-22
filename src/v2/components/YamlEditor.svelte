@@ -4,15 +4,49 @@
 
   hljs.registerLanguage('yaml', yamlLang);
 
-  let { yamlText = '' } = $props();
+  let { yamlText = '', onchange = () => {} } = $props();
+
+  let editText = $state(yamlText);
+  let textareaEl;
+
+  $effect(() => {
+    editText = yamlText;
+  });
 
   let highlighted = $derived(
-    yamlText ? hljs.highlight(yamlText, { language: 'yaml' }).value : ''
+    editText ? hljs.highlight(editText, { language: 'yaml' }).value : ''
   );
+
+  function onInput(e) {
+    editText = e.target.value;
+    onchange(editText);
+  }
+
+  function onKeydown(e) {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const ta = e.target;
+      const start = ta.selectionStart;
+      const end = ta.selectionEnd;
+      ta.value = ta.value.substring(0, start) + '  ' + ta.value.substring(end);
+      ta.selectionStart = ta.selectionEnd = start + 2;
+      editText = ta.value;
+      onchange(editText);
+    }
+  }
 </script>
 
 <div class="yaml-editor">
   <pre class="yaml-highlight" aria-hidden="true"><code>{@html highlighted}&nbsp;</code></pre>
+  <textarea
+    class="yaml-input"
+    value={editText}
+    oninput={onInput}
+    onkeydown={onKeydown}
+    spellcheck="false"
+    autocomplete="off"
+    bind:this={textareaEl}
+  ></textarea>
 </div>
 
 <style>
@@ -22,6 +56,7 @@
     overflow: auto;
     background: #1e1e2e;
     padding: 0.75rem;
+    position: relative;
   }
 
   .yaml-highlight {
@@ -32,11 +67,38 @@
     tab-size: 2;
     white-space: pre;
     color: #cdd6f4;
+    pointer-events: none;
   }
 
   .yaml-highlight :global(code) {
     font: inherit;
     color: inherit;
+  }
+
+  .yaml-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0.75rem;
+    margin: 0;
+    border: none;
+    outline: none;
+    resize: none;
+    background: transparent;
+    color: transparent;
+    caret-color: #cdd6f4;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    tab-size: 2;
+    white-space: pre;
+    overflow: hidden;
+  }
+
+  .yaml-input::selection {
+    background: rgba(137, 180, 250, 0.3);
   }
 
   /* Catppuccin Mocha syntax colors */

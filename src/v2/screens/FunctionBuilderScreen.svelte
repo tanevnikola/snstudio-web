@@ -1,10 +1,12 @@
 <script>
   import ComponentsPalette from '../components/palette/ComponentsPalette.svelte';
-  import FunctionComposer from '../components/FunctionComposer.svelte';
+  import FunctionComposer from '../components/composer/FunctionComposer.svelte';
   import TaskProperty from '../components/property/TaskProperty.svelte';
   import YamlContainer from '../components/YamlContainer.svelte';
 
   let { yaml = '' } = $props();
+
+  let composerYaml = $state(yaml);
 
   let paletteWidth = $state(260);
   let propsWidth = $state(Math.floor(window.innerWidth / 4));
@@ -78,11 +80,11 @@
     <div class="resize-handle vertical" class:active={resizingLeft} onmousedown={startResizeLeft} role="separator" aria-label="Resize palette"></div>
     <div class="center-column">
       <div class="composer">
-        <FunctionComposer />
+        <FunctionComposer yaml={composerYaml} />
       </div>
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <div class="resize-handle horizontal" class:active={resizingYaml} onmousedown={startResizeYaml} role="separator" aria-label="Resize YAML panel"></div>
-      <YamlContainer yamlText={yaml} style={yamlHeight ? `flex: 0 0 ${yamlHeight}px` : ''} />
+      <YamlContainer yamlText={yaml} style={yamlHeight ? `flex: 0 0 ${yamlHeight}px` : ''} onchange={(text) => { composerYaml = text; }} />
     </div>
     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <div class="resize-handle vertical" class:active={resizingRight} onmousedown={startResizeRight} role="separator" aria-label="Resize properties"></div>

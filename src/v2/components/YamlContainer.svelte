@@ -1,7 +1,7 @@
 <script>
   import YamlEditor from './YamlEditor.svelte';
 
-  let { yamlText = '', style = '' } = $props();
+  let { yamlText = '', style = '', onchange = () => {} } = $props();
 
   let collapsed = $state(false);
   let copyLabel = $state('Copy');
@@ -25,7 +25,7 @@
     </span>
   </div>
   {#if !collapsed}
-    <YamlEditor {yamlText} />
+    <YamlEditor {yamlText} {onchange} />
   {/if}
 </div>
 

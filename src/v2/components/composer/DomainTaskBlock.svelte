@@ -1,5 +1,5 @@
 <script>
-  import ConfirmDeleteButton from './ConfirmDeleteButton.svelte';
+  import ConfirmDeleteButton from '../ConfirmDeleteButton.svelte';
 
   let { title = '', detail = '', ondelete = () => {} } = $props();
 </script>
