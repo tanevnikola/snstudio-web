@@ -9,6 +9,7 @@
 
   let mnemonic = $derived(yaml?.t ?? '');
   let mnemonicSpec = $state(null);
+  let collapsed = $state(false);
 
   $effect(() => {
     const m = mnemonic;
@@ -35,29 +36,56 @@
   }
 </script>
 
-<div class="block">
-  <div class="delete">
-    <ConfirmDeleteButton onclick={ondelete} />
-  </div>
-  <div class="info">
-    <span class="title">{mnemonic}</span>
-    {#if detail}
-      <span class="detail">{detail}</span>
+<div class="task" class:has-children={domainFunctionParams.length > 0} class:collapsed>
+  <div class="header">
+    {#if domainFunctionParams.length > 0}
+      <button class="collapse-btn" onclick={() => collapsed = !collapsed}>
+        <span class="chevron">&#9662;</span>
+      </button>
     {/if}
+    <div class="block">
+      <div class="delete">
+      <ConfirmDeleteButton onclick={ondelete} />
+    </div>
+    <div class="info">
+      <span class="title">{mnemonic}</span>
+      {#if detail}
+        <span class="detail">{detail}</span>
+      {/if}
+    </div>
+    </div>
   </div>
+
+  {#if !collapsed}
+    {#each domainFunctionParams as param (param.name)}
+      <div class="children" class:named={param.name !== '@delegating@'}>
+        {#if param.name !== '@delegating@'}
+          <span class="param-label">{param.name}</span>
+        {/if}
+        <div class="children-content">
+          {#if param.injectionStrategy === 'DIRECT'}
+            <DomainFunctionBlock yaml={getParamYaml(param)} />
+          {:else if param.injectionStrategy === 'MAP'}
+            <DomainFunctionMapBlock yaml={getParamYaml(param)} />
+          {:else if param.injectionStrategy === 'COLLECTION'}
+            <DomainFunctionListBlock yaml={getParamYaml(param)} />
+          {/if}
+        </div>
+      </div>
+    {/each}
+  {/if}
 </div>
 
-{#each domainFunctionParams as param (param.name)}
-  {#if param.injectionStrategy === 'DIRECT'}
-    <DomainFunctionBlock yaml={getParamYaml(param)} />
-  {:else if param.injectionStrategy === 'MAP'}
-    <DomainFunctionMapBlock yaml={getParamYaml(param)} />
-  {:else if param.injectionStrategy === 'COLLECTION'}
-    <DomainFunctionListBlock yaml={getParamYaml(param)} />
-  {/if}
-{/each}
-
 <style>
+  .task {
+    position: relative;
+  }
+
+  .header {
+    display: flex;
+    align-items: stretch;
+  }
+
   .block {
     display: flex;
     align-items: stretch;
@@ -65,6 +93,35 @@
     border: 1px solid #e0e0e0;
     border-radius: 6px;
     overflow: hidden;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .collapse-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    flex-shrink: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    color: #999;
+    font-size: 0.7rem;
+  }
+
+  .collapse-btn:hover {
+    color: #555;
+  }
+
+  .chevron {
+    display: inline-block;
+    transition: transform 0.15s ease;
+  }
+
+  .task.collapsed .chevron {
+    transform: rotate(-90deg);
   }
 
   .delete {
@@ -101,5 +158,50 @@
     border-radius: 4px;
     white-space: nowrap;
     flex-shrink: 0;
+  }
+
+  .task.has-children::after {
+    content: '';
+    position: absolute;
+    left: 0.7rem;
+    top: 100%;
+    height: 0;
+    width: 2px;
+    background: #d0d0d0;
+    border-radius: 1px;
+  }
+
+  .task.has-children:not(.collapsed)::after {
+    top: 2rem;
+    bottom: 0;
+    height: auto;
+  }
+
+  .children {
+    margin-top: 0.25rem;
+    margin-left: 2rem;
+  }
+
+  .children.named + .children {
+    margin-top: 0.5rem;
+  }
+
+  .children.named {
+    margin-top: 0.6rem;
+    position: relative;
+    border: 1px dashed #ccc;
+    border-radius: 6px;
+    padding: 0.5rem;
+  }
+
+  .param-label {
+    position: absolute;
+    top: -0.55rem;
+    left: 0.5rem;
+    background: white;
+    padding: 0 0.3rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #888;
   }
 </style>
