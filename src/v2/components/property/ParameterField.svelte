@@ -1,5 +1,5 @@
 <script>
-  import { getSpecSync } from '../../lib/specApi.js';
+  import { getSpecSync } from '../../../lib/specApi.js';
   import StringValue from './value/primitive/StringValue.svelte';
   import NumberValue from './value/primitive/NumberValue.svelte';
   import BooleanValue from './value/primitive/BooleanValue.svelte';
@@ -7,7 +7,7 @@
   import MnemonicValue from './value/MnemonicValue.svelte';
   import MapValue from './value/MapValue.svelte';
   import CollectionValue from './value/CollectionValue.svelte';
-  import DocsPopover from '../../lib/components/DocsPopover.svelte';
+  import DocsPopover from '../../../lib/components/DocsPopover.svelte';
 
   let { parameterSpec } = $props();
 

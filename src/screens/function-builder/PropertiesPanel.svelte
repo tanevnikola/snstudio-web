@@ -14,7 +14,7 @@
   import ParamField from '../../lib/components/ParamField.svelte';
   import MnemonicField from '../../lib/components/MnemonicField.svelte';
   import DocsPopover from '../../lib/components/DocsPopover.svelte';
-  import ParameterField from '../../v2/components/ParameterField.svelte';
+  import ParameterField from '../../v2/components/property/ParameterField.svelte';
 
   let { nodeId, onchange } = $props();
 
