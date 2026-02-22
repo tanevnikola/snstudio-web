@@ -81,6 +81,23 @@ export function isMnemonicType(param) {
 }
 
 /**
+ * Check if a mnemonic implements (directly or transitively) a given stereotype.
+ * Walks up the implementsStereotype chain until found or exhausted.
+ * @param {string} mnemonic
+ * @param {string} implementsMnemonic
+ * @returns {Promise<boolean>}
+ */
+export async function isImplementing(mnemonic, implementsMnemonic) {
+  const spec = await fetchSpec(mnemonic);
+  if (!spec) return false;
+  if (spec.implementsStereotype === implementsMnemonic) return true;
+  if (spec.implementsStereotype) {
+    return isImplementing(spec.implementsStereotype, implementsMnemonic);
+  }
+  return false;
+}
+
+/**
  * Recursively collect all non-ABSTRACT implementations of a mnemonic.
  * Uses the sync cache — call after loading screen has warmed specs.
  * @param {string} mnemonic

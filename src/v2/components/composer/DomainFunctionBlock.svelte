@@ -3,9 +3,9 @@
 
   let { yaml = {} } = $props();
 
-  let v = $derived(yaml?.v ?? {});
-  let hasTask = $derived('task' in v);
-  let hasTasks = $derived('tasks' in v);
+  let v = $derived(yaml?.v ?? yaml ?? {});
+  let hasTask = $derived(v != null && typeof v === 'object' && 'task' in v);
+  let hasTasks = $derived(v != null && typeof v === 'object' && 'tasks' in v);
   let valid = $derived((hasTask || hasTasks) && !(hasTask && hasTasks));
 
   let taskYaml = $derived.by(() => {

@@ -27,12 +27,12 @@
 
   .close {
     color: #888;
-    background: #f0f0f0;
+    background: transparent;
   }
 
   .close:hover {
     color: #666;
-    background: #e4e4e4;
+    background: rgba(0, 0, 0, 0.05);
   }
 
   .check {
