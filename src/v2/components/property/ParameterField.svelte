@@ -20,6 +20,8 @@
   const NUMBER_TYPES = ['Integer', 'int', 'Long', 'long', 'Double', 'double', 'Float', 'float', 'Byte', 'byte', 'Short', 'short'];
 
   let mnemonic = $derived(parameterSpec?.mnemonic ?? null);
+  let canInject = $derived(parameterSpec?.eager === false && parameterSpec?.injectionPoint === true);
+  let injecting = $state(false);
 
   let isPrimitive = $derived(
     PRIMITIVE_MNEMONICS.includes(mnemonic) || getSpecSync(mnemonic)?.category === 'ENUM'
@@ -48,6 +50,11 @@
   </label>
 
   <div class="value">
+    {#if canInject}
+      <button class="inject-toggle" class:active={injecting} onclick={() => (injecting = !injecting)} title="Use resource injector">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+      </button>
+    {/if}
     {#if parameterSpec.injectionStrategy === 'MAP'}
       <MapField yaml={yaml.v} parameterSpec={parameterSpec} />
     {:else if parameterSpec.injectionStrategy === 'COLLECTION'}
@@ -91,5 +98,29 @@
   .value > :global(*) {
     flex: 1;
     min-width: 0;
+  }
+  .inject-toggle {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #f5f5f5;
+    color: #999;
+    cursor: pointer;
+    margin-right: 4px;
+  }
+  .inject-toggle:hover {
+    color: #666;
+    border-color: #999;
+  }
+  .inject-toggle.active {
+    background: #fff3e0;
+    border-color: #ff9800;
+    color: #ff9800;
   }
 </style>
