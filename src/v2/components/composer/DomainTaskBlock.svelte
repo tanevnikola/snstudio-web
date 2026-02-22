@@ -4,8 +4,18 @@
   import DomainFunctionMapBlock from './DomainFunctionMapBlock.svelte';
   import DomainFunctionListBlock from './DomainFunctionListBlock.svelte';
   import { fetchSpec } from '../../../lib/specApi.js';
+  import { setDragHeight } from './dragState.js';
 
-  let { yaml = {}, detail = '', ondelete = () => {} } = $props();
+  let { yaml = {}, detail = '', ondelete = () => {}, ondragstart = (/** @type {DragEvent} */ _e) => {}, ondragend = (/** @type {DragEvent} */ _e) => {} } = $props();
+
+  let taskEl;
+
+  function handleDragStart(e) {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setDragImage(taskEl, 0, 0);
+    setDragHeight(taskEl.offsetHeight);
+    ondragstart(e);
+  }
 
   let mnemonic = $derived(yaml?.t ?? '');
   let mnemonicSpec = $state(null);
@@ -36,8 +46,19 @@
   }
 </script>
 
-<div class="task" class:has-children={domainFunctionParams.length > 0} class:collapsed>
-  <div class="header">
+<div
+  class="task"
+  class:has-children={domainFunctionParams.length > 0}
+  class:collapsed
+>
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
+    class="header"
+    draggable="true"
+    ondragstart={handleDragStart}
+    ondragend={(e) => ondragend(e)}
+    bind:this={taskEl}
+  >
     {#if domainFunctionParams.length > 0}
       <button class="collapse-btn" onclick={() => collapsed = !collapsed}>
         <span class="chevron">&#9662;</span>
