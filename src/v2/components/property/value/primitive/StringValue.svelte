@@ -3,6 +3,10 @@
   let parameterName = $derived(parameterSpec?.name ?? null);
   let value = $derived(yaml?.[parameterName] ?? '');
   let multiline = $state(false);
+
+  $effect(() => {
+    console.log("yaml", yaml, "name", parameterSpec.name);
+  });
 </script>
 
 <div class="string-value">

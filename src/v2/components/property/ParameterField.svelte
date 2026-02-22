@@ -1,5 +1,5 @@
 <script>
-  import { fetchSpec, getSpecSync } from '../../../lib/specApi.js';
+  import { getSpecSync } from '../../../lib/specApi.js';
   import StringValue from './value/primitive/StringValue.svelte';
   import NumberValue from './value/primitive/NumberValue.svelte';
   import BooleanValue from './value/primitive/BooleanValue.svelte';
@@ -8,20 +8,7 @@
   import MapField from './MapField.svelte';
   import CollectionField from './CollectionField.svelte';
 
-  let { yaml, parameterSpec} = $props();
-
-  let mnemonic = $derived(parameterSpec?.mnemonic ?? null);
-  let mnemonicSpec = $state(null);
-
-  $effect(() => {
-    const m = mnemonic;
-    if (!m) { mnemonicSpec = null; return; }
-    fetchSpec(m).then(s => {
-      if (mnemonic === m) mnemonicSpec = s;
-    }).catch(() => {
-      if (mnemonic === m) mnemonicSpec = null;
-    });
-  });
+  let { yaml, parameterSpec } = $props();
 
   const PRIMITIVE_MNEMONICS = [
     'String', 'Boolean', 'boolean', 'Integer', 'int', 'Long', 'long',
@@ -31,61 +18,43 @@
   const BOOLEAN_TYPES = ['Boolean', 'boolean'];
   const NUMBER_TYPES = ['Integer', 'int', 'Long', 'long', 'Double', 'double', 'Float', 'float', 'Byte', 'byte', 'Short', 'short'];
 
-  let params = $derived.by(() => {
-    if (!parameterSpec?.parameters) return [];
-    return Object.entries(parameterSpec.parameters)
-      .filter(([, p]) => p.mnemonic !== 'DomainFunction')
-      .sort(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0))
-      .map(([name, p]) => ({ name, ...p }));
-  });
+  let mnemonic = $derived(parameterSpec?.mnemonic ?? null);
 
-  function isPrimitive(param) {
-    return PRIMITIVE_MNEMONICS.includes(param.mnemonic) || getSpecSync(param.mnemonic)?.category === 'ENUM';
-  }
+  let isPrimitive = $derived(
+    PRIMITIVE_MNEMONICS.includes(mnemonic) || getSpecSync(mnemonic)?.category === 'ENUM'
+  );
 
-  function isEnum(param) {
-    return getSpecSync(param.mnemonic)?.category === 'ENUM';
-  }
+  let isEnum = $derived(getSpecSync(mnemonic)?.category === 'ENUM');
 
-  function getEnumValues(param) {
-    return getSpecSync(param.mnemonic)?.constraints?.values ?? [];
-  }
-
-  $effect(() => {
-    console.log("yaml", yaml, "mnemonic", mnemonic, "name", parameterSpec.name);
-  });
+  let enumValues = $derived(getSpecSync(mnemonic)?.constraints?.values ?? []);
 </script>
 
-{#if mnemonicSpec && params.length > 0}
-  {#each params as param (param.name)}
-    <div class="field">
-      <label class="label">
-        {param.name}
-        {#if param.required}<span class="required">*</span>{/if}
-      </label>
-      
-      <div class="value">
-        {#if param.injectionStrategy === 'MAP'}
-          <MapField yaml={yaml.v} parameterSpec={param} />
-        {:else if param.injectionStrategy === 'COLLECTION'}
-          <CollectionField yaml={yaml.v} parameterSpec={param} />
-        {:else if isPrimitive(param)}
-          {#if isEnum(param)}
-            <EnumValue yaml={yaml.v} options={getEnumValues(param)} parameterSpec={param} />
-          {:else if BOOLEAN_TYPES.includes(param.mnemonic)}
-            <BooleanValue yaml={yaml.v} parameterSpec={param} />
-          {:else if NUMBER_TYPES.includes(param.mnemonic)}
-            <NumberValue yaml={yaml.v} parameterSpec={param} />
-          {:else}
-            <StringValue yaml={yaml.v} parameterSpec={param} />
-          {/if}
-        {:else}
-          <MnemonicValue yaml={yaml.v} parameterSpec={param} />
-        {/if}
-      </div>
-    </div>
-  {/each}
-{/if}
+<div class="field">
+  <label class="label">
+    {parameterSpec.name}
+    {#if parameterSpec.required}<span class="required">*</span>{/if}
+  </label>
+
+  <div class="value">
+    {#if parameterSpec.injectionStrategy === 'MAP'}
+      <MapField yaml={yaml.v} parameterSpec={parameterSpec} />
+    {:else if parameterSpec.injectionStrategy === 'COLLECTION'}
+      <CollectionField yaml={yaml.v} parameterSpec={parameterSpec} />
+    {:else if isPrimitive}
+      {#if isEnum}
+        <EnumValue yaml={yaml.v} options={enumValues} parameterSpec={parameterSpec} />
+      {:else if BOOLEAN_TYPES.includes(mnemonic)}
+        <BooleanValue yaml={yaml.v} parameterSpec={parameterSpec} />
+      {:else if NUMBER_TYPES.includes(mnemonic)}
+        <NumberValue yaml={yaml.v} parameterSpec={parameterSpec} />
+      {:else}
+        <StringValue yaml={yaml.v} parameterSpec={parameterSpec} />
+      {/if}
+    {:else}
+      <MnemonicValue yaml={yaml.v} parameterSpec={parameterSpec} />
+    {/if}
+  </div>
+</div>
 
 <style>
   .field {
