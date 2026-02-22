@@ -9,10 +9,14 @@
   let dragHeight = $state(0);
   let listEl;
 
+  function isPaletteDrag(e) {
+    return !getDragItem() && e.dataTransfer.types.includes('text/plain');
+  }
+
   function handleDragOver(e) {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    dragHeight = getDragHeight();
+    e.dataTransfer.dropEffect = getDragItem() ? 'move' : 'copy';
+    dragHeight = getDragItem() ? getDragHeight() : 32;
 
     const children = [...listEl.children].filter(el => !el.classList.contains('drop-placeholder'));
     if (children.length === 0) { dropIndex = 0; return; }
@@ -42,39 +46,45 @@
       removeSource();
       yaml.splice(dropIndex, 0, item);
       flush();
+    } else if (!item && dropIndex >= 0) {
+      const mnemonic = e.dataTransfer.getData('text/plain');
+      if (mnemonic) {
+        const newItem = { v: { task: { t: mnemonic, v: {} } } };
+        yaml.splice(dropIndex, 0, newItem);
+        flush();
+      }
     }
     dropIndex = -1;
     clearDragItem();
   }
 </script>
 
-{#if items.length > 0}
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div
-    class="list"
-    bind:this={listEl}
-    ondragenter={(e) => e.preventDefault()}
-    ondragover={handleDragOver}
-    ondragleave={handleDragLeave}
-    ondrop={handleDrop}
-  >
-    {#each items as item, i (i)}
-      {#if dropIndex === i}
-        <div class="drop-placeholder" style="height: {dragHeight}px"></div>
-      {/if}
-      <DomainFunctionBlock yaml={item} onremove={() => { yaml.splice(i, 1); }} />
-    {/each}
-    {#if dropIndex === items.length}
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div
+  class="list"
+  bind:this={listEl}
+  ondragenter={(e) => e.preventDefault()}
+  ondragover={handleDragOver}
+  ondragleave={handleDragLeave}
+  ondrop={handleDrop}
+>
+  {#each items as item, i (i)}
+    {#if dropIndex === i}
       <div class="drop-placeholder" style="height: {dragHeight}px"></div>
     {/if}
-  </div>
-{/if}
+    <DomainFunctionBlock yaml={item} onremove={() => { yaml.splice(i, 1); }} />
+  {/each}
+  {#if dropIndex === items.length}
+    <div class="drop-placeholder" style="height: {dragHeight}px"></div>
+  {/if}
+</div>
 
 <style>
   .list {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    min-height: 0.5rem;
   }
 
   .drop-placeholder {

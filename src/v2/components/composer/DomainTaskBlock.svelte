@@ -4,9 +4,9 @@
   import DomainFunctionMapBlock from './DomainFunctionMapBlock.svelte';
   import DomainFunctionListBlock from './DomainFunctionListBlock.svelte';
   import { fetchSpec } from '../../../lib/specApi.js';
-  import { setDragHeight, setDragItem, setRemoveSource, clearDragItem } from './dragState.js';
+  import { setDragHeight, setDragItem, setRemoveSource, clearDragItem, flush } from './dragState.js';
 
-  let { yaml = {}, detail = '', parent = null, onremove = () => {}, ondelete = () => {}, ondragstart = (/** @type {DragEvent} */ _e) => {}, ondragend = (/** @type {DragEvent} */ _e) => {} } = $props();
+  let { yaml = {}, detail = '', parent = null, onremove = () => {}, ondragstart = (/** @type {DragEvent} */ _e) => {}, ondragend = (/** @type {DragEvent} */ _e) => {} } = $props();
 
   let taskEl;
 
@@ -69,7 +69,7 @@
     {/if}
     <div class="block">
       <div class="delete">
-      <ConfirmDeleteButton onclick={ondelete} />
+      <ConfirmDeleteButton onclick={() => { onremove(); flush(); }} />
     </div>
     <div class="info">
       <span class="title">{mnemonic}</span>
