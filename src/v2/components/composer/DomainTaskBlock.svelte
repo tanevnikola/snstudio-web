@@ -1,7 +1,9 @@
 <script>
   import ConfirmDeleteButton from '../ConfirmDeleteButton.svelte';
 
-  let { title = '', detail = '', ondelete = () => {} } = $props();
+  let { yaml = {}, detail = '', ondelete = () => {} } = $props();
+
+  let title = $derived(yaml?.t ?? '');
 </script>
 
 <div class="block">
