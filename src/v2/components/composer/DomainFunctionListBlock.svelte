@@ -1,6 +1,7 @@
 <script>
   import DomainFunctionBlock from './DomainFunctionBlock.svelte';
   import { getDragHeight, getDragItem, removeSource, clearDragItem, flush } from './dragState.js';
+  import { getSpecSync, fetchSpec } from '../../../lib/specApi.js';
 
   let { yaml = [] } = $props();
 
@@ -49,9 +50,18 @@
     } else if (!item && dropIndex >= 0) {
       const mnemonic = e.dataTransfer.getData('text/plain');
       if (mnemonic) {
-        const newItem = { v: { task: { t: mnemonic, v: {} } } };
+        const spec = getSpecSync(mnemonic);
+        const isDelegatingCollection = spec?.parameters && (() => {
+          const params = Object.entries(spec.parameters);
+          return params.length === 1 && params[0][0] === '@delegating@' && params[0][1].injectionStrategy === 'COLLECTION';
+        })();
+        const taskV = isDelegatingCollection ? [] : {};
+        const newItem = { task: { t: mnemonic, v: taskV } };
         yaml.splice(dropIndex, 0, newItem);
         flush();
+        if (!spec) {
+          fetchSpec(mnemonic);
+        }
       }
     }
     dropIndex = -1;

@@ -17,6 +17,7 @@
 
   function handleDragStart(e) {
     e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('application/x-reorder', '');
     e.dataTransfer.setDragImage(taskEl, 0, 0);
     setDragHeight(taskEl.offsetHeight);
     setDragItem(parent ?? yaml);
@@ -56,6 +57,9 @@
     if (param.name === '@delegating@') {
       return yaml?.v;
     }
+    if (yaml?.v && param.injectionStrategy === 'COLLECTION' && !Array.isArray(yaml.v[param.name])) {
+      yaml.v[param.name] = [];
+    }
     return yaml?.v?.[param.name];
   }
 
@@ -72,11 +76,9 @@
     onclick={handleClick}
     bind:this={taskEl}
   >
-    {#if domainFunctionParams.length > 0}
-      <button class="collapse-btn" onclick={(e) => { e.stopPropagation(); collapsed = !collapsed; }}>
-        <span class="chevron">&#9662;</span>
-      </button>
-    {/if}
+    <button class="collapse-btn" class:hidden={domainFunctionParams.length === 0} onclick={(e) => { e.stopPropagation(); collapsed = !collapsed; }}>
+      <span class="chevron">&#9662;</span>
+    </button>
     <div class="block" style="border: 2px solid {selected ? '#4a90d9' : '#e0e0e0'}">
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
@@ -174,6 +176,10 @@
     padding: 0;
     color: #999;
     font-size: 0.7rem;
+  }
+
+  .collapse-btn.hidden {
+    visibility: hidden;
   }
 
   .collapse-btn:hover {

@@ -8,7 +8,6 @@
 
   let mnemonic = $derived(parameterSpec?.mnemonic ?? null);
   let parameterName = $derived(parameterSpec?.name ?? null);
-  let node = $derived(parameterName ? yaml?.[parameterName] : null);
 
   let mnemonicSpec = $state(null);
   let implementations = $derived(mnemonicSpec ? getConcreteImplementations(mnemonic) : []);
@@ -61,6 +60,7 @@
           .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
       : []
   );
+
 </script>
 
 <div class="mnemonic-value">
@@ -83,7 +83,7 @@
   {/if}
 
   {#each params as param (param.name)}
-    <ParameterField yaml={node} parameterSpec={param} />
+    <ParameterField yaml={yaml[param.name]} parameterSpec={param} />
   {/each}
 
   {#if selectedType}
