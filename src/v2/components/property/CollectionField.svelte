@@ -1,7 +1,7 @@
 <script>
   import ParameterField from '../ParameterField.svelte';
 
-  let { parameterSpec } = $props();
+  let { yaml = null, key = '', parameterSpec = null } = $props();
 
   let entrySpec = $derived({ ...parameterSpec, name: null, injectionStrategy: null });
   let entries = $state([]);

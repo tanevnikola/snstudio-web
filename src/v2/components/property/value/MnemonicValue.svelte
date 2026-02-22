@@ -4,7 +4,7 @@
   import DocsPopover from '../../../../lib/components/DocsPopover.svelte';
   import Self from './MnemonicValue.svelte';
 
-  let { mnemonic } = $props();
+  let { mnemonic, yaml = null, key = '', parameterSpec = null } = $props();
 
   let spec = $state(null);
   let implementations = $derived(spec ? getConcreteImplementations(mnemonic) : []);

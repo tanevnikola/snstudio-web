@@ -1,8 +1,9 @@
 <script>
-  let { value = '', onchange = () => {} } = $props();
+  let { yaml = null, key = '', parameterSpec = null } = $props();
+  let value = $derived(yaml?.v?.[key] ?? '');
 </script>
 
-<input type="text" value={value} oninput={(e) => onchange(/** @type {HTMLInputElement} */ (e.target).value)} />
+<input type="text" value={value} />
 
 <style>
   input {

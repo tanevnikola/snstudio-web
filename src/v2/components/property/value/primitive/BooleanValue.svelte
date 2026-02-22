@@ -1,8 +1,9 @@
 <script>
-  let { value = false, onchange = () => {} } = $props();
+  let { yaml = null, key = '', parameterSpec = null } = $props();
+  let value = $derived(yaml?.v?.[key] ?? false);
 </script>
 
-<input type="checkbox" checked={value} onchange={(e) => onchange(/** @type {HTMLInputElement} */ (e.target).checked)} />
+<input type="checkbox" checked={value} />
 
 <style>
   input[type="checkbox"] {
