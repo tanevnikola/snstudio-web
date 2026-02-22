@@ -5,8 +5,8 @@
   import BooleanValue from './value/primitive/BooleanValue.svelte';
   import EnumValue from './value/primitive/EnumValue.svelte';
   import MnemonicValue from './value/MnemonicValue.svelte';
-  import MapValue from './value/MapValue.svelte';
-  import CollectionValue from './value/CollectionValue.svelte';
+  import MapField from './MapField.svelte';
+  import CollectionField from './CollectionField.svelte';
   import DocsPopover from '../../../lib/components/DocsPopover.svelte';
 
   let { yaml = null } = $props();
@@ -100,9 +100,9 @@
 
   {#if !collapsed}
     {#if parameterSpec.injectionStrategy === 'MAP'}
-      <MapValue {parameterSpec} />
+      <MapField {parameterSpec} />
     {:else if parameterSpec.injectionStrategy === 'COLLECTION'}
-      <CollectionValue {parameterSpec} />
+      <CollectionField {parameterSpec} />
     {:else}
       <div class="body">
         {#if canBeInjected}

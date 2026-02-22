@@ -66,12 +66,10 @@
   class:has-children={domainFunctionParams.length > 0}
   class:collapsed
 >
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="header"
-    role="button"
-    tabindex="-1"
     onclick={handleClick}
-    onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleClick(e); }}
     bind:this={taskEl}
   >
     {#if domainFunctionParams.length > 0}
@@ -80,15 +78,13 @@
       </button>
     {/if}
     <div class="block" style="border: 2px solid {selected ? '#4a90d9' : '#e0e0e0'}">
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
         class="drag-handle"
-        role="button"
-        tabindex="-1"
         draggable="true"
         ondragstart={handleDragStart}
         ondragend={(e) => { clearDragItem(); ondragend(e); }}
         onclick={(e) => e.stopPropagation()}
-        onkeydown={(e) => e.stopPropagation()}
       >&#9783;</div>
       <div class="delete">
         <ConfirmDeleteButton onclick={() => { onremove(); flush(); }} />
