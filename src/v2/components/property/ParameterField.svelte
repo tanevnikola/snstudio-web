@@ -1,5 +1,5 @@
 <script>
-  import { getSpecSync } from '../../../lib/specApi.js';
+  import { fetchSpec } from '../../../lib/specApi.js';
   import StringValue from './value/primitive/StringValue.svelte';
   import NumberValue from './value/primitive/NumberValue.svelte';
   import BooleanValue from './value/primitive/BooleanValue.svelte';
@@ -9,7 +9,20 @@
   import CollectionValue from './value/CollectionValue.svelte';
   import DocsPopover from '../../../lib/components/DocsPopover.svelte';
 
-  let { parameterSpec } = $props();
+  let { yaml = null } = $props();
+
+  let mnemonic = $derived(yaml?.t ?? null);
+  let parameterSpec = $state(null);
+
+  $effect(() => {
+    const m = mnemonic;
+    if (!m) { parameterSpec = null; return; }
+    fetchSpec(m).then(spec => {
+      if (mnemonic === m) parameterSpec = spec;
+    }).catch(() => {
+      if (mnemonic === m) parameterSpec = null;
+    });
+  });
 
   const PRIMITIVE_MNEMONICS = [
     'String', 'Boolean', 'boolean', 'Integer', 'int', 'Long', 'long',
@@ -19,7 +32,7 @@
   const BOOLEAN_TYPES = ['Boolean', 'boolean'];
   const NUMBER_TYPES = ['Integer', 'int', 'Long', 'long', 'Double', 'double', 'Float', 'float', 'Byte', 'byte', 'Short', 'short'];
 
-  let spec = $derived(getSpecSync(parameterSpec.mnemonic));
+  let spec = $derived(parameterSpec);
   let isPrimitive = $derived(
     PRIMITIVE_MNEMONICS.includes(parameterSpec.mnemonic) || spec?.category === 'ENUM'
   );
