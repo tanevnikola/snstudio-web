@@ -1,5 +1,5 @@
 <script>
-  import { getSpecSync } from '../../../lib/specApi.js';
+  import { getSpecSync, getConcreteImplementations } from '../../../lib/specApi.js';
   import { markDirty } from '../composer/selectionState.svelte.js';
   import StringValue from './value/primitive/StringValue.svelte';
   import NumberValue from './value/primitive/NumberValue.svelte';
@@ -22,6 +22,7 @@
   let mnemonic = $derived(parameterSpec?.mnemonic ?? null);
   let canInject = $derived(parameterSpec?.eager === false && parameterSpec?.injectionPoint === true);
   let injecting = $state(false);
+  let injectorOptions = $derived(injecting ? getConcreteImplementations('ResourceInjector') : []);
 
   let isPrimitive = $derived(
     PRIMITIVE_MNEMONICS.includes(mnemonic) || getSpecSync(mnemonic)?.category === 'ENUM'
@@ -33,6 +34,16 @@
 
   function handlePrimitiveChange(newValue) {
     yaml.v[parameterSpec.name] = newValue;
+    markDirty();
+  }
+
+  function handleInjectorChange(e) {
+    const selected = e.target.value;
+    if (selected) {
+      yaml.v[parameterSpec.name] = { t: selected, v: {} };
+    } else {
+      delete yaml.v[parameterSpec.name];
+    }
     markDirty();
   }
 
@@ -50,27 +61,37 @@
   </label>
 
   <div class="value">
-    {#if canInject}
-      <button class="inject-toggle" class:active={injecting} onclick={() => (injecting = !injecting)} title="Use resource injector">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
-      </button>
-    {/if}
+
     {#if parameterSpec.injectionStrategy === 'MAP'}
       <MapField yaml={yaml.v} parameterSpec={parameterSpec} />
     {:else if parameterSpec.injectionStrategy === 'COLLECTION'}
       <CollectionField yaml={yaml.v} parameterSpec={parameterSpec} />
-    {:else if isPrimitive}
-      {#if isEnum}
-        <EnumValue value={yaml.v?.[parameterSpec.name] ?? ''} options={enumValues} onchange={handlePrimitiveChange} />
-      {:else if BOOLEAN_TYPES.includes(mnemonic)}
-        <BooleanValue value={yaml.v?.[parameterSpec.name] ?? false} onchange={handlePrimitiveChange} />
-      {:else if NUMBER_TYPES.includes(mnemonic)}
-        <NumberValue value={yaml.v?.[parameterSpec.name] ?? ''} onchange={handleNumberChange} />
-      {:else}
-        <StringValue value={yaml.v?.[parameterSpec.name] ?? ''} onchange={handlePrimitiveChange} />
-      {/if}
     {:else}
-      <MnemonicValue yaml={yaml.v?.[parameterSpec.name] ?? ''} parameterSpec={parameterSpec} />
+      {#if canInject}
+        <button class="inject-toggle" class:active={injecting} onclick={() => (injecting = !injecting)} title="Use resource injector">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+        </button>
+      {/if}
+      {#if injecting}
+        <select class="injector-select" onchange={handleInjectorChange} value={yaml.v?.[parameterSpec.name]?.t ?? ''}>
+          <option value="">— Select Injector —</option>
+          {#each injectorOptions as opt}
+            <option value={opt}>{opt}</option>
+          {/each}
+        </select>
+      {:else if isPrimitive}
+        {#if isEnum}
+          <EnumValue value={yaml.v?.[parameterSpec.name] ?? ''} options={enumValues} onchange={handlePrimitiveChange} />
+        {:else if BOOLEAN_TYPES.includes(mnemonic)}
+          <BooleanValue value={yaml.v?.[parameterSpec.name] ?? false} onchange={handlePrimitiveChange} />
+        {:else if NUMBER_TYPES.includes(mnemonic)}
+          <NumberValue value={yaml.v?.[parameterSpec.name] ?? ''} onchange={handleNumberChange} />
+        {:else}
+          <StringValue value={yaml.v?.[parameterSpec.name] ?? ''} onchange={handlePrimitiveChange} />
+        {/if}
+      {:else}
+        <MnemonicValue yaml={yaml.v?.[parameterSpec.name] ?? ''} parameterSpec={parameterSpec} />
+      {/if}
     {/if}
   </div>
 </div>
@@ -122,5 +143,18 @@
     background: #fff3e0;
     border-color: #ff9800;
     color: #ff9800;
+  }
+  .injector-select {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid #ff9800;
+    border-radius: 4px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background: #fff8e1;
+  }
+  .injector-select:focus {
+    outline: none;
+    border-color: #f57c00;
   }
 </style>
