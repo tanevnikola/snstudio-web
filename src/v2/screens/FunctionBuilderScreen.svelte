@@ -1,10 +1,14 @@
 <script>
+  import { setContext } from 'svelte';
   import ComponentsPalette from '../components/palette/ComponentsPalette.svelte';
   import FunctionComposer from '../components/composer/FunctionComposer.svelte';
   import TaskProperty from '../components/property/TaskProperty.svelte';
   import YamlContainer from '../components/YamlContainer.svelte';
 
   let { yaml = '' } = $props();
+
+  const selection = $state({ yaml: null });
+  setContext('selection', selection);
 
   let composerYaml = $state(yaml);
 

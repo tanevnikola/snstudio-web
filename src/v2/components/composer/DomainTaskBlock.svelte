@@ -3,12 +3,17 @@
   import DomainFunctionBlock from './DomainFunctionBlock.svelte';
   import DomainFunctionMapBlock from './DomainFunctionMapBlock.svelte';
   import DomainFunctionListBlock from './DomainFunctionListBlock.svelte';
+  import { getContext } from 'svelte';
   import { fetchSpec } from '../../../lib/specApi.js';
   import { setDragHeight, setDragItem, setRemoveSource, clearDragItem, flush } from './dragState.js';
+  import { select } from './selectionState.js';
+
+  const selection = getContext('selection');
 
   let { yaml = {}, detail = '', parent = null, onremove = () => {}, ondragstart = (/** @type {DragEvent} */ _e) => {}, ondragend = (/** @type {DragEvent} */ _e) => {} } = $props();
 
   let taskEl;
+  let selected = $state(false);
 
   function handleDragStart(e) {
     e.dataTransfer.effectAllowed = 'move';
@@ -17,6 +22,13 @@
     setDragItem(parent ?? yaml);
     setRemoveSource(onremove);
     ondragstart(e);
+  }
+
+  function handleClick(e) {
+    e.stopPropagation();
+    selected = true;
+    select(() => { selected = false; });
+    selection.yaml = yaml;
   }
 
   let mnemonic = $derived(yaml?.t ?? '');
@@ -57,26 +69,31 @@
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="header"
-    draggable="true"
-    ondragstart={handleDragStart}
-    ondragend={(e) => { clearDragItem(); ondragend(e); }}
+    onclick={handleClick}
     bind:this={taskEl}
   >
     {#if domainFunctionParams.length > 0}
-      <button class="collapse-btn" onclick={() => collapsed = !collapsed}>
+      <button class="collapse-btn" onclick={(e) => { e.stopPropagation(); collapsed = !collapsed; }}>
         <span class="chevron">&#9662;</span>
       </button>
     {/if}
-    <div class="block">
+    <div class="block" style="border: 2px solid {selected ? '#4a90d9' : '#e0e0e0'}">
+      <div
+        class="drag-handle"
+        draggable="true"
+        ondragstart={handleDragStart}
+        ondragend={(e) => { clearDragItem(); ondragend(e); }}
+        onclick={(e) => e.stopPropagation()}
+      >&#9783;</div>
       <div class="delete">
-      <ConfirmDeleteButton onclick={() => { onremove(); flush(); }} />
-    </div>
-    <div class="info">
-      <span class="title">{mnemonic}</span>
-      {#if detail}
-        <span class="detail">{detail}</span>
-      {/if}
-    </div>
+        <ConfirmDeleteButton onclick={() => { onremove(); flush(); }} />
+      </div>
+      <div class="info">
+        <span class="title">{mnemonic}</span>
+        {#if detail}
+          <span class="detail">{detail}</span>
+        {/if}
+      </div>
     </div>
   </div>
 
@@ -108,18 +125,41 @@
   .header {
     display: flex;
     align-items: stretch;
+    cursor: pointer;
+  }
+
+  .drag-handle {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    border-right: 1px solid #e0e0e0;
+    cursor: grab;
+    color: #bbb;
+    font-size: 0.85rem;
+    user-select: none;
+  }
+
+  .drag-handle:hover {
+    color: #777;
+    background: #f5f5f5;
+  }
+
+  .drag-handle:active {
+    cursor: grabbing;
   }
 
   .block {
     display: flex;
     align-items: stretch;
     background: white;
-    border: 1px solid #e0e0e0;
     border-radius: 6px;
     overflow: hidden;
     flex: 1;
     min-width: 0;
   }
+
 
   .collapse-btn {
     display: flex;
