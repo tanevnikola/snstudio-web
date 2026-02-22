@@ -1,7 +1,9 @@
 <script>
   import { getSpecSync } from '../../lib/specApi.js';
-  import PrimitiveField from './PrimitiveField.svelte';
-  import MnemonicField from './MnemonicField.svelte';
+  import StringValue from './value/primitive/StringValue.svelte';
+  import NumberValue from './value/primitive/NumberValue.svelte';
+  import BooleanValue from './value/primitive/BooleanValue.svelte';
+  import EnumValue from './value/primitive/EnumValue.svelte';
   import MnemonicValue from './value/MnemonicValue.svelte';
   import MapValue from './value/MapValue.svelte';
   import CollectionValue from './value/CollectionValue.svelte';
@@ -14,12 +16,15 @@
     'Double', 'double', 'Float', 'float', 'Character', 'char',
     'Byte', 'byte', 'Short', 'short',
   ];
+  const BOOLEAN_TYPES = ['Boolean', 'boolean'];
+  const NUMBER_TYPES = ['Integer', 'int', 'Long', 'long', 'Double', 'double', 'Float', 'float', 'Byte', 'byte', 'Short', 'short'];
 
-  let value = $state('');
   let spec = $derived(getSpecSync(parameterSpec.mnemonic));
   let isPrimitive = $derived(
     PRIMITIVE_MNEMONICS.includes(parameterSpec.mnemonic) || spec?.category === 'ENUM'
   );
+  let isEnum = $derived(spec?.category === 'ENUM');
+  let enumValues = $derived(spec?.constraints?.values ?? []);
   let canBeInjected = $derived(parameterSpec.injectionPoint && !parameterSpec.eager);
   let injecting = $state(false);
   let collapsed = $state(false);
@@ -98,9 +103,17 @@
         {#if injecting}
           <MnemonicValue mnemonic="ResourceInjector" />
         {:else if isPrimitive}
-          <PrimitiveField {parameterSpec} />
+          {#if isEnum}
+            <EnumValue options={enumValues} />
+          {:else if BOOLEAN_TYPES.includes(parameterSpec.mnemonic)}
+            <BooleanValue />
+          {:else if NUMBER_TYPES.includes(parameterSpec.mnemonic)}
+            <NumberValue />
+          {:else}
+            <StringValue />
+          {/if}
         {:else}
-          <MnemonicField {parameterSpec} />
+          <MnemonicValue mnemonic={parameterSpec.mnemonic} />
         {/if}
       </div>
     {/if}
