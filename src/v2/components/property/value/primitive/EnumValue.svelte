@@ -1,10 +1,8 @@
 <script>
-  let { yaml, options = [], parameterSpec } = $props();
-  let parameterName = $derived(parameterSpec?.name ?? null);
-  let value = $derived(yaml?.[parameterName] ?? '');
+  let { value = '', options = [], onchange = () => {} } = $props();
 </script>
 
-<select value={value} onchange={(e) => yaml[parameterName] = /** @type {HTMLSelectElement} */ (e.target).value}>
+<select value={value} onchange={(e) => onchange(/** @type {HTMLSelectElement} */ (e.target).value)}>
   <option value="">—</option>
   {#each options as opt}
     <option value={opt}>{opt}</option>

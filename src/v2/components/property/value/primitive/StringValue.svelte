@@ -1,7 +1,5 @@
 <script>
-  let { yaml, parameterSpec } = $props();
-  let parameterName = $derived(parameterSpec?.name ?? null);
-  let value = $derived(yaml?.[parameterName] ?? '');
+  let { value = '', onchange = () => {} } = $props();
   let multiline = $state(false);
 </script>
 
@@ -14,9 +12,9 @@
     </svg>
   </button>
   {#if multiline}
-    <textarea rows="4" value={value} oninput={(e) => yaml[parameterName] = /** @type {HTMLTextAreaElement} */ (e.target).value}></textarea>
+    <textarea rows="4" value={value} oninput={(e) => onchange(/** @type {HTMLTextAreaElement} */ (e.target).value)}></textarea>
   {:else}
-    <input type="text" value={value} oninput={(e) => yaml[parameterName] = /** @type {HTMLInputElement} */ (e.target).value} />
+    <input type="text" value={value} oninput={(e) => onchange(/** @type {HTMLInputElement} */ (e.target).value)} />
   {/if}
 </div>
 

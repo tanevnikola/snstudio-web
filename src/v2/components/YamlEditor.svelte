@@ -4,7 +4,7 @@
 
   hljs.registerLanguage('yaml', yamlLang);
 
-  let { yamlText = '', onchange = () => {} } = $props();
+  let { yamlText = '', readonly = true, onchange = () => {} } = $props();
 
   let editText = $state(yamlText);
   let textareaEl;
@@ -18,11 +18,13 @@
   );
 
   function onInput(e) {
+    if (readonly) return;
     editText = e.target.value;
     onchange(editText);
   }
 
   function onKeydown(e) {
+    if (readonly) return;
     if (e.key === 'Tab') {
       e.preventDefault();
       const ta = e.target;
@@ -41,11 +43,13 @@
     <pre class="yaml-highlight" aria-hidden="true"><code>{@html highlighted}&nbsp;</code></pre>
     <textarea
       class="yaml-input"
+      class:readonly
       value={editText}
       oninput={onInput}
       onkeydown={onKeydown}
       spellcheck="false"
       autocomplete="off"
+      readonly={readonly}
       bind:this={textareaEl}
     ></textarea>
   </div>
@@ -95,6 +99,11 @@
     color: transparent;
     caret-color: #cdd6f4;
     overflow: hidden;
+  }
+
+  .yaml-input.readonly {
+    caret-color: transparent;
+    cursor: default;
   }
 
   .yaml-input::selection {

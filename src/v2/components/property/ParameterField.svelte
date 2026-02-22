@@ -1,5 +1,6 @@
 <script>
   import { getSpecSync } from '../../../lib/specApi.js';
+  import { markDirty } from '../composer/selectionState.svelte.js';
   import StringValue from './value/primitive/StringValue.svelte';
   import NumberValue from './value/primitive/NumberValue.svelte';
   import BooleanValue from './value/primitive/BooleanValue.svelte';
@@ -27,6 +28,17 @@
   let isEnum = $derived(getSpecSync(mnemonic)?.category === 'ENUM');
 
   let enumValues = $derived(getSpecSync(mnemonic)?.constraints?.values ?? []);
+
+  function handlePrimitiveChange(newValue) {
+    yaml.v[parameterSpec.name] = newValue;
+    markDirty();
+  }
+
+  function handleNumberChange(newValue) {
+    const num = Number(newValue);
+    yaml.v[parameterSpec.name] = newValue === '' ? '' : isNaN(num) ? newValue : num;
+    markDirty();
+  }
 </script>
 
 <div class="field">
@@ -42,16 +54,16 @@
       <CollectionField yaml={yaml.v} parameterSpec={parameterSpec} />
     {:else if isPrimitive}
       {#if isEnum}
-        <EnumValue yaml={yaml.v} options={enumValues} parameterSpec={parameterSpec} />
+        <EnumValue value={yaml.v?.[parameterSpec.name] ?? ''} options={enumValues} onchange={handlePrimitiveChange} />
       {:else if BOOLEAN_TYPES.includes(mnemonic)}
-        <BooleanValue yaml={yaml.v} parameterSpec={parameterSpec} />
+        <BooleanValue value={yaml.v?.[parameterSpec.name] ?? false} onchange={handlePrimitiveChange} />
       {:else if NUMBER_TYPES.includes(mnemonic)}
-        <NumberValue yaml={yaml.v} parameterSpec={parameterSpec} />
+        <NumberValue value={yaml.v?.[parameterSpec.name] ?? ''} onchange={handleNumberChange} />
       {:else}
-        <StringValue yaml={yaml.v} parameterSpec={parameterSpec} />
+        <StringValue value={yaml.v?.[parameterSpec.name] ?? ''} onchange={handlePrimitiveChange} />
       {/if}
     {:else}
-      <MnemonicValue yaml={yaml.v} parameterSpec={parameterSpec} />
+      <MnemonicValue yaml={yaml.v?.[parameterSpec.name] ?? ''} parameterSpec={parameterSpec} />
     {/if}
   </div>
 </div>

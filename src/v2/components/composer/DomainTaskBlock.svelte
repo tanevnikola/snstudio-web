@@ -3,12 +3,9 @@
   import DomainFunctionBlock from './DomainFunctionBlock.svelte';
   import DomainFunctionMapBlock from './DomainFunctionMapBlock.svelte';
   import DomainFunctionListBlock from './DomainFunctionListBlock.svelte';
-  import { getContext } from 'svelte';
   import { fetchSpec } from '../../../lib/specApi.js';
   import { setDragHeight, setDragItem, setRemoveSource, clearDragItem, flush } from './dragState.js';
-  import { select } from './selectionState.js';
-
-  const selection = getContext('selection');
+  import { select, setSelectionYaml } from './selectionState.svelte.js';
 
   let { yaml = {}, detail = '', parent = null, onremove = () => {}, ondragstart = (/** @type {DragEvent} */ _e) => {}, ondragend = (/** @type {DragEvent} */ _e) => {} } = $props();
 
@@ -29,8 +26,15 @@
     e.stopPropagation();
     selected = true;
     select(() => { selected = false; });
-    selection.yaml = parent ?? yaml;
+    setSelectionYaml(parent ?? yaml);
   }
+
+  // Re-push fresh references into selection when props change after re-parse
+  $effect(() => {
+    if (selected) {
+      setSelectionYaml(parent ?? yaml);
+    }
+  });
 
   let mnemonic = $derived(yaml?.t ?? '');
   let mnemonicSpec = $state(null);

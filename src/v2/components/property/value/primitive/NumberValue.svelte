@@ -1,10 +1,8 @@
 <script>
-  let { yaml, parameterSpec } = $props();
-  let parameterName = $derived(parameterSpec?.name ?? null);
-  let value = $derived(yaml?.[parameterName] ?? '');
+  let { value = '', onchange = () => {} } = $props();
 </script>
 
-<input type="text" value={value} oninput={(e) => yaml[parameterName] = /** @type {HTMLInputElement} */ (e.target).value} />
+<input type="text" value={value} oninput={(e) => onchange(/** @type {HTMLInputElement} */ (e.target).value)} />
 
 <style>
   input {

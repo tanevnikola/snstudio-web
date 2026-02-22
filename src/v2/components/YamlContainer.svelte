@@ -1,9 +1,10 @@
 <script>
   import YamlEditor from './YamlEditor.svelte';
 
-  let { yamlText = '', style = '', onchange = () => {} } = $props();
+  let { yamlText = '', style = '', collapsed: initialCollapsed = false, canEdit = true, onchange = () => {} } = $props();
 
-  let collapsed = $state(false);
+  let collapsed = $state(initialCollapsed);
+  let readonlyMode = $state(true);
   let copyLabel = $state('Copy');
 
   function copyYaml() {
@@ -21,11 +22,14 @@
       <span class="title">YAML</span>
     </button>
     <span class="actions">
+      {#if canEdit}
+        <button class="edit-toggle" class:active={!readonlyMode} onclick={() => (readonlyMode = !readonlyMode)} title={readonlyMode ? 'Enable editing' : 'Disable editing'}>Edit</button>
+      {/if}
       <button class="copy-btn" onclick={copyYaml}>{copyLabel}</button>
     </span>
   </div>
   {#if !collapsed}
-    <YamlEditor {yamlText} {onchange} />
+    <YamlEditor {yamlText} readonly={readonlyMode} {onchange} />
   {/if}
 </div>
 
@@ -36,6 +40,7 @@
     background: #1e1e2e;
     flex: 1;
     min-height: 0;
+    overflow: auto;
   }
 
   .yaml-screen.collapsed {
@@ -104,5 +109,28 @@
   .copy-btn:hover {
     color: #cdd6f4;
     border-color: #6c7086;
+  }
+
+  .edit-toggle {
+    background: none;
+    border: 1px solid #45475a;
+    border-radius: 4px;
+    padding: 0.15rem 0.5rem;
+    font-size: 0.65rem;
+    color: #6c7086;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    font-family: inherit;
+  }
+
+  .edit-toggle:hover {
+    color: #cdd6f4;
+    border-color: #6c7086;
+  }
+
+  .edit-toggle.active {
+    color: #a6e3a1;
+    border-color: #a6e3a1;
+    background: rgba(166, 227, 161, 0.1);
   }
 </style>
