@@ -24,7 +24,7 @@ export function deselect() {
   _dirty = false;
 }
 
-/** Set the yaml reference of the selected task. Uses $state.raw to avoid deep proxying. */
+/** Set the yaml reference of the selected task. */
 export function setSelectionYaml(yaml) {
   _yaml = yaml;
   _dirty = false;

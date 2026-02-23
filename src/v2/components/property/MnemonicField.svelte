@@ -1,8 +1,8 @@
 <script>
-  import { getSpecSync, fetchSpec, getConcreteImplementations } from '../../../../lib/specApi.js';
-  import ParameterField from '../ParameterField.svelte';
-  import DocsPopover from '../../../../lib/components/DocsPopover.svelte';
-  import Self from './MnemonicValue.svelte';
+  import { getSpecSync, fetchSpec, getConcreteImplementations } from '../../../lib/specApi.js';
+  import ParameterField from './ParameterField.svelte';
+  import DocsPopover from '../../../lib/components/DocsPopover.svelte';
+  import Self from './MnemonicField.svelte';
 
   let { yaml, mnemonic } = $props();
 
@@ -59,7 +59,9 @@
   }
 
 
-
+  // $effect(() => {
+  //   console.log('[MnemonicValue] yaml:', yaml);
+  // });
 </script>
 
 <div class="mnemonic-value">
@@ -82,7 +84,7 @@
   {/if}
 
   {#each params as param (param.name)}
-    <ParameterField yaml={param.name === '@delegating@' ? yaml : yaml[param.name]} parameterSpec={param} />
+    <ParameterField yaml={yaml} parameterSpec={param} />
   {/each}
 
   {#if selectedType}

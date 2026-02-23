@@ -1,12 +1,12 @@
 <script>
   import { getSpecSync, isImplementingSync } from '../../../lib/specApi.js';
   import { markDirty } from '../composer/selectionState.svelte.js';
-  import StringValue from './value/primitive/StringValue.svelte';
-  import NumberValue from './value/primitive/NumberValue.svelte';
-  import BooleanValue from './value/primitive/BooleanValue.svelte';
-  import EnumValue from './value/primitive/EnumValue.svelte';
-  import InjectedValue from './value/InjectedValue.svelte';
-  import MnemonicValue from './value/MnemonicValue.svelte';
+  import StringValue from './value/StringValue.svelte';
+  import NumberValue from './value/NumberValue.svelte';
+  import BooleanValue from './value/BooleanValue.svelte';
+  import EnumValue from './value/EnumValue.svelte';
+  import InjectionField from './InjectionField.svelte';
+  import MnemonicField from './MnemonicField.svelte';
   import MapField from './MapField.svelte';
   import CollectionField from './CollectionField.svelte';
 
@@ -26,12 +26,12 @@
   let isDelegating = $derived(parameterSpec?.name === '@delegating@');
   let currentValue = $derived(isDelegating ? yaml?.v : yaml?.v?.[parameterSpec?.name]);
   let currentType = $derived(currentValue?.t ?? null);
-  let hasInjector = $derived(currentType ? isImplementingSync(currentType, 'ResourceInjector') : false);
+  let isInjectorSet = $derived(currentType ? isImplementingSync(currentType, 'ResourceInjector') : false);
 
   let injecting = $state(false);
 
   $effect(() => {
-    if (hasInjector) injecting = true;
+    if (isInjectorSet) injecting = true;
   });
 
   let isPrimitive = $derived(
@@ -56,6 +56,11 @@
     ensureV()[parameterSpec.name] = newValue === '' ? '' : isNaN(num) ? newValue : num;
     markDirty();
   }
+
+  function handleInjectorChange(newValue) {
+    ensureV()[parameterSpec.name] = newValue;
+    markDirty();
+  }
 </script>
 
 <div class="field">
@@ -67,9 +72,9 @@
   <div class="value">
 
     {#if parameterSpec.injectionStrategy === 'MAP'}
-      <MapField yaml={yaml.v} parameterSpec={parameterSpec} />
+      <MapField yaml={yaml?.v} parameterSpec={parameterSpec} />
     {:else if parameterSpec.injectionStrategy === 'COLLECTION'}
-      <CollectionField yaml={yaml.v} parameterSpec={parameterSpec} />
+      <CollectionField yaml={yaml?.v} parameterSpec={parameterSpec} />
     {:else}
       {#if canInject}
         <button class="inject-toggle" class:active={injecting} onclick={() => (injecting = !injecting)} title="Use resource injector">
@@ -78,19 +83,19 @@
       {/if}
 
       {#if injecting}
-        <InjectedValue {yaml} {parameterSpec} />
+        <InjectionField yaml={currentValue} onchange={handleInjectorChange} />
       {:else if isPrimitive}
         {#if isEnum}
-          <EnumValue value={yaml?.v?.[parameterSpec.name] ?? ''} options={enumValues} onchange={handlePrimitiveChange} />
+          <EnumValue value={currentValue} options={enumValues} onchange={handlePrimitiveChange} />
         {:else if BOOLEAN_TYPES.includes(mnemonic)}
-          <BooleanValue value={yaml?.v?.[parameterSpec.name] ?? false} onchange={handlePrimitiveChange} />
+          <BooleanValue value={currentValue} onchange={handlePrimitiveChange} />
         {:else if NUMBER_TYPES.includes(mnemonic)}
-          <NumberValue value={yaml?.v?.[parameterSpec.name] ?? ''} onchange={handleNumberChange} />
+          <NumberValue value={currentValue} onchange={handleNumberChange} />
         {:else}
-          <StringValue value={yaml?.v?.[parameterSpec.name] ?? ''} onchange={handlePrimitiveChange} />
+          <StringValue value={currentValue} onchange={handlePrimitiveChange} />
         {/if}
       {:else}
-        <MnemonicValue yaml={yaml?.v?.[parameterSpec.name] ?? ''} mnemonic={ parameterSpec.mnemonic } />
+        <MnemonicField yaml={currentValue} mnemonic={ parameterSpec.mnemonic } />
       {/if}
     {/if}
   </div>

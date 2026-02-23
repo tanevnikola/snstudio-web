@@ -1,30 +1,20 @@
 <script>
-  import { getConcreteImplementations, isImplementingSync } from '../../../../lib/specApi.js';
-  import { markDirty } from '../../composer/selectionState.svelte.js';
-  import MnemonicValue from './MnemonicValue.svelte';
+  import { getConcreteImplementations } from '../../../lib/specApi.js';
+  import MnemonicField from './MnemonicField.svelte';
 
-  let { yaml, parameterSpec } = $props();
+  let { yaml = null, onchange = () => {} } = $props();
 
-  let isDelegating = $derived(parameterSpec?.name === '@delegating@');
   let injectorOptions = $derived(getConcreteImplementations('ResourceInjector'));
-
-  let currentValue = $derived(isDelegating ? yaml?.v : yaml?.v?.[parameterSpec?.name]);
-  let currentType = $derived(currentValue?.t ?? null);
+  let currentType = $derived(yaml?.t ?? null);
 
   function handleChange(e) {
     const selected = e.target.value;
-    if (isDelegating) {
-      yaml.v = selected ? { t: selected, v: {} } : null;
-    } else {
-      if (!yaml.v) yaml.v = {};
-      if (selected) {
-        yaml.v[parameterSpec.name] = { t: selected, v: {} };
-      } else {
-        delete yaml.v[parameterSpec.name];
-      }
-    }
-    markDirty();
+    onchange(selected ? { t: selected, v: {} } : null);
   }
+
+  $effect(() => {
+    console.log('[InjectedValue] yaml:', yaml);
+  });
 </script>
 
 <div class="injected-value">
@@ -35,7 +25,9 @@
     {/each}
   </select>
   {#if currentType}
-    <MnemonicValue yaml={currentValue} mnemonic={currentType} />
+    {#key currentType}
+      <MnemonicField yaml={yaml} mnemonic={currentType} />
+    {/key}
   {/if}
 </div>
 
