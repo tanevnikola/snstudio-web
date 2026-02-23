@@ -4,10 +4,7 @@
   import DocsPopover from '../../../../lib/components/DocsPopover.svelte';
   import Self from './MnemonicValue.svelte';
 
-  let { yaml, parameterSpec } = $props();
-
-  let mnemonic = $derived(parameterSpec?.mnemonic ?? null);
-  let parameterName = $derived(parameterSpec?.name ?? null);
+  let { yaml, mnemonic } = $props();
 
   let mnemonicSpec = $state(null);
   let implementations = $derived(mnemonicSpec ? getConcreteImplementations(mnemonic) : []);
@@ -26,6 +23,13 @@
   let docsPinned = $state(false);
   let docsHoverTimer = null;
   let docsMnemonic = $derived(selectedType ?? mnemonic);
+
+  let params = $derived(
+    mnemonicSpec?.parameters
+      ? Object.values(mnemonicSpec.parameters)
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      : []
+  );
 
   function onDocsEnter() {
     clearTimeout(docsHoverTimer);
@@ -54,12 +58,7 @@
     clearTimeout(docsHoverTimer);
   }
 
-  let params = $derived(
-    mnemonicSpec?.parameters
-      ? Object.values(mnemonicSpec.parameters)
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-      : []
-  );
+
 
 </script>
 
@@ -83,12 +82,12 @@
   {/if}
 
   {#each params as param (param.name)}
-    <ParameterField yaml={yaml[param.name]} parameterSpec={param} />
+    <ParameterField yaml={param.name === '@delegating@' ? yaml : yaml[param.name]} parameterSpec={param} />
   {/each}
 
   {#if selectedType}
     {#key selectedType}
-      <Self yaml={node} parameterSpec={{ mnemonic: selectedType }} />
+      <Self yaml={{ t: selectedType, v: {} }} mnemonic={selectedType} />
     {/key}
   {/if}
 </div>

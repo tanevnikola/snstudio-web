@@ -6,21 +6,15 @@
 
   let { yamlText = '', readonly = true, onchange = () => {} } = $props();
 
-  let editText = $state(yamlText);
   let textareaEl;
 
-  $effect(() => {
-    editText = yamlText;
-  });
-
   let highlighted = $derived(
-    editText ? hljs.highlight(editText, { language: 'yaml' }).value : ''
+    yamlText ? hljs.highlight(yamlText, { language: 'yaml' }).value : ''
   );
 
   function onInput(e) {
     if (readonly) return;
-    editText = e.target.value;
-    onchange(editText);
+    onchange(e.target.value);
   }
 
   function onKeydown(e) {
@@ -32,8 +26,7 @@
       const end = ta.selectionEnd;
       ta.value = ta.value.substring(0, start) + '  ' + ta.value.substring(end);
       ta.selectionStart = ta.selectionEnd = start + 2;
-      editText = ta.value;
-      onchange(editText);
+      onchange(ta.value);
     }
   }
 </script>
@@ -44,7 +37,7 @@
     <textarea
       class="yaml-input"
       class:readonly
-      value={editText}
+      value={yamlText}
       oninput={onInput}
       onkeydown={onKeydown}
       spellcheck="false"
@@ -99,11 +92,6 @@
     color: transparent;
     caret-color: #cdd6f4;
     overflow: hidden;
-  }
-
-  .yaml-input.readonly {
-    caret-color: transparent;
-    cursor: default;
   }
 
   .yaml-input::selection {

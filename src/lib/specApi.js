@@ -6,7 +6,7 @@ export async function fetchSpec(mnemonic) {
   const res = await fetch(`/docs/autogen?target=${encodeURIComponent(mnemonic)}`);
   if (!res.ok) throw new Error(`Failed to fetch spec for "${mnemonic}": ${res.status}`);
   const data = await res.json();
-  if (!data.length) throw new Error(`No spec found for "${mnemonic}"`);
+  if (!data?.length) throw new Error(`No spec found for "${mnemonic}"`);
 
   // Cache all specs returned by the API (may include param type specs)
   for (const spec of data) {
@@ -93,6 +93,22 @@ export async function isImplementing(mnemonic, implementsMnemonic) {
   if (spec.implementsStereotype === implementsMnemonic) return true;
   if (spec.implementsStereotype) {
     return isImplementing(spec.implementsStereotype, implementsMnemonic);
+  }
+  return false;
+}
+
+/**
+ * Sync version of isImplementing. Uses cached specs only.
+ * @param {string} mnemonic
+ * @param {string} implementsMnemonic
+ * @returns {boolean}
+ */
+export function isImplementingSync(mnemonic, implementsMnemonic) {
+  const spec = getSpecSync(mnemonic);
+  if (!spec) return false;
+  if (spec.implementsStereotype === implementsMnemonic) return true;
+  if (spec.implementsStereotype) {
+    return isImplementingSync(spec.implementsStereotype, implementsMnemonic);
   }
   return false;
 }
