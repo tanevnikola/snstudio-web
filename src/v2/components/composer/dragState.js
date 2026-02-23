@@ -36,6 +36,26 @@ export function clearDragItem() {
   _removeSource = null;
 }
 
+/**
+ * Check if the dragged item is the container itself or a descendant of it.
+ * Used to prevent dropping an item into itself or its ancestors.
+ */
+export function isDragDescendant(containerYaml) {
+  if (!_dragItem) return false;
+  return containsRef(_dragItem, containerYaml);
+}
+
+function containsRef(node, target) {
+  if (node === target) return true;
+  if (Array.isArray(node)) return node.some(child => containsRef(child, target));
+  if (node?.task) return containsRef(node.task, target);
+  if (node?.v && typeof node.v === 'object') return containsRef(node.v, target);
+  if (typeof node === 'object' && node !== null) {
+    return Object.values(node).some(v => typeof v === 'object' && v !== null && containsRef(v, target));
+  }
+  return false;
+}
+
 /** Store a callback that removes the dragged item from its source. */
 export function setRemoveSource(fn) {
   _removeSource = fn;
