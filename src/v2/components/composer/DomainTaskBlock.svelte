@@ -11,6 +11,7 @@
 
   let taskEl;
   let selected = $state(false);
+  let dragging = $state(false);
 
   function handleDragStart(e) {
     e.dataTransfer.effectAllowed = 'move';
@@ -19,6 +20,7 @@
     setDragHeight(taskEl.offsetHeight);
     setDragItem(parent ?? yaml);
     setRemoveSource(onremove);
+    dragging = true;
     ondragstart(e);
   }
 
@@ -73,6 +75,7 @@
   class="task"
   class:has-children={domainFunctionParams.length > 0}
   class:collapsed
+  class:dragging
 >
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
@@ -89,7 +92,7 @@
         class="drag-handle"
         draggable="true"
         ondragstart={handleDragStart}
-        ondragend={(e) => { clearDragItem(); ondragend(e); }}
+        ondragend={(e) => { dragging = false; clearDragItem(); ondragend(e); }}
         onclick={(e) => e.stopPropagation()}
       >&#9783;</div>
       <div class="delete">
@@ -127,6 +130,10 @@
 <style>
   .task {
     position: relative;
+  }
+
+  .task.dragging {
+    opacity: 0.4;
   }
 
   .header {

@@ -16,7 +16,7 @@
   }
 </script>
 
-<button class="confirm-btn" class:confirming onclick={handleClick}>
+<button class="confirm-btn" class:confirming onclick={handleClick} onmouseleave={() => { confirming = false; clearTimeout(timer); }}>
   {#if confirming}
     {@render confirm()}
   {:else}

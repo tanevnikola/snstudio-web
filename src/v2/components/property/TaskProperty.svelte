@@ -44,9 +44,11 @@
     <span class="mnemonic">{mnemonic}</span>
     <button class="save-btn" class:dirty disabled={!dirty} onclick={handleSave}>Save</button>
   </div>
-  {#each params as param (param.name)}
-    <ParameterField yaml={taskYaml} parameterSpec={param} />
-  {/each}
+  <div class="params">
+    {#each params as param (param.name)}
+      <ParameterField yaml={taskYaml} parameterSpec={param} />
+    {/each}
+  </div>
   <YamlContainer yamlText={taskYamlText} collapsed={true} canEdit={false} style="max-height: 450px" />
 {/if}
 
@@ -81,5 +83,8 @@
   }
   .save-btn.dirty:hover {
     background: #3a7bc8;
+  }
+  .params {
+    padding: 8px 12px;
   }
 </style>

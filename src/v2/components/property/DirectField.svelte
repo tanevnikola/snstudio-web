@@ -1,0 +1,110 @@
+<script>
+  import { getSpecSync, isImplementingSync } from '../../../lib/specApi.js';
+  import StringValue from './value/StringValue.svelte';
+  import NumberValue from './value/NumberValue.svelte';
+  import BooleanValue from './value/BooleanValue.svelte';
+  import EnumValue from './value/EnumValue.svelte';
+  import InjectionField from './InjectionField.svelte';
+  import MnemonicField from './MnemonicField.svelte';
+
+  let { yaml, parameterSpec, onchange = () => {} } = $props();
+
+  const PRIMITIVE_MNEMONICS = [
+    'String', 'Boolean', 'boolean', 'Integer', 'int', 'Long', 'long',
+    'Double', 'double', 'Float', 'float', 'Character', 'char',
+    'Byte', 'byte', 'Short', 'short',
+  ];
+  const BOOLEAN_TYPES = ['Boolean', 'boolean'];
+  const NUMBER_TYPES = ['Integer', 'int', 'Long', 'long', 'Double', 'double', 'Float', 'float', 'Byte', 'byte', 'Short', 'short'];
+
+  let mnemonic = $derived(parameterSpec?.mnemonic ?? null);
+  let canInject = $derived(parameterSpec?.eager === false && parameterSpec?.injectionPoint === true);
+
+  let currentType = $derived(yaml?.t ?? null);
+  let isInjectorSet = $derived(currentType ? isImplementingSync(currentType, 'ResourceInjector') : false);
+
+  let injecting = $state(false);
+
+  $effect(() => {
+    if (isInjectorSet) injecting = true;
+  });
+
+  let isPrimitive = $derived(
+    PRIMITIVE_MNEMONICS.includes(mnemonic) || getSpecSync(mnemonic)?.category === 'ENUM'
+  );
+
+  let isEnum = $derived(getSpecSync(mnemonic)?.category === 'ENUM');
+  let enumValues = $derived(getSpecSync(mnemonic)?.constraints?.values ?? []);
+
+  function handlePrimitiveChange(newValue) {
+    onchange(newValue);
+  }
+
+  function handleNumberChange(newValue) {
+    const num = Number(newValue);
+    onchange(newValue === '' ? '' : isNaN(num) ? newValue : num);
+  }
+
+  function handleInjectorChange(newValue) {
+    onchange(newValue);
+  }
+</script>
+
+<div class="direct-field">
+  {#if canInject}
+    <button class="inject-toggle" class:active={injecting} onclick={() => (injecting = !injecting)} title="Use resource injector">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+    </button>
+  {/if}
+
+  {#if injecting}
+    <InjectionField yaml={yaml} onchange={handleInjectorChange} />
+  {:else if isPrimitive}
+    {#if isEnum}
+      <EnumValue value={yaml} options={enumValues} onchange={handlePrimitiveChange} />
+    {:else if BOOLEAN_TYPES.includes(mnemonic)}
+      <BooleanValue value={yaml} onchange={handlePrimitiveChange} />
+    {:else if NUMBER_TYPES.includes(mnemonic)}
+      <NumberValue value={yaml} onchange={handleNumberChange} />
+    {:else}
+      <StringValue value={yaml} onchange={handlePrimitiveChange} />
+    {/if}
+  {:else}
+    <MnemonicField yaml={yaml} mnemonic={ parameterSpec.mnemonic } />
+  {/if}
+</div>
+
+<style>
+  .direct-field {
+    display: flex;
+    align-items: flex-start;
+  }
+  .direct-field > :global(*:not(button)) {
+    flex: 1;
+    min-width: 0;
+  }
+  .inject-toggle {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #f5f5f5;
+    color: #999;
+    cursor: pointer;
+    margin-right: 4px;
+  }
+  .inject-toggle:hover {
+    color: #666;
+    border-color: #999;
+  }
+  .inject-toggle.active {
+    background: #fff3e0;
+    border-color: #ff9800;
+    color: #ff9800;
+  }
+</style>
