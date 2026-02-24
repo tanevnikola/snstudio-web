@@ -1,5 +1,5 @@
 <script>
-  import { getConcreteImplementations } from '../../../lib/specApi.js';
+  import { getConcreteImplementations } from '../../mnemoUtils.js';
   import MnemonicField from './MnemonicField.svelte';
 
   let { yaml = null, onchange = () => {} } = $props();

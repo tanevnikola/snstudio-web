@@ -1,5 +1,5 @@
 <script>
-  import { getSpecSync, fetchSpec, getConcreteImplementations } from '../../../lib/specApi.js';
+  import { getSpecSync, fetchSpec, getConcreteImplementations } from '../../mnemoUtils.js';
   import ParameterField from './ParameterField.svelte';
   import DocsPopover from '../../../lib/components/DocsPopover.svelte';
   import Self from './MnemonicField.svelte';

@@ -2,8 +2,8 @@
   import ConfirmDeleteButton from '../ConfirmDeleteButton.svelte';
   import DomainFunctionBlock from './DomainFunctionBlock.svelte';
   import DomainFunctionMapBlock from './DomainFunctionMapBlock.svelte';
-  import DomainFunctionListBlock from './DomainFunctionListBlock.svelte';
-  import { fetchSpec } from '../../../lib/specApi.js';
+  import DomainFunctionCollectionBlock from './DomainFunctionCollectionBlock.svelte';
+  import { fetchSpec } from '../../mnemoUtils.js';
   import { setDragHeight, setDragItem, setRemoveSource, clearDragItem, flush } from './dragState.js';
   import { select, setSelectionYaml } from './selectionState.svelte.js';
 
@@ -119,7 +119,7 @@
           {:else if param.injectionStrategy === 'MAP'}
             <DomainFunctionMapBlock yaml={getParamYaml(param)} />
           {:else if param.injectionStrategy === 'COLLECTION'}
-            <DomainFunctionListBlock yaml={getParamYaml(param)} />
+            <DomainFunctionCollectionBlock yaml={getParamYaml(param)} />
           {/if}
         </div>
       </div>

@@ -1,6 +1,6 @@
 <script>
   import jsYaml from 'js-yaml';
-  import { fetchSpec } from '../../../lib/specApi.js';
+  import { fetchSpec } from '../../mnemoUtils.js';
   import { getSelectionYaml, isDirty, clearDirty } from '../composer/selectionState.svelte.js';
   import { flush } from '../composer/dragState.js';
   import ParameterField from './ParameterField.svelte';

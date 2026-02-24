@@ -1,5 +1,5 @@
 <script>
-  import { loadAllSpecs } from '../specLoader.js';
+  import { loadAllSpecs } from '../../v2/mnemoUtils.js';
 
   let { onready } = $props();
 

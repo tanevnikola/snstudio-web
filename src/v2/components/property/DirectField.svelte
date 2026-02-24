@@ -1,5 +1,5 @@
 <script>
-  import { getSpecSync, isImplementingSync } from '../../../lib/specApi.js';
+  import { getSpecSync, isImplementingSync } from '../../mnemoUtils.js';
   import StringValue from './value/StringValue.svelte';
   import NumberValue from './value/NumberValue.svelte';
   import BooleanValue from './value/BooleanValue.svelte';
