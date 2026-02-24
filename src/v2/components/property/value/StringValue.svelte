@@ -4,7 +4,7 @@
 
   function handleInput(e) {
     const v = /** @type {HTMLInputElement} */ (e.target).value;
-    onchange({t: mnemonic, v: v});
+    onchange(v === '' ? null : {t: mnemonic, v: v});
   }
 </script>
 

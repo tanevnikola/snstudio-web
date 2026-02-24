@@ -1,18 +1,37 @@
 <script>
+  import { deriveMapItemSpec } from '../../parameterSpecUtils';
   import { normalizeParameterValue } from '../../yamlUtils';
 import ParameterField from './ParameterField.svelte';
 
   let { yaml = null, parameterSpec = null, onchange = () => {} } = $props();
 
-  let entrySpec = $derived({ ...parameterSpec, name: null, injectionStrategy: null });
+  let entrySpec = $derived(deriveMapItemSpec(parameterSpec));
   let entries = $state([]);
+
+  function emitMap() {
+    onchange(Object.fromEntries(entries.map(e => [e.key, e.value])));
+  }
+
+  function handleEntryChange(id, value) {
+    const entry = entries.find(e => e.id === id);
+    if (entry) entry.value = value;
+    emitMap();
+  }
+
+  function handleKeyChange(id, newKey) {
+    const entry = entries.find(e => e.id === id);
+    if (entry) entry.key = newKey;
+    emitMap();
+  }
 
   function addEntry() {
     entries.push({ id: crypto.randomUUID(), key: '' });
+    emitMap();
   }
 
   function removeEntry(id) {
     entries = entries.filter((e) => e.id !== id);
+    emitMap();
   }
 
   $effect(() => {
@@ -30,11 +49,12 @@ import ParameterField from './ParameterField.svelte';
         <button class="remove-btn" onclick={() => removeEntry(entry.id)} title="Remove entry">&times;</button>
         <input type="text" class="key-input" placeholder="key"
           value={entry.key}
-          oninput={(e) => entry.key = /** @type {HTMLInputElement} */ (e.target).value} />
+          oninput={(e) => handleKeyChange(entry.id, /** @type {HTMLInputElement} */ (e.target).value)} />
       </div>
-      <ParameterField 
-        parameterYaml={normalizeParameterValue(entry.value, {...entrySpec, injectionStrategy: 'DIRECT'})} 
-        parameterSpec={{...entrySpec, injectionStrategy: 'DIRECT'}} 
+      <ParameterField
+        parameterYaml={normalizeParameterValue(entry.value, entrySpec)}
+        parameterSpec={entrySpec}
+        onchange={(value) => handleEntryChange(entry.id, value)}
       />
     </div>
   {/each}

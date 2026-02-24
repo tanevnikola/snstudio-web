@@ -4,7 +4,7 @@
   function handleInput(e) {
     const v = /** @type {HTMLInputElement} */ (e.target).value;
     const num = Number(v);
-    onchange({t: mnemonic, v: v === '' ? '' : isNaN(num) ? v : num});
+    onchange(v === '' ? null : {t: mnemonic, v: isNaN(num) ? v : num});
   }
 </script>
 

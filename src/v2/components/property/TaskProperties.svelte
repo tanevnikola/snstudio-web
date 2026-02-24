@@ -31,7 +31,7 @@
   let taskYamlText = $derived(dumpAsText(taskYaml));
 
   function onchange(yaml) {
-    console.log("Updated Parameters", yaml)
+    console.log("Updated Parameters", dumpAsText(yaml))
   }
 
   function handleSave() {

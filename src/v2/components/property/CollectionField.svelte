@@ -7,12 +7,24 @@ import ParameterField from './ParameterField.svelte';
 
   let entries = $state([]);
 
+  function emitCollection() {
+    onchange(entries.map(e => e.value));
+  }
+
+  function handleEntryChange(id, value) {
+    const entry = entries.find(e => e.id === id);
+    if (entry) entry.value = value;
+    emitCollection();
+  }
+
   function addEntry() {
     entries.push({ id: crypto.randomUUID() });
+    emitCollection();
   }
 
   function removeEntry(id) {
     entries = entries.filter((e) => e.id !== id);
+    emitCollection();
   }
 
   $effect(() => {
@@ -27,9 +39,10 @@ import ParameterField from './ParameterField.svelte';
     <div class="entry">
       <button class="remove-btn" onclick={() => removeEntry(entry.id)} title="Remove entry">&times;</button>
       <div class="entry-value">
-        <ParameterField 
-          parameterYaml={normalizeParameterValue(entry.value, deriveCollectionItemSpec(parameterSpec))} 
-          parameterSpec={deriveCollectionItemSpec(parameterSpec)} 
+        <ParameterField
+          parameterYaml={normalizeParameterValue(entry.value, deriveCollectionItemSpec(parameterSpec))}
+          parameterSpec={deriveCollectionItemSpec(parameterSpec)}
+          onchange={(value) => handleEntryChange(entry.id, value)}
         />
       </div>
     </div>

@@ -3,7 +3,7 @@
 
   function handleChange(e) {
     const v = /** @type {HTMLInputElement} */ (e.target).checked;
-    onchange({t: mnemonic, v: v});
+    onchange(v === false ? null : {t: mnemonic, v: v});
   }
 </script>
 

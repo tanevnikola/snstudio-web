@@ -3,7 +3,7 @@
 
   function handleChange(e) {
     const v = /** @type {HTMLSelectElement} */ (e.target).value
-    onchange({t: mnemonic, v: v});
+    onchange(v === '' ? null : {t: mnemonic, v: v});
   }
 </script>
 
