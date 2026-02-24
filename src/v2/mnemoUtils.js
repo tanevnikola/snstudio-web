@@ -108,6 +108,11 @@ export function isPrimitive(mnemonic) {
     || isEnumPrimitive(mnemonic);
 }
 
+export function isResourceInjector(mnemonic) {
+  return isImplementing(mnemonic,  "ResourceInjector")
+}
+
+
 export function getPrimitiveMnemonics() {
   const result = [];
   for (const mnemonic of cache.keys()) {

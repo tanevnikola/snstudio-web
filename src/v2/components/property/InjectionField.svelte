@@ -1,16 +1,17 @@
 <script>
-  import { getImplementations } from '../../mnemoUtils.js';
+  import { getImplementations, isResourceInjector } from '../../mnemoUtils.js';
   import MnemonicField from './MnemonicField.svelte';
 
   let { yaml, onchange = () => {} } = $props();
 
   let injectorOptions = $derived(getImplementations('ResourceInjector'));
-  let currentType = $derived(yaml?.t ?? null);
-
-  function handleChange(e) {
-    const selected = e.target.value;
-    onchange(selected ? { t: selected, v: {} } : null);
+  let selectedInjector = $state(isResourceInjector(yaml.t) ? yaml.t : null)
+  let finalYaml = $state({});
+  function handleSelectInjector(e) {
+    selectedInjector = e.target.value || null;
   }
+
+
 
   // $effect(() => {
   //   console.log('[InjectionField] yaml:', yaml);
@@ -18,15 +19,15 @@
 </script>
 
 <div class="injected-value">
-  <select class="injector-select" onchange={handleChange} value={currentType ?? ''}>
+  <select class="injector-select" onchange={handleSelectInjector} value={selectedInjector ?? ''}>
     <option value="">— Select Injector —</option>
     {#each injectorOptions as opt}
       <option value={opt}>{opt}</option>
     {/each}
   </select>
-  {#if currentType}
-    {#key currentType}
-      <MnemonicField yaml={yaml} mnemonic={currentType} />
+  {#if selectedInjector}
+    {#key selectedInjector}
+      <MnemonicField yaml={yaml} mnemonic={selectedInjector} />
     {/key}
   {/if}
 </div>

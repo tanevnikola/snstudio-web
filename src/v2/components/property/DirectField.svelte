@@ -25,17 +25,13 @@
 
   let injecting = $state(isInjectorSet);
 
-  function handlePrimitiveChange(newValue) {
-    onchange(newValue);
+  function notifyNumberChange(value) {
+    const num = Number(value);
+    notifyChange(value === '' ? '' : isNaN(num) ? value : num);
   }
 
-  function handleNumberChange(newValue) {
-    const num = Number(newValue);
-    onchange(newValue === '' ? '' : isNaN(num) ? newValue : num);
-  }
-
-  function handleInjectorChange(newValue) {
-    onchange(newValue);
+  function notifyChange(value) {
+    onchange({t: parameterSpec.mnemonic, v: value})
   }
 </script>
 
@@ -47,21 +43,21 @@
   {/if}
 
   {#if injecting}
-    <InjectionField yaml={yaml} onchange={handleInjectorChange} />
+    <InjectionField yaml={yaml} onchange={notifyChange} />
   {:else if isPrim}
     {#if isEnum}
-      <EnumValue value={yaml.v} options={enumValues} onchange={handlePrimitiveChange} />
+      <EnumValue value={yaml.v} options={enumValues} onchange={notifyChange} />
     {:else if isBooleanPrimitive(mnemonic)}
-      <BooleanValue value={yaml.v} onchange={handlePrimitiveChange} />
+      <BooleanValue value={yaml.v} onchange={notifyChange} />
     {:else if isNumberPrimitive(mnemonic)}
-      <NumberValue value={yaml.v} onchange={handleNumberChange} />
+      <NumberValue value={yaml.v} onchange={notifyNumberChange} />
     {:else if isStringPrimitive(mnemonic)}
-      <StringValue value={yaml.v} onchange={handlePrimitiveChange} />
+      <StringValue value={yaml.v} onchange={notifyChange} />
     {:else}
       {console.error(`DirectField: unhandled primitive category for mnemonic "${mnemonic}"`)}
     {/if}
   {:else}
-    <MnemonicField yaml={yaml} mnemonic={ parameterSpec.mnemonic } />
+    <MnemonicField yaml={yaml} mnemonic={ parameterSpec.mnemonic } onchange={notifyChange} />
   {/if}
 </div>
 

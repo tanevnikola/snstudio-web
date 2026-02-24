@@ -5,13 +5,13 @@
   import CollectionField from './CollectionField.svelte';
   import { extractParameterYaml } from '../../yamlUtils.js';
 
-  let { parameterYaml, parameterSpec } = $props();
+  let { parameterYaml, parameterSpec, onchange = () => {} } = $props();
 
   //let parameterYaml = $derived(extractParameterYaml(yaml, parameterSpec));
 
-  function handleChange(newValue) {
+  // function handleChange(newValue) {
 
-  }
+  // }
 
   // $effect(() => {
   //   console.log('[ParemeterField]', 'name:', parameterSpec.name,  '; yaml:', parameterYaml);
@@ -26,11 +26,23 @@
 
   <div class="value">
     {#if isMapInjection(parameterSpec)}
-      <MapField yaml={parameterYaml} parameterSpec={parameterSpec} />
+      <MapField 
+        yaml={parameterYaml} 
+        parameterSpec={parameterSpec} 
+        onchange={onchange} 
+      />
     {:else if isCollectionInjection(parameterSpec)}
-      <CollectionField yaml={parameterYaml} parameterSpec={parameterSpec} />
+      <CollectionField 
+        yaml={parameterYaml} 
+        parameterSpec={parameterSpec} 
+        onchange={onchange} 
+      />
     {:else}
-      <DirectField yaml={parameterYaml} parameterSpec={parameterSpec} onchange={handleChange} />
+      <DirectField 
+        yaml={parameterYaml} 
+        parameterSpec={parameterSpec} 
+        onchange={onchange} 
+      />
     {/if}
   </div>
 </div>

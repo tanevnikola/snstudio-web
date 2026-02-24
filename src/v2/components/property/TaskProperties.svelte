@@ -30,6 +30,10 @@
   let dirty = $derived(isDirty());
   let taskYamlText = $derived(dumpAsText(taskYaml));
 
+  function onchange(yaml) {
+    console.log("Updated Parameters", yaml)
+  }
+
   function handleSave() {
     flush();
     clearDirty();
@@ -43,10 +47,19 @@
   </div>
   <div class="params">
     {#each parameters as param (param.name)}
-      <ParameterField parameterYaml={extractParameterYaml(taskYaml.v, param)} parameterSpec={param} />
+      <ParameterField 
+        parameterYaml={extractParameterYaml(taskYaml.v, param)} 
+        parameterSpec={param} 
+        onchange={onchange} 
+      />
     {/each}
   </div>
-  <YamlContainer yamlText={taskYamlText} collapsed={true} canEdit={false} style="max-height: 450px" />
+  <YamlContainer 
+    yamlText={taskYamlText} 
+    collapsed={true} 
+    canEdit={false} 
+    style="max-height: 450px" 
+  />
 {/if}
 
 <style>

@@ -2,7 +2,7 @@
   import { normalizeParameterValue } from '../../yamlUtils';
 import ParameterField from './ParameterField.svelte';
 
-  let { yaml = null, parameterSpec = null } = $props();
+  let { yaml = null, parameterSpec = null, onchange = () => {} } = $props();
 
   let entrySpec = $derived({ ...parameterSpec, name: null, injectionStrategy: null });
   let entries = $state([]);

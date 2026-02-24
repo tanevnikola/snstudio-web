@@ -6,12 +6,12 @@
     import { extractParameterYaml } from '../../yamlUtils.js';
     import { untrack } from 'svelte';
 
-  let { yaml, mnemonic } = $props();
+  let { yaml, mnemonic, onchange = () => {} } = $props();
 
   let mnemonicSpec = $state(null);
   let implementations = $derived(mnemonicSpec ? getImplementations(mnemonic) : []);
-  let selectedType = $state(null);
-  let finalYaml = $state(null);
+  let seletedMnemonic = $state(null);
+  let finalYaml = $state({});
 
   $effect(() => {
     const cached = getSpec(mnemonic);
@@ -22,48 +22,55 @@
     }
     untrack(() =>{
       if (isImplementing(yaml.t, mnemonic)) {
-        selectedType = yaml.t
-        finalYaml = yaml;
+        seletedMnemonic = yaml.t
+        finalYaml[seletedMnemonic] = yaml;
       }
     })
   });
 
+  function handleImplementationChange(e) {
+    seletedMnemonic = /** @type {HTMLSelectElement} */ (e.target).value || null;
+  }
+
+  /**
+   * Handle parameters
+   */
+  let params = $derived(getNonDomainFunctionParameters(mnemonicSpec));
+
+  /**
+   * Documentation stuff
+   */
   let showDocs = $state(false);
   let docsPinned = $state(false);
   let docsHoverTimer = null;
-  let docsMnemonic = $derived(selectedType ?? mnemonic);
-
-  let params = $derived(getNonDomainFunctionParameters(mnemonicSpec));
+  let docsMnemonic = $derived(seletedMnemonic ?? mnemonic);
 
   function onDocsEnter() {
     clearTimeout(docsHoverTimer);
     if (!docsPinned) showDocs = true;
   }
+
   function onDocsLeave() {
     if (!docsPinned) {
       docsHoverTimer = setTimeout(() => { showDocs = false; }, 200);
     }
   }
-  function onDocsPopoverEnter() { clearTimeout(docsHoverTimer); }
+
+  function onDocsPopoverEnter() { 
+    clearTimeout(docsHoverTimer); 
+  }
+
   function onDocsPopoverLeave() {
     if (!docsPinned) {
       docsHoverTimer = setTimeout(() => { showDocs = false; }, 200);
     }
   }
+
   function onDocsClick(e) {
     e.stopPropagation();
     e.preventDefault();
     docsPinned = true;
     showDocs = true;
-  }
-
-  function handleImplementationChange(e) {
-    selectedType = /** @type {HTMLSelectElement} */ (e.target).value || null;
-    if (selectedType === yaml.t) {
-      finalYaml = yaml;
-    } else {
-      finalYaml = null;
-    }
   }
 
   function closeDocs() {
@@ -81,14 +88,15 @@
 
 <div class="mnemonic-value">
   {#if implementations.length > 0}
+    <!-- When there are multiple implementations - show drop-down with compatibles  -->
     <div class="select-row">
-      <select value={selectedType ?? ''} onchange={handleImplementationChange}>
+      <select value={seletedMnemonic ?? ''} onchange={handleImplementationChange}>
         <option value="">-- select --</option>
         {#each implementations as impl}
           <option value={impl}>{impl}</option>
         {/each}
       </select>
-      {#if selectedType}
+      {#if seletedMnemonic}
         <span class="info-icon" role="button" tabindex="-1"
           onmouseenter={onDocsEnter}
           onmouseleave={onDocsLeave}
@@ -96,17 +104,23 @@
           onkeydown={onDocsClick}>i</span>
       {/if}
     </div>
+    <!-- Render the mnemonic impl -->
+    {#if seletedMnemonic}
+      {#key seletedMnemonic}
+        <Self yaml={{ t: seletedMnemonic, v: finalYaml[seletedMnemonic] }} mnemonic={seletedMnemonic} />
+      {/key}
+    {/if}
+  {:else}
+    <!-- Render Mnemonic parameters -->
+    {#each params as param (param.name)}
+      <ParameterField 
+        parameterYaml={extractParameterYaml(yaml.v ?? yaml.factory ?? null, param)} 
+        parameterSpec={param} 
+      />
+    {/each}
   {/if}
 
-  {#each params as param (param.name)}
-    <ParameterField parameterYaml={extractParameterYaml(yaml.v ?? yaml.factory ?? null, param)} parameterSpec={param} />
-  {/each}
 
-  {#if selectedType}
-    {#key selectedType}
-      <Self yaml={{ t: selectedType, v: finalYaml }} mnemonic={selectedType} />
-    {/key}
-  {/if}
 </div>
 {#if showDocs && docsMnemonic}
   <DocsPopover
