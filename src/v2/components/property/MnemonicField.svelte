@@ -1,17 +1,17 @@
 <script>
-  import { getSpecSync, fetchSpec, getConcreteImplementations } from '../../mnemoUtils.js';
+  import { getSpec, fetchSpec, getImplementations } from '../../mnemoUtils.js';
   import ParameterField from './ParameterField.svelte';
-  import DocsPopover from '../../../lib/components/DocsPopover.svelte';
+  import DocsPopover from '../DocsPopover.svelte';
   import Self from './MnemonicField.svelte';
 
   let { yaml, mnemonic } = $props();
 
   let mnemonicSpec = $state(null);
-  let implementations = $derived(mnemonicSpec ? getConcreteImplementations(mnemonic) : []);
+  let implementations = $derived(mnemonicSpec ? getImplementations(mnemonic) : []);
   let selectedType = $state(null);
 
   $effect(() => {
-    const cached = getSpecSync(mnemonic);
+    const cached = getSpec(mnemonic);
     if (cached) {
       mnemonicSpec = cached;
     } else {

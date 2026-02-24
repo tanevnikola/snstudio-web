@@ -19,21 +19,7 @@ export async function fetchSpec(mnemonic) {
   return spec;
 }
 
-export function getSpecSync(mnemonic) {
-  return cache.get(mnemonic) ?? null;
-}
-
-export function isImplementingSync(mnemonic, implementsMnemonic) {
-  const spec = getSpecSync(mnemonic);
-  if (!spec) return false;
-  if (spec.implementsStereotype === implementsMnemonic) return true;
-  if (spec.implementsStereotype) {
-    return isImplementingSync(spec.implementsStereotype, implementsMnemonic);
-  }
-  return false;
-}
-
-export async function loadAllSpecs(roots = [
+export async function fetchAllSpecs(roots = [
   'Speck', 'Object',
   'int', 'long', 'double', 'float', 'boolean', 'byte',
   'int[]', 'long[]', 'double[]', 'float[]', 'boolean[]', 'byte[]',
@@ -69,8 +55,22 @@ export async function loadAllSpecs(roots = [
   return loaded;
 }
 
+export function getSpec(mnemonic) {
+  return cache.get(mnemonic) ?? null;
+}
+
+export function isImplementing(mnemonic, implementsMnemonic) {
+  const spec = getSpec(mnemonic);
+  if (!spec) return false;
+  if (spec.implementsStereotype === implementsMnemonic) return true;
+  if (spec.implementsStereotype) {
+    return isImplementing(spec.implementsStereotype, implementsMnemonic);
+  }
+  return false;
+}
+
 export function isInjectionCollection(mnemonic) {
-  const spec = getSpecSync(mnemonic);
+  const spec = getSpec(mnemonic);
   if (!spec?.parameters) return false;
   const params = Object.entries(spec.parameters);
   return params.length === 1
@@ -78,13 +78,48 @@ export function isInjectionCollection(mnemonic) {
     && params[0][1].injectionStrategy === 'COLLECTION';
 }
 
-export function getConcreteImplementations(mnemonic) {
+const STRING_MNEMONICS = new Set(['String']);
+const BOOLEAN_MNEMONICS = new Set(['Boolean', 'boolean']);
+const NUMBER_MNEMONICS = new Set(['Integer', 'int', 'Long', 'long', 'Double', 'double', 'Float', 'float', 'Byte', 'byte', 'Short', 'short']);
+
+export function isStringPrimitive(mnemonic) {
+  return STRING_MNEMONICS.has(mnemonic);
+}
+
+export function isBooleanPrimitive(mnemonic) {
+  return BOOLEAN_MNEMONICS.has(mnemonic);
+}
+
+export function isNumberPrimitive(mnemonic) {
+  return NUMBER_MNEMONICS.has(mnemonic);
+}
+
+export function isEnumPrimitive(mnemonic) {
+  return getSpec(mnemonic)?.category === 'ENUM';
+}
+
+export function isPrimitive(mnemonic) {
+  return isStringPrimitive(mnemonic)
+    || isBooleanPrimitive(mnemonic)
+    || isNumberPrimitive(mnemonic)
+    || isEnumPrimitive(mnemonic);
+}
+
+export function getPrimitiveMnemonics() {
   const result = [];
+  for (const mnemonic of cache.keys()) {
+    if (isPrimitive(mnemonic)) result.push(mnemonic);
+  }
+  return result.sort();
+}
+
+export function getImplementations(mnemonic) {
+  const result = new Set();
   function collect(mn) {
-    const spec = getSpecSync(mn);
+    const spec = getSpec(mn);
     if (!spec) return;
     if (spec.category !== 'ABSTRACT') {
-      result.push(mn);
+      result.add(mn);
     }
     if (spec.implementations?.length) {
       for (const impl of spec.implementations) {
@@ -92,11 +127,11 @@ export function getConcreteImplementations(mnemonic) {
       }
     }
   }
-  const rootSpec = getSpecSync(mnemonic);
+  const rootSpec = getSpec(mnemonic);
   if (rootSpec?.implementations?.length) {
     for (const impl of rootSpec.implementations) {
       collect(impl);
     }
   }
-  return result.sort();
+  return [...result].sort();
 }

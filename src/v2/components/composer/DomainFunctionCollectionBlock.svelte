@@ -1,7 +1,7 @@
 <script>
   import DomainFunctionBlock from './DomainFunctionBlock.svelte';
   import { getDragHeight, getDragItem, isDragDescendant, removeSource, clearDragItem, flush } from './dragState.js';
-  import { isInjectionCollection, getSpecSync, fetchSpec } from '../../mnemoUtils.js';
+  import { isInjectionCollection, getSpec, fetchSpec } from '../../mnemoUtils.js';
 
   let { yaml = [] } = $props();
 
@@ -67,7 +67,7 @@
         const newItem = { task: { t: mnemonic, v: taskV } };
         yaml.splice(dropIndex, 0, newItem);
         flush();
-        if (!getSpecSync(mnemonic)) {
+        if (!getSpec(mnemonic)) {
           fetchSpec(mnemonic);
         }
       }

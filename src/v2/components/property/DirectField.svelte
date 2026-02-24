@@ -1,5 +1,5 @@
 <script>
-  import { getSpecSync, isImplementingSync } from '../../mnemoUtils.js';
+  import { getSpec, isImplementing, isPrimitive, isStringPrimitive, isBooleanPrimitive, isNumberPrimitive, isEnumPrimitive } from '../../mnemoUtils.js';
   import StringValue from './value/StringValue.svelte';
   import NumberValue from './value/NumberValue.svelte';
   import BooleanValue from './value/BooleanValue.svelte';
@@ -9,19 +9,12 @@
 
   let { yaml, parameterSpec, onchange = () => {} } = $props();
 
-  const PRIMITIVE_MNEMONICS = [
-    'String', 'Boolean', 'boolean', 'Integer', 'int', 'Long', 'long',
-    'Double', 'double', 'Float', 'float', 'Character', 'char',
-    'Byte', 'byte', 'Short', 'short',
-  ];
-  const BOOLEAN_TYPES = ['Boolean', 'boolean'];
-  const NUMBER_TYPES = ['Integer', 'int', 'Long', 'long', 'Double', 'double', 'Float', 'float', 'Byte', 'byte', 'Short', 'short'];
 
   let mnemonic = $derived(parameterSpec?.mnemonic ?? null);
   let canInject = $derived(parameterSpec?.eager === false && parameterSpec?.injectionPoint === true);
 
   let currentType = $derived(yaml?.t ?? null);
-  let isInjectorSet = $derived(currentType ? isImplementingSync(currentType, 'ResourceInjector') : false);
+  let isInjectorSet = $derived(currentType ? isImplementing(currentType, 'ResourceInjector') : false);
 
   let injecting = $state(false);
 
@@ -29,12 +22,10 @@
     if (isInjectorSet) injecting = true;
   });
 
-  let isPrimitive = $derived(
-    PRIMITIVE_MNEMONICS.includes(mnemonic) || getSpecSync(mnemonic)?.category === 'ENUM'
-  );
+  let isPrim = $derived(isPrimitive(mnemonic));
 
-  let isEnum = $derived(getSpecSync(mnemonic)?.category === 'ENUM');
-  let enumValues = $derived(getSpecSync(mnemonic)?.constraints?.values ?? []);
+  let isEnum = $derived(isEnumPrimitive(mnemonic));
+  let enumValues = $derived(getSpec(mnemonic)?.constraints?.values ?? []);
 
   function handlePrimitiveChange(newValue) {
     onchange(newValue);
@@ -59,15 +50,17 @@
 
   {#if injecting}
     <InjectionField yaml={yaml} onchange={handleInjectorChange} />
-  {:else if isPrimitive}
+  {:else if isPrim}
     {#if isEnum}
       <EnumValue value={yaml} options={enumValues} onchange={handlePrimitiveChange} />
-    {:else if BOOLEAN_TYPES.includes(mnemonic)}
+    {:else if isBooleanPrimitive(mnemonic)}
       <BooleanValue value={yaml} onchange={handlePrimitiveChange} />
-    {:else if NUMBER_TYPES.includes(mnemonic)}
+    {:else if isNumberPrimitive(mnemonic)}
       <NumberValue value={yaml} onchange={handleNumberChange} />
-    {:else}
+    {:else if isStringPrimitive(mnemonic)}
       <StringValue value={yaml} onchange={handlePrimitiveChange} />
+    {:else}
+      {console.error(`DirectField: unhandled primitive category for mnemonic "${mnemonic}"`)}
     {/if}
   {:else}
     <MnemonicField yaml={yaml} mnemonic={ parameterSpec.mnemonic } />

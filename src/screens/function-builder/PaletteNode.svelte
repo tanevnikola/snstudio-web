@@ -1,6 +1,6 @@
 <script>
   import PaletteNode from './PaletteNode.svelte';
-  import DocsPopover from '../../lib/components/DocsPopover.svelte';
+  import DocsPopover from '../../v2/components/DocsPopover.svelte';
   import { fetchSpec } from '../../lib/specApi.js';
 
   let { mnemonic, depth = 0, defaultCollapsed = true } = $props();

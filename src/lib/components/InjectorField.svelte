@@ -3,7 +3,7 @@
   import { resolveParam } from '../rules.js';
   import { settings } from '../settings.svelte.js';
   import ParamField from './ParamField.svelte';
-  import DocsPopover from './DocsPopover.svelte';
+  import DocsPopover from '../../v2/components/DocsPopover.svelte';
 
   let { value, param, onchange, injectOnly = false } = $props();
 

@@ -1,5 +1,5 @@
 <script>
-  import { loadAllSpecs } from '../../v2/mnemoUtils.js';
+  import { fetchAllSpecs } from '../../v2/mnemoUtils.js';
 
   let { onready } = $props();
 
@@ -8,7 +8,7 @@
   let error = $state(null);
 
   $effect(() => {
-    loadAllSpecs(undefined, (l, t) => {
+    fetchAllSpecs(undefined, (l, t) => {
       loaded = l;
       total = t;
     })

@@ -1,10 +1,10 @@
 <script>
-  import { getConcreteImplementations } from '../../mnemoUtils.js';
+  import { getImplementations } from '../../mnemoUtils.js';
   import MnemonicField from './MnemonicField.svelte';
 
   let { yaml = null, onchange = () => {} } = $props();
 
-  let injectorOptions = $derived(getConcreteImplementations('ResourceInjector'));
+  let injectorOptions = $derived(getImplementations('ResourceInjector'));
   let currentType = $derived(yaml?.t ?? null);
 
   function handleChange(e) {

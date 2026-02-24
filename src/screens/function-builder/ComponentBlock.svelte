@@ -1,6 +1,6 @@
 <script>
   import DropZone from '../../lib/components/DropZone.svelte';
-  import DocsPopover from '../../lib/components/DocsPopover.svelte';
+  import DocsPopover from '../../v2/components/DocsPopover.svelte';
   import ComponentBlock from './ComponentBlock.svelte';
   import { isNestedParam, fetchSpec, createNode, getNode, addChild, insertChild, removeChild, detachNode, moveChild } from '../../lib/specApi.js';
 

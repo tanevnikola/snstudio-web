@@ -9,7 +9,7 @@
   import { resolveParam, resolveNode } from '../rules.js';
   import { settings } from '../settings.svelte.js';
   import ParamField from './ParamField.svelte';
-  import DocsPopover from './DocsPopover.svelte';
+  import DocsPopover from '../../v2/components/DocsPopover.svelte';
 
   let { param, value, onchange, facts = null } = $props();
 
