@@ -1,12 +1,13 @@
 <script>
-  let { value = '', options = [], onchange = () => {} } = $props();
+  let { yaml, mnemonic, options = [], onchange = () => {} } = $props();
 
-  // $effect(() => {
-  //   console.log('[EnumValue]', 'value:', value);
-  // });
+  function handleChange(e) {
+    const v = /** @type {HTMLSelectElement} */ (e.target).value
+    onchange({t: mnemonic, v: v});
+  }
 </script>
 
-<select value={value} onchange={(e) => onchange(/** @type {HTMLSelectElement} */ (e.target).value)}>
+<select value={yaml.v} onchange={handleChange}>
   <option value="">—</option>
   {#each options as opt}
     <option value={opt}>{opt}</option>

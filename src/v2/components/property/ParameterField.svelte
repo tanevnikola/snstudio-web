@@ -1,5 +1,5 @@
 <script>
-  import { isMapInjection, isCollectionInjection } from '../../parameterSpecUtils.js';
+  import { isMapInjection, isCollectionInjection, isDelegating } from '../../parameterSpecUtils.js';
   import DirectField from './DirectField.svelte';
   import MapField from './MapField.svelte';
   import CollectionField from './CollectionField.svelte';
@@ -7,11 +7,15 @@
 
   let { parameterYaml, parameterSpec, onchange = () => {} } = $props();
 
-  //let parameterYaml = $derived(extractParameterYaml(yaml, parameterSpec));
+  
 
-  // function handleChange(newValue) {
-
-  // }
+  function notifyChange(value) {
+    if (isDelegating(parameterSpec)) {
+      onchange(value)
+    } else {
+      onchange({ [parameterSpec.name]: value })
+    }
+  }
 
   // $effect(() => {
   //   console.log('[ParemeterField]', 'name:', parameterSpec.name,  '; yaml:', parameterYaml);
@@ -29,19 +33,19 @@
       <MapField 
         yaml={parameterYaml} 
         parameterSpec={parameterSpec} 
-        onchange={onchange} 
+        onchange={notifyChange} 
       />
     {:else if isCollectionInjection(parameterSpec)}
       <CollectionField 
         yaml={parameterYaml} 
         parameterSpec={parameterSpec} 
-        onchange={onchange} 
+        onchange={notifyChange} 
       />
     {:else}
       <DirectField 
         yaml={parameterYaml} 
         parameterSpec={parameterSpec} 
-        onchange={onchange} 
+        onchange={notifyChange} 
       />
     {/if}
   </div>

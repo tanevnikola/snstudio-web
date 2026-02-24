@@ -32,7 +32,10 @@ import ParameterField from './ParameterField.svelte';
           value={entry.key}
           oninput={(e) => entry.key = /** @type {HTMLInputElement} */ (e.target).value} />
       </div>
-      <ParameterField parameterYaml={normalizeParameterValue(entry.value, {...entrySpec, injectionStrategy: 'DIRECT'})} parameterSpec={{...entrySpec, injectionStrategy: 'DIRECT'}} />
+      <ParameterField 
+        parameterYaml={normalizeParameterValue(entry.value, {...entrySpec, injectionStrategy: 'DIRECT'})} 
+        parameterSpec={{...entrySpec, injectionStrategy: 'DIRECT'}} 
+      />
     </div>
   {/each}
   <button class="add-btn" onclick={addEntry}>+ add entry</button>

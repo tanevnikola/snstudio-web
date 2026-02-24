@@ -19,6 +19,7 @@
 
   function updateSelectedInjector(updatedYaml) {
     injectorYamls[selectedInjector] = updatedYaml;
+    onchange(updatedYaml)
   }
 
   // $effect(() => {

@@ -1,8 +1,14 @@
 <script>
-  let { value = '', onchange = () => {} } = $props();
+  let { yaml, mnemonic, onchange = () => {} } = $props();
+
+  function handleInput(e) {
+    const v = /** @type {HTMLInputElement} */ (e.target).value;
+    const num = Number(v);
+    onchange({t: mnemonic, v: v === '' ? '' : isNaN(num) ? v : num});
+  }
 </script>
 
-<input type="text" value={value} oninput={(e) => onchange(/** @type {HTMLInputElement} */ (e.target).value)} />
+<input type="text" value={yaml.v} oninput={handleInput} />
 
 <style>
   input {

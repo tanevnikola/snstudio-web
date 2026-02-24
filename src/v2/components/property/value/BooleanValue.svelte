@@ -1,8 +1,13 @@
 <script>
-  let { value = false, onchange = () => {} } = $props();
+  let { yaml, mnemonic, onchange = () => {} } = $props();
+
+  function handleChange(e) {
+    const v = /** @type {HTMLInputElement} */ (e.target).checked;
+    onchange({t: mnemonic, v: v});
+  }
 </script>
 
-<input type="checkbox" checked={value} onchange={(e) => onchange(/** @type {HTMLInputElement} */ (e.target).checked)} />
+<input type="checkbox" checked={yaml.v} onchange={handleChange} />
 
 <style>
   input[type="checkbox"] {

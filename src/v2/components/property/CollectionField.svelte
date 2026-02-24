@@ -19,8 +19,6 @@ import ParameterField from './ParameterField.svelte';
     if (Array.isArray(yaml)) {
       entries = yaml.map(item => ({ id: crypto.randomUUID(), value: item }));
     }
-
-    console.log("[CollectionField] yaml=", yaml)
   });
 </script>
 
@@ -29,7 +27,10 @@ import ParameterField from './ParameterField.svelte';
     <div class="entry">
       <button class="remove-btn" onclick={() => removeEntry(entry.id)} title="Remove entry">&times;</button>
       <div class="entry-value">
-        <ParameterField parameterYaml={normalizeParameterValue(entry.value, deriveCollectionItemSpec(parameterSpec))} parameterSpec={deriveCollectionItemSpec(parameterSpec)} />
+        <ParameterField 
+          parameterYaml={normalizeParameterValue(entry.value, deriveCollectionItemSpec(parameterSpec))} 
+          parameterSpec={deriveCollectionItemSpec(parameterSpec)} 
+        />
       </div>
     </div>
   {/each}

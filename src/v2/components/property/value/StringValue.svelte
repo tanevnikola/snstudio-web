@@ -1,10 +1,11 @@
 <script>
-  let { value = '', onchange = () => {} } = $props();
+  let { yaml, mnemonic, onchange = () => {} } = $props();
   let multiline = $state(false);
 
-  // $effect(() => {
-  //   console.log('[StringValue]', 'value:', value);
-  // });
+  function handleInput(e) {
+    const v = /** @type {HTMLInputElement} */ (e.target).value;
+    onchange({t: mnemonic, v: v});
+  }
 </script>
 
 <div class="string-value">
@@ -16,9 +17,9 @@
     </svg>
   </button>
   {#if multiline}
-    <textarea rows="4" value={value} oninput={(e) => onchange(/** @type {HTMLTextAreaElement} */ (e.target).value)}></textarea>
+    <textarea rows="4" value={yaml.v} oninput={handleInput}></textarea>
   {:else}
-    <input type="text" value={value} oninput={(e) => onchange(/** @type {HTMLInputElement} */ (e.target).value)} />
+    <input type="text" value={yaml.v} oninput={handleInput} />
   {/if}
 </div>
 

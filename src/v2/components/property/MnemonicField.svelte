@@ -32,6 +32,10 @@
     seletedMnemonic = /** @type {HTMLSelectElement} */ (e.target).value || null;
   }
 
+  function notifyChange(value) {
+    onchange({t: seletedMnemonic, v: value})
+  }
+
   /**
    * Handle parameters
    */
@@ -109,7 +113,8 @@
       {#key seletedMnemonic}
         <Self 
           yaml={{ t: seletedMnemonic, v: finalYaml[seletedMnemonic] }} 
-          mnemonic={seletedMnemonic} 
+          mnemonic={seletedMnemonic}
+          onchange={notifyChange}
         />
       {/key}
     {/if}
@@ -119,6 +124,7 @@
       <ParameterField 
         parameterYaml={extractParameterYaml(yaml.v ?? yaml.factory ?? null, param)} 
         parameterSpec={param} 
+        onchange={onchange}
       />
     {/each}
   {/if}
