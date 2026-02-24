@@ -1,9 +1,9 @@
 <script>
   let { value = '', options = [], onchange = () => {} } = $props();
 
-  $effect(() => {
-    console.log('[EnumValue]', 'value:', value);
-  });
+  // $effect(() => {
+  //   console.log('[EnumValue]', 'value:', value);
+  // });
 </script>
 
 <select value={value} onchange={(e) => onchange(/** @type {HTMLSelectElement} */ (e.target).value)}>

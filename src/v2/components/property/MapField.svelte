@@ -1,5 +1,6 @@
 <script>
-  import ParameterField from './ParameterField.svelte';
+  import { normalizeParameterValue } from '../../yamlUtils';
+import ParameterField from './ParameterField.svelte';
 
   let { yaml = null, parameterSpec = null } = $props();
 
@@ -31,7 +32,7 @@
           value={entry.key}
           oninput={(e) => entry.key = /** @type {HTMLInputElement} */ (e.target).value} />
       </div>
-      <ParameterField parameterYaml={entry.value} parameterSpec={{...entrySpec, injectionStrategy: 'DIRECT'}} />
+      <ParameterField parameterYaml={normalizeParameterValue(entry.value, {...entrySpec, injectionStrategy: 'DIRECT'})} parameterSpec={{...entrySpec, injectionStrategy: 'DIRECT'}} />
     </div>
   {/each}
   <button class="add-btn" onclick={addEntry}>+ add entry</button>

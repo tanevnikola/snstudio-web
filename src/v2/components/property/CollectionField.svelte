@@ -1,9 +1,10 @@
 <script>
-  import ParameterField from './ParameterField.svelte';
+    import { deriveCollectionItemSpec } from '../../parameterSpecUtils';
+  import { normalizeParameterValue } from '../../yamlUtils';
+import ParameterField from './ParameterField.svelte';
 
   let { yaml = null, parameterSpec = null } = $props();
 
-  let entrySpec = $derived({ ...parameterSpec, name: null, injectionStrategy: null });
   let entries = $state([]);
 
   function addEntry() {
@@ -13,6 +14,14 @@
   function removeEntry(id) {
     entries = entries.filter((e) => e.id !== id);
   }
+
+  $effect(() => {
+    if (Array.isArray(yaml)) {
+      entries = yaml.map(item => ({ id: crypto.randomUUID(), value: item }));
+    }
+
+    console.log("[CollectionField] yaml=", yaml)
+  });
 </script>
 
 <div class="collection-value">
@@ -20,7 +29,7 @@
     <div class="entry">
       <button class="remove-btn" onclick={() => removeEntry(entry.id)} title="Remove entry">&times;</button>
       <div class="entry-value">
-        <ParameterField parameterYaml={entry} parameterSpec={{...entrySpec, injectionStrategy: 'DIRECT'}} />
+        <ParameterField parameterYaml={normalizeParameterValue(entry.value, deriveCollectionItemSpec(parameterSpec))} parameterSpec={deriveCollectionItemSpec(parameterSpec)} />
       </div>
     </div>
   {/each}

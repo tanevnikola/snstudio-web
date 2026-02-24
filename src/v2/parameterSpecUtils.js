@@ -26,3 +26,11 @@ export function isInjectionAllowed(parameterSpec) {
   return isInjectionPoint(parameterSpec) && !isInjectionEager(parameterSpec);
 }
 
+export function deriveMapItemSpec(parameterSpec) {
+  return {...parameterSpec, injectionStrategy: 'DIRECT'}
+}
+
+export function deriveCollectionItemSpec(parameterSpec) {
+  return {...parameterSpec, injectionStrategy: 'DIRECT'}
+}
+

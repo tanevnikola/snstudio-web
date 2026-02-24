@@ -1,15 +1,17 @@
 <script>
-  import { getSpec, fetchSpec, getImplementations, getNonDomainFunctionParameters } from '../../mnemoUtils.js';
+  import { getSpec, fetchSpec, getImplementations, getNonDomainFunctionParameters, isImplementing } from '../../mnemoUtils.js';
   import ParameterField from './ParameterField.svelte';
   import DocsPopover from '../DocsPopover.svelte';
   import Self from './MnemonicField.svelte';
     import { extractParameterYaml } from '../../yamlUtils.js';
+    import { untrack } from 'svelte';
 
   let { yaml, mnemonic } = $props();
 
   let mnemonicSpec = $state(null);
   let implementations = $derived(mnemonicSpec ? getImplementations(mnemonic) : []);
   let selectedType = $state(null);
+  let finalYaml = $state(null);
 
   $effect(() => {
     const cached = getSpec(mnemonic);
@@ -18,6 +20,12 @@
     } else {
       fetchSpec(mnemonic).then((fetched) => { mnemonicSpec = fetched; });
     }
+    untrack(() =>{
+      if (isImplementing(yaml.t, mnemonic)) {
+        selectedType = yaml.t
+        finalYaml = yaml;
+      }
+    })
   });
 
   let showDocs = $state(false);
@@ -48,6 +56,16 @@
     docsPinned = true;
     showDocs = true;
   }
+
+  function handleImplementationChange(e) {
+    selectedType = /** @type {HTMLSelectElement} */ (e.target).value || null;
+    if (selectedType === yaml.t) {
+      finalYaml = yaml;
+    } else {
+      finalYaml = null;
+    }
+  }
+
   function closeDocs() {
     showDocs = false;
     docsPinned = false;
@@ -55,16 +73,16 @@
   }
 
 
-  $effect(() => {
-    console.log('[MnemonicValue] mnemo:', mnemonic, 'yaml:', yaml);
+  // $effect(() => {
+  //   console.log('[MnemonicValue] mnemo:', mnemonic, 'yaml:', yaml);
 
-  });
+  // });
 </script>
 
 <div class="mnemonic-value">
   {#if implementations.length > 0}
     <div class="select-row">
-      <select value={selectedType ?? ''} onchange={(e) => selectedType = /** @type {HTMLSelectElement} */ (e.target).value || null}>
+      <select value={selectedType ?? ''} onchange={handleImplementationChange}>
         <option value="">-- select --</option>
         {#each implementations as impl}
           <option value={impl}>{impl}</option>
@@ -81,12 +99,12 @@
   {/if}
 
   {#each params as param (param.name)}
-    <ParameterField parameterYaml={extractParameterYaml(yaml.v, param)} parameterSpec={param} />
+    <ParameterField parameterYaml={extractParameterYaml(yaml.v ?? yaml.factory ?? null, param)} parameterSpec={param} />
   {/each}
 
   {#if selectedType}
     {#key selectedType}
-      <Self yaml={{ t: selectedType, v: {} }} mnemonic={selectedType} />
+      <Self yaml={{ t: selectedType, v: finalYaml }} mnemonic={selectedType} />
     {/key}
   {/if}
 </div>

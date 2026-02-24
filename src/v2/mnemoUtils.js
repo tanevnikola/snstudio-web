@@ -60,6 +60,9 @@ export function getSpec(mnemonic) {
 }
 
 export function isImplementing(mnemonic, implementsMnemonic) {
+  // if (implementsMnemonic == 'Object') {
+  //   return true;
+  // }
   const spec = getSpec(mnemonic);
   if (!spec) return false;
   if (spec.implementsStereotype === implementsMnemonic) return true;

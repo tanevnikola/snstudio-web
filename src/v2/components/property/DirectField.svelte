@@ -25,7 +25,8 @@
   let injecting = $state(false);
 
   $effect(() => {
-    if (isInjectorSet) injecting = true;
+    injecting = isInjectorSet;
+    console.log(isInjectorSet, injecting, isImplementing(currentType, 'ResourceInjector'))
   });
 
   function handlePrimitiveChange(newValue) {
@@ -53,13 +54,13 @@
     <InjectionField yaml={yaml} onchange={handleInjectorChange} />
   {:else if isPrim}
     {#if isEnum}
-      <EnumValue value={yaml} options={enumValues} onchange={handlePrimitiveChange} />
+      <EnumValue value={yaml.v} options={enumValues} onchange={handlePrimitiveChange} />
     {:else if isBooleanPrimitive(mnemonic)}
-      <BooleanValue value={yaml} onchange={handlePrimitiveChange} />
+      <BooleanValue value={yaml.v} onchange={handlePrimitiveChange} />
     {:else if isNumberPrimitive(mnemonic)}
-      <NumberValue value={yaml} onchange={handleNumberChange} />
+      <NumberValue value={yaml.v} onchange={handleNumberChange} />
     {:else if isStringPrimitive(mnemonic)}
-      <StringValue value={yaml} onchange={handlePrimitiveChange} />
+      <StringValue value={yaml.v} onchange={handlePrimitiveChange} />
     {:else}
       {console.error(`DirectField: unhandled primitive category for mnemonic "${mnemonic}"`)}
     {/if}

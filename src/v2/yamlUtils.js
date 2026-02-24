@@ -1,18 +1,33 @@
 import jsYaml from 'js-yaml';
 import { isCollectionInjection, isDelegating, isMapInjection } from "./parameterSpecUtils";
+import { isImplementing } from './mnemoUtils';
 
 export function dumpAsText(yaml) {
     return yaml ? jsYaml.dump(yaml, { lineWidth: -1, noRefs: true }) : ''
 }
 
 export function extractParameterYaml(yaml, parameterSpec) {
-    if (isMapInjection(parameterSpec) || isCollectionInjection(parameterSpec)) {
-        return yaml?.[parameterSpec.name];
+    const paramYaml = isDelegating(parameterSpec) 
+        ? yaml
+        : yaml?.[parameterSpec?.name];
+        
+    if (paramYaml == null) {
+        if (isCollectionInjection(parameterSpec)) {
+            return [];
+        }
+        if (isMapInjection(parameterSpec)) {
+            return {};
+        }
+        return  { t: parameterSpec.mnemonic };
     }
-    if (isDelegating(parameterSpec)) {
-        return normalizeParameterValue(yaml, parameterSpec);
+
+    if (isImplementing(paramYaml.t, "ResourceInjector") 
+        || isMapInjection(parameterSpec) 
+        || isCollectionInjection(parameterSpec)) {
+        return paramYaml;
     }
-    return normalizeParameterValue(yaml?.[parameterSpec?.name], parameterSpec);
+
+    return normalizeParameterValue(paramYaml, parameterSpec);
 }
 
 export function normalizeParameterValue(parameterYaml, parameterSpec) {

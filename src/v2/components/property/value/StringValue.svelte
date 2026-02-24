@@ -1,6 +1,10 @@
 <script>
   let { value = '', onchange = () => {} } = $props();
   let multiline = $state(false);
+
+  // $effect(() => {
+  //   console.log('[StringValue]', 'value:', value);
+  // });
 </script>
 
 <div class="string-value">

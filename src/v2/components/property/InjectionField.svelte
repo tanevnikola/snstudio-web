@@ -12,9 +12,9 @@
     onchange(selected ? { t: selected, v: {} } : null);
   }
 
-  $effect(() => {
-    console.log('[InjectionField] yaml:', yaml);
-  });
+  // $effect(() => {
+  //   console.log('[InjectionField] yaml:', yaml);
+  // });
 </script>
 
 <div class="injected-value">
