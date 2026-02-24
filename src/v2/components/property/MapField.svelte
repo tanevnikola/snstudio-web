@@ -15,16 +15,11 @@
   }
 
   $effect(() => {
-    const map = yaml?.[parameterSpec?.name];
+    const map = yaml;
     if (map && typeof map === 'object' && !Array.isArray(map)) {
-      console.log('[MapField] value:', map);
       entries = Object.keys(map).map(key => ({ id: crypto.randomUUID(), key, value: map[key] }));
     }
   });
-
-  // $effect(() => {
-  //   console.log('[MapField] yaml:', yaml);
-  // });
 </script>
 
 <div class="map-value">
@@ -36,7 +31,7 @@
           value={entry.key}
           oninput={(e) => entry.key = /** @type {HTMLInputElement} */ (e.target).value} />
       </div>
-      <ParameterField yaml={entry.value} parameterSpec={entrySpec} />
+      <ParameterField parameterYaml={entry.value} parameterSpec={{...entrySpec, injectionStrategy: 'DIRECT'}} />
     </div>
   {/each}
   <button class="add-btn" onclick={addEntry}>+ add entry</button>

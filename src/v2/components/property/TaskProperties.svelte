@@ -5,11 +5,13 @@
   import { flush } from '../composer/dragState.js';
   import ParameterField from './ParameterField.svelte';
   import YamlContainer from '../YamlContainer.svelte';
+  import { dumpAsText, extractParameterYaml, extractTaskMnemonic, extractTaskYaml } from '../../yamlUtils.js';
 
   let yaml = $derived(getSelectionYaml());
 
-  let mnemonic = $derived(yaml?.tasks ? 'Task.Chain' : yaml?.task?.t ?? null);
-  let taskYaml = $derived(yaml?.task ?? (yaml?.tasks ? { t: 'Task.Chain', v: yaml.tasks } : null));
+  let taskYaml = $derived(extractTaskYaml(yaml));
+  let mnemonic = $derived(extractTaskMnemonic(taskYaml));
+
   let mnemonicSpec = $state(null);
 
   // load mnemonicSpec
@@ -23,10 +25,10 @@
     });
   });
 
-  let params = $derived.by(() => getNonDomainFunctionParameters(mnemonicSpec));
+  let parameters = $derived.by(() => getNonDomainFunctionParameters(mnemonicSpec));
 
   let dirty = $derived(isDirty());
-  let taskYamlText = $derived(taskYaml ? jsYaml.dump(taskYaml, { lineWidth: -1, noRefs: true }) : '');
+  let taskYamlText = $derived(dumpAsText(taskYaml));
 
   function handleSave() {
     flush();
@@ -40,8 +42,8 @@
     <button class="save-btn" class:dirty disabled={!dirty} onclick={handleSave}>Save</button>
   </div>
   <div class="params">
-    {#each params as param (param.name)}
-      <ParameterField yaml={taskYaml} parameterSpec={param} />
+    {#each parameters as param (param.name)}
+      <ParameterField parameterYaml={extractParameterYaml(taskYaml.v, param)} parameterSpec={param} />
     {/each}
   </div>
   <YamlContainer yamlText={taskYamlText} collapsed={true} canEdit={false} style="max-height: 450px" />

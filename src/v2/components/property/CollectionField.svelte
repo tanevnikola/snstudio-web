@@ -20,7 +20,7 @@
     <div class="entry">
       <button class="remove-btn" onclick={() => removeEntry(entry.id)} title="Remove entry">&times;</button>
       <div class="entry-value">
-        <ParameterField yaml={yaml} parameterSpec={entrySpec} />
+        <ParameterField parameterYaml={entry} parameterSpec={{...entrySpec, injectionStrategy: 'DIRECT'}} />
       </div>
     </div>
   {/each}

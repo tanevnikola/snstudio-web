@@ -1,7 +1,7 @@
 <script>
   import ComponentsPalette from '../components/palette/ComponentsPalette.svelte';
   import FunctionComposer from '../components/composer/FunctionComposer.svelte';
-  import TaskProperty from '../components/property/TaskProperty.svelte';
+  import TaskProperties from '../components/property/TaskProperties.svelte';
   import YamlContainer from '../components/YamlContainer.svelte';
 
   let { yaml = '' } = $props();
@@ -89,7 +89,7 @@
     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <div class="resize-handle vertical" class:active={resizingRight} onmousedown={startResizeRight} role="separator" aria-label="Resize properties"></div>
     <div class="properties">
-      <TaskProperty />
+      <TaskProperties />
     </div>
   </div>
 </div>

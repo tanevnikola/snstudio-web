@@ -1,9 +1,8 @@
 <script>
   import YamlEditor from './YamlEditor.svelte';
 
-  let { yamlText = '', style = '', collapsed: initialCollapsed = false, canEdit = true, onchange = () => {} } = $props();
+  let { yamlText = '', style = '', collapsed = false, canEdit = true, onchange = () => {} } = $props();
 
-  let collapsed = $state(initialCollapsed);
   let readonlyMode = $state(true);
   let copyLabel = $state('Copy');
 

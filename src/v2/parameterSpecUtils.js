@@ -10,12 +10,12 @@ export function isCollectionInjection(parameterSpec) {
   return parameterSpec?.injectionStrategy === 'COLLECTION';
 }
 
-export function isDirectInjectionParameter(parameterSpec) {
+export function isDirectInjection(parameterSpec) {
   return parameterSpec?.injectionStrategy === 'DIRECT';
 }
 
 export function isInjectionPoint(parameterSpec) {
-  return parameterSpec?.injectionPoint && isDirectInjectionParameter(parameterSpec);
+  return parameterSpec?.injectionPoint && isDirectInjection(parameterSpec);
 }
 
 export function isInjectionEager(parameterSpec) {
@@ -25,3 +25,4 @@ export function isInjectionEager(parameterSpec) {
 export function isInjectionAllowed(parameterSpec) {
   return isInjectionPoint(parameterSpec) && !isInjectionEager(parameterSpec);
 }
+

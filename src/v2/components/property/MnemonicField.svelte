@@ -1,8 +1,9 @@
 <script>
-  import { getSpec, fetchSpec, getImplementations } from '../../mnemoUtils.js';
+  import { getSpec, fetchSpec, getImplementations, getNonDomainFunctionParameters } from '../../mnemoUtils.js';
   import ParameterField from './ParameterField.svelte';
   import DocsPopover from '../DocsPopover.svelte';
   import Self from './MnemonicField.svelte';
+    import { extractParameterYaml } from '../../yamlUtils.js';
 
   let { yaml, mnemonic } = $props();
 
@@ -24,12 +25,7 @@
   let docsHoverTimer = null;
   let docsMnemonic = $derived(selectedType ?? mnemonic);
 
-  let params = $derived(
-    mnemonicSpec?.parameters
-      ? Object.values(mnemonicSpec.parameters)
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-      : []
-  );
+  let params = $derived(getNonDomainFunctionParameters(mnemonicSpec));
 
   function onDocsEnter() {
     clearTimeout(docsHoverTimer);
@@ -59,9 +55,10 @@
   }
 
 
-  // $effect(() => {
-  //   console.log('[MnemonicValue] yaml:', yaml);
-  // });
+  $effect(() => {
+    console.log('[MnemonicValue] mnemo:', mnemonic, 'yaml:', yaml);
+
+  });
 </script>
 
 <div class="mnemonic-value">
@@ -84,7 +81,7 @@
   {/if}
 
   {#each params as param (param.name)}
-    <ParameterField yaml={yaml} parameterSpec={param} />
+    <ParameterField parameterYaml={extractParameterYaml(yaml.v, param)} parameterSpec={param} />
   {/each}
 
   {#if selectedType}

@@ -1,23 +1,21 @@
 <script>
-  import { isDelegating, isMapInjection, isCollectionInjection } from '../../parameterSpecUtils.js';
-  import { markDirty } from '../composer/selectionState.svelte.js';
+  import { isMapInjection, isCollectionInjection } from '../../parameterSpecUtils.js';
   import DirectField from './DirectField.svelte';
   import MapField from './MapField.svelte';
   import CollectionField from './CollectionField.svelte';
+  import { extractParameterYaml } from '../../yamlUtils.js';
 
-  let { yaml, parameterSpec } = $props();
+  let { parameterYaml, parameterSpec } = $props();
 
-  let parameterYaml = $derived(isDelegating(parameterSpec) ? yaml?.v : yaml?.v?.[parameterSpec?.name]);
-
-  function ensureV() {
-    if (!yaml.v) yaml.v = {};
-    return yaml.v;
-  }
+  //let parameterYaml = $derived(extractParameterYaml(yaml, parameterSpec));
 
   function handleChange(newValue) {
-    ensureV()[parameterSpec.name] = newValue;
-    markDirty();
+
   }
+
+  // $effect(() => {
+  //   console.log('[ParemeterField]', 'name:', parameterSpec.name,  '; yaml:', parameterYaml);
+  // });
 </script>
 
 <div class="field">
@@ -28,9 +26,9 @@
 
   <div class="value">
     {#if isMapInjection(parameterSpec)}
-      <MapField yaml={yaml?.v} parameterSpec={parameterSpec} />
+      <MapField yaml={parameterYaml} parameterSpec={parameterSpec} />
     {:else if isCollectionInjection(parameterSpec)}
-      <CollectionField yaml={yaml?.v} parameterSpec={parameterSpec} />
+      <CollectionField yaml={parameterYaml} parameterSpec={parameterSpec} />
     {:else}
       <DirectField yaml={parameterYaml} parameterSpec={parameterSpec} onchange={handleChange} />
     {/if}

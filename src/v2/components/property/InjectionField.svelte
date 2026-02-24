@@ -2,7 +2,7 @@
   import { getImplementations } from '../../mnemoUtils.js';
   import MnemonicField from './MnemonicField.svelte';
 
-  let { yaml = null, onchange = () => {} } = $props();
+  let { yaml, onchange = () => {} } = $props();
 
   let injectorOptions = $derived(getImplementations('ResourceInjector'));
   let currentType = $derived(yaml?.t ?? null);
@@ -13,7 +13,7 @@
   }
 
   $effect(() => {
-    console.log('[InjectedValue] yaml:', yaml);
+    console.log('[InjectionField] yaml:', yaml);
   });
 </script>
 
