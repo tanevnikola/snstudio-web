@@ -7,6 +7,7 @@
   import EnumValue from './value/EnumValue.svelte';
   import InjectionField from './InjectionField.svelte';
   import MnemonicField from './MnemonicField.svelte';
+    import { unmount } from 'svelte';
 
   let { yaml, parameterSpec, onchange = () => {} } = $props();
 
@@ -22,12 +23,7 @@
   let isEnum = $derived(isEnumPrimitive(mnemonic));
   let enumValues = $derived(getSpec(mnemonic)?.constraints?.values ?? []);
 
-  let injecting = $state(false);
-
-  $effect(() => {
-    injecting = isInjectorSet;
-    console.log(isInjectorSet, injecting, isImplementing(currentType, 'ResourceInjector'))
-  });
+  let injecting = $state(isInjectorSet);
 
   function handlePrimitiveChange(newValue) {
     onchange(newValue);
