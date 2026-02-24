@@ -135,3 +135,11 @@ export function getImplementations(mnemonic) {
   }
   return [...result].sort();
 }
+
+export function getNonDomainFunctionParameters(spec) {
+  if (!spec?.parameters) return [];
+  return Object.entries(spec.parameters)
+    .filter(([, p]) => p.mnemonic !== 'DomainFunction')
+    .sort(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0))
+    .map(([name, p]) => ({ name, ...p }));
+}

@@ -1,4 +1,5 @@
 <script>
+  import { isDelegating, isMapInjection, isCollectionInjection } from '../../parameterSpecUtils.js';
   import { markDirty } from '../composer/selectionState.svelte.js';
   import DirectField from './DirectField.svelte';
   import MapField from './MapField.svelte';
@@ -6,8 +7,7 @@
 
   let { yaml, parameterSpec } = $props();
 
-  let isDelegating = $derived(parameterSpec?.name === '@delegating@');
-  let currentValue = $derived(isDelegating ? yaml?.v : yaml?.v?.[parameterSpec?.name]);
+  let parameterYaml = $derived(isDelegating(parameterSpec) ? yaml?.v : yaml?.v?.[parameterSpec?.name]);
 
   function ensureV() {
     if (!yaml.v) yaml.v = {};
@@ -27,12 +27,12 @@
   </span>
 
   <div class="value">
-    {#if parameterSpec.injectionStrategy === 'MAP'}
+    {#if isMapInjection(parameterSpec)}
       <MapField yaml={yaml?.v} parameterSpec={parameterSpec} />
-    {:else if parameterSpec.injectionStrategy === 'COLLECTION'}
+    {:else if isCollectionInjection(parameterSpec)}
       <CollectionField yaml={yaml?.v} parameterSpec={parameterSpec} />
     {:else}
-      <DirectField yaml={currentValue} parameterSpec={parameterSpec} onchange={handleChange} />
+      <DirectField yaml={parameterYaml} parameterSpec={parameterSpec} onchange={handleChange} />
     {/if}
   </div>
 </div>

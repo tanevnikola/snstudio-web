@@ -1,6 +1,6 @@
 <script>
   import jsYaml from 'js-yaml';
-  import { fetchSpec } from '../../mnemoUtils.js';
+  import { fetchSpec, getNonDomainFunctionParameters } from '../../mnemoUtils.js';
   import { getSelectionYaml, isDirty, clearDirty } from '../composer/selectionState.svelte.js';
   import { flush } from '../composer/dragState.js';
   import ParameterField from './ParameterField.svelte';
@@ -10,25 +10,20 @@
 
   let mnemonic = $derived(yaml?.tasks ? 'Task.Chain' : yaml?.task?.t ?? null);
   let taskYaml = $derived(yaml?.task ?? (yaml?.tasks ? { t: 'Task.Chain', v: yaml.tasks } : null));
-  let spec = $state(null);
+  let mnemonicSpec = $state(null);
 
+  // load mnemonicSpec
   $effect(() => {
     const m = mnemonic;
-    if (!m) { spec = null; return; }
+    if (!m) { mnemonicSpec = null; return; }
     fetchSpec(m).then(s => {
-      if (mnemonic === m) spec = s;
+      if (mnemonic === m) mnemonicSpec = s;
     }).catch(() => {
-      if (mnemonic === m) spec = null;
+      if (mnemonic === m) mnemonicSpec = null;
     });
   });
 
-  let params = $derived.by(() => {
-    if (!spec?.parameters) return [];
-    return Object.entries(spec.parameters)
-      .filter(([, p]) => p.mnemonic !== 'DomainFunction')
-      .sort(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0))
-      .map(([name, p]) => ({ name, ...p }));
-  });
+  let params = $derived.by(() => getNonDomainFunctionParameters(mnemonicSpec));
 
   let dirty = $derived(isDirty());
   let taskYamlText = $derived(taskYaml ? jsYaml.dump(taskYaml, { lineWidth: -1, noRefs: true }) : '');

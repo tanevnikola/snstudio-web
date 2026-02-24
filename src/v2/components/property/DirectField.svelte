@@ -1,5 +1,6 @@
 <script>
   import { getSpec, isImplementing, isPrimitive, isStringPrimitive, isBooleanPrimitive, isNumberPrimitive, isEnumPrimitive } from '../../mnemoUtils.js';
+  import { isInjectionAllowed } from '../../parameterSpecUtils.js';
   import StringValue from './value/StringValue.svelte';
   import NumberValue from './value/NumberValue.svelte';
   import BooleanValue from './value/BooleanValue.svelte';
@@ -11,21 +12,21 @@
 
 
   let mnemonic = $derived(parameterSpec?.mnemonic ?? null);
-  let canInject = $derived(parameterSpec?.eager === false && parameterSpec?.injectionPoint === true);
+  let canInject = $derived(isInjectionAllowed(parameterSpec));
 
   let currentType = $derived(yaml?.t ?? null);
   let isInjectorSet = $derived(currentType ? isImplementing(currentType, 'ResourceInjector') : false);
+
+  let isPrim = $derived(isPrimitive(mnemonic));
+
+  let isEnum = $derived(isEnumPrimitive(mnemonic));
+  let enumValues = $derived(getSpec(mnemonic)?.constraints?.values ?? []);
 
   let injecting = $state(false);
 
   $effect(() => {
     if (isInjectorSet) injecting = true;
   });
-
-  let isPrim = $derived(isPrimitive(mnemonic));
-
-  let isEnum = $derived(isEnumPrimitive(mnemonic));
-  let enumValues = $derived(getSpec(mnemonic)?.constraints?.values ?? []);
 
   function handlePrimitiveChange(newValue) {
     onchange(newValue);

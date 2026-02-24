@@ -77,23 +77,27 @@
   class:collapsed
   class:dragging
 >
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="header"
+    role="button"
+    tabindex="0"
     onclick={handleClick}
+    onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(e); } }}
     bind:this={taskEl}
   >
     <button class="collapse-btn" class:hidden={domainFunctionParams.length === 0} onclick={(e) => { e.stopPropagation(); collapsed = !collapsed; }}>
       <span class="chevron">&#9662;</span>
     </button>
     <div class="block" style="border: 2px solid {selected ? '#4a90d9' : '#e0e0e0'}">
-      <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
         class="drag-handle"
+        role="button"
+        tabindex="0"
         draggable="true"
         ondragstart={handleDragStart}
         ondragend={(e) => { dragging = false; clearDragItem(); ondragend(e); }}
         onclick={(e) => e.stopPropagation()}
+        onkeydown={(e) => e.stopPropagation()}
       >&#9783;</div>
       <div class="delete">
         <ConfirmDeleteButton onclick={() => { onremove(); flush(); }} />
