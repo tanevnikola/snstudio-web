@@ -107,7 +107,10 @@
     <!-- Render the mnemonic impl -->
     {#if seletedMnemonic}
       {#key seletedMnemonic}
-        <Self yaml={{ t: seletedMnemonic, v: finalYaml[seletedMnemonic] }} mnemonic={seletedMnemonic} />
+        <Self 
+          yaml={{ t: seletedMnemonic, v: finalYaml[seletedMnemonic] }} 
+          mnemonic={seletedMnemonic} 
+        />
       {/key}
     {/if}
   {:else}

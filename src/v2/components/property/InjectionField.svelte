@@ -4,14 +4,22 @@
 
   let { yaml, onchange = () => {} } = $props();
 
-  let injectorOptions = $derived(getImplementations('ResourceInjector'));
-  let selectedInjector = $state(isResourceInjector(yaml.t) ? yaml.t : null)
-  let finalYaml = $state({});
+  let possibleInjectors = $derived(getImplementations('ResourceInjector'));
+
+  let selectedInjector = $state(
+    isResourceInjector(yaml.t) ? yaml.t : null
+  );
+  let injectorYamls = $state(
+    isResourceInjector(selectedInjector) ? { [selectedInjector]: yaml } : {}
+  );
+
   function handleSelectInjector(e) {
     selectedInjector = e.target.value || null;
   }
 
-
+  function updateSelectedInjector(updatedYaml) {
+    injectorYamls[selectedInjector] = updatedYaml;
+  }
 
   // $effect(() => {
   //   console.log('[InjectionField] yaml:', yaml);
@@ -21,13 +29,17 @@
 <div class="injected-value">
   <select class="injector-select" onchange={handleSelectInjector} value={selectedInjector ?? ''}>
     <option value="">— Select Injector —</option>
-    {#each injectorOptions as opt}
-      <option value={opt}>{opt}</option>
+    {#each possibleInjectors as injector}
+      <option value={injector}>{injector}</option>
     {/each}
   </select>
   {#if selectedInjector}
     {#key selectedInjector}
-      <MnemonicField yaml={yaml} mnemonic={selectedInjector} />
+      <MnemonicField 
+        yaml={injectorYamls[selectedInjector] ?? { t: selectedInjector }} 
+        mnemonic={selectedInjector}
+        onchange={updateSelectedInjector}
+      />
     {/key}
   {/if}
 </div>
