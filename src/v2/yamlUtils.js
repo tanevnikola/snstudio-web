@@ -7,6 +7,13 @@ export function dumpAsText(yaml) {
 }
 
 export function extractParameterYaml(yaml, parameterSpec) {
+    const a = extractParameterYaml1(yaml, parameterSpec);
+    if (a.t == 'Object') {
+        console.log("ekstraktisnishen", a, "from", yaml, "and spec", parameterSpec)
+    }
+    return a;
+}
+export function extractParameterYaml1(yaml, parameterSpec) {
     const paramYaml = isDelegating(parameterSpec) 
         ? yaml
         : yaml?.[parameterSpec?.name];

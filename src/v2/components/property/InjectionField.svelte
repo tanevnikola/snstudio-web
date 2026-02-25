@@ -22,9 +22,6 @@
     onchange(updatedYaml)
   }
 
-  // $effect(() => {
-  //   console.log('[InjectionField] yaml:', yaml);
-  // });
 </script>
 
 <div class="injected-value">

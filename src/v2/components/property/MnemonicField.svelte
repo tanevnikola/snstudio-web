@@ -10,7 +10,7 @@
 
   let mnemonicSpec = $state(null);
   let implementations = $derived(mnemonicSpec ? getImplementations(mnemonic) : []);
-  let seletedMnemonic = $state(null);
+  let selectedMnemonic = $state(null);
   let finalYaml = $state({});
 
   $effect(() => {
@@ -21,19 +21,20 @@
       fetchSpec(mnemonic).then((fetched) => { mnemonicSpec = fetched; });
     }
     untrack(() =>{
-      if (isImplementing(yaml.t, mnemonic)) {
-        seletedMnemonic = yaml.t
-        finalYaml[seletedMnemonic] = yaml;
+      if (yaml.t == 'Object') console.log("objeeeect", yaml)
+      if (isImplementing(yaml.t, mnemonic) || yaml.t != 'Object' && mnemonic === 'Object') {
+        selectedMnemonic = yaml.t
+        finalYaml[selectedMnemonic] = yaml;
       }
     })
   });
 
   function handleImplementationChange(e) {
-    seletedMnemonic = /** @type {HTMLSelectElement} */ (e.target).value || null;
+    selectedMnemonic = /** @type {HTMLSelectElement} */ (e.target).value || null;
   }
 
   function notifyChange(value) {
-    onchange({t: seletedMnemonic, v: value})
+    onchange({t: selectedMnemonic, v: value})
   }
 
   /**
@@ -47,7 +48,7 @@
   let showDocs = $state(false);
   let docsPinned = $state(false);
   let docsHoverTimer = null;
-  let docsMnemonic = $derived(seletedMnemonic ?? mnemonic);
+  let docsMnemonic = $derived(selectedMnemonic ?? mnemonic);
 
   function onDocsEnter() {
     clearTimeout(docsHoverTimer);
@@ -83,24 +84,19 @@
     clearTimeout(docsHoverTimer);
   }
 
-
-  // $effect(() => {
-  //   console.log('[MnemonicValue] mnemo:', mnemonic, 'yaml:', yaml);
-
-  // });
 </script>
 
 <div class="mnemonic-value">
   {#if implementations.length > 0}
     <!-- When there are multiple implementations - show drop-down with compatibles  -->
     <div class="select-row">
-      <select value={seletedMnemonic ?? ''} onchange={handleImplementationChange}>
+      <select value={selectedMnemonic ?? ''} onchange={handleImplementationChange}>
         <option value="">-- select --</option>
         {#each implementations as impl}
           <option value={impl}>{impl}</option>
         {/each}
       </select>
-      {#if seletedMnemonic}
+      {#if selectedMnemonic}
         <span class="info-icon" role="button" tabindex="-1"
           onmouseenter={onDocsEnter}
           onmouseleave={onDocsLeave}
@@ -109,11 +105,11 @@
       {/if}
     </div>
     <!-- Render the mnemonic impl -->
-    {#if seletedMnemonic}
-      {#key seletedMnemonic}
+    {#if selectedMnemonic}
+      {#key selectedMnemonic}
         <Self 
-          yaml={{ t: seletedMnemonic, v: finalYaml[seletedMnemonic] }} 
-          mnemonic={seletedMnemonic}
+          yaml={{ t: selectedMnemonic, v: finalYaml[selectedMnemonic].v ??  finalYaml[selectedMnemonic].factory}} 
+          mnemonic={selectedMnemonic}
           onchange={notifyChange}
         />
       {/key}

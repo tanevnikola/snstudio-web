@@ -3,8 +3,7 @@
   import DirectField from './DirectField.svelte';
   import MapField from './MapField.svelte';
   import CollectionField from './CollectionField.svelte';
-  import { extractParameterYaml } from '../../yamlUtils.js';
-
+  
   let { parameterYaml, parameterSpec, onchange = () => {} } = $props();
 
   
@@ -17,9 +16,6 @@
     }
   }
 
-  // $effect(() => {
-  //   console.log('[ParemeterField]', 'name:', parameterSpec.name,  '; yaml:', parameterYaml);
-  // });
 </script>
 
 <div class="field">

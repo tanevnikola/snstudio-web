@@ -25,13 +25,16 @@
     });
   });
 
-  let parameters = $derived.by(() => getNonDomainFunctionParameters(mnemonicSpec));
+  let parameters = $derived.by(() => {
+    var params = getNonDomainFunctionParameters(mnemonicSpec);
+      console.log("Task params", params);
 
+    return params;
+  });
   let dirty = $derived(isDirty());
   let taskYamlText = $derived(dumpAsText(taskYaml));
 
   function onchange(yaml) {
-    console.log("Updated Parameters", dumpAsText(yaml))
   }
 
   function handleSave() {
@@ -45,15 +48,17 @@
     <span class="mnemonic">{mnemonic}</span>
     <button class="save-btn" class:dirty disabled={!dirty} onclick={handleSave}>Save</button>
   </div>
-  <div class="params">
-    {#each parameters as param (param.name)}
-      <ParameterField 
-        parameterYaml={extractParameterYaml(taskYaml.v, param)} 
-        parameterSpec={param} 
-        onchange={onchange} 
-      />
-    {/each}
-  </div>
+  {#key yaml}
+    <div class="params">
+      {#each parameters as param (param.name)}
+        <ParameterField
+          parameterYaml={extractParameterYaml(taskYaml.v, param)}
+          parameterSpec={param}
+          onchange={onchange}
+        />
+      {/each}
+    </div>
+  {/key}
   <YamlContainer 
     yamlText={taskYamlText} 
     collapsed={true} 
