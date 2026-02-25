@@ -5,10 +5,7 @@
   import NumberValue from './value/NumberValue.svelte';
   import BooleanValue from './value/BooleanValue.svelte';
   import EnumValue from './value/EnumValue.svelte';
-  import ReadOnlyValue from './value/ReadOnlyValue.svelte';
-  import InjectionField from './InjectionField.svelte';
   import MnemonicField from './MnemonicField.svelte';
-    import { unmount } from 'svelte';
 
   let { yaml, parameterSpec, onchange = () => {} } = $props();
 
@@ -39,7 +36,7 @@
   {/if}
 
   {#if injecting}
-    <InjectionField yaml={yaml} onchange={notifyChange} />
+    <MnemonicField yaml={yaml} mnemonic={ 'ResourceInjector' } onchange={notifyChange} />
   {:else if isPrim}
     {#if isEnum}
       <EnumValue yaml={yaml} mnemonic={mnemonic} spec={parameterSpec} options={enumValues} onchange={notifyChange} />

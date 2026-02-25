@@ -11,7 +11,7 @@
   let mnemonicSpec = $state(null);
   let implementations = $derived(mnemonicSpec ? getImplementations(mnemonic) : []);
   let selectedMnemonic = $state(null);
-  let finalYaml = $state({});
+  let yamlStates = $state({});
 
   $effect(() => {
     const cached = getSpec(mnemonic);
@@ -23,7 +23,7 @@
     untrack(() =>{
       if (isImplementing(yaml.t, mnemonic) || yaml.t != 'Object' && mnemonic === 'Object') {
         selectedMnemonic = yaml.t
-        finalYaml[selectedMnemonic] = yaml;
+        yamlStates[selectedMnemonic] = yaml;
       }
     })
   });
@@ -33,9 +33,22 @@
   }
 
   function notifyChange(value) {
-    onchange({t: selectedMnemonic, v: value})
+    yamlStates[selectedMnemonic] = { ...yamlStates[selectedMnemonic], ...value };
+    onchange({t: selectedMnemonic, v: yamlStates[selectedMnemonic]})
   }
 
+  // called with (paramName, value) from the template below
+  function parameterChange(paramName, value) {
+    if (!yamlStates[selectedMnemonic]) {
+      yamlStates[selectedMnemonic] = {};
+    }
+    if (paramName !== '@delegating@') {
+      yamlStates[selectedMnemonic][paramName] = { ...yamlStates[selectedMnemonic][paramName], ...value };
+    } else {
+      yamlStates[selectedMnemonic] = { ...yamlStates[selectedMnemonic], ...value };
+    }
+    notifyChange(yamlStates[selectedMnemonic]);
+  }
   /**
    * Handle parameters
    */
@@ -107,7 +120,7 @@
     {#if selectedMnemonic}
       {#key selectedMnemonic}
         <Self
-          yaml={{ t: selectedMnemonic, v: finalYaml?.[selectedMnemonic]?.v ??  finalYaml?.[selectedMnemonic]?.factory}}
+          yaml={{ t: selectedMnemonic, v: yamlStates?.[selectedMnemonic]?.v ??  yamlStates?.[selectedMnemonic]?.factory}}
           mnemonic={selectedMnemonic}
           onchange={notifyChange}
         />
@@ -119,7 +132,7 @@
       <ParameterField
         parameterYaml={extractParameterYaml(yaml.v ?? yaml.factory ?? null, param)}
         parameterSpec={param}
-        onchange={onchange}
+        onchange={(value) => parameterChange(param.name, value)}
       />
     {/each}
   {/if}

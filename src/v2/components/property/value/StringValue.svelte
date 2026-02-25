@@ -8,9 +8,12 @@
   let isMultiline = $derived(typeof value === 'string' && value.includes('\n'));
 
   function handleInput(e) {
+    autoResize(e.target);
+  }
+
+  function handleBlur(e) {
     const v = /** @type {HTMLTextAreaElement} */ (e.target).value;
     onchange(v === '' ? null : {t: mnemonic, v: v});
-    autoResize(e.target);
   }
 
   function autoResize(el) {
@@ -30,9 +33,10 @@
     bind:this={textareaEl}
     value={value}
     oninput={handleInput}
+    onblur={handleBlur}
   ></textarea>
 {:else}
-  <input type="text" value={value} oninput={handleInput} />
+  <input type="text" value={value} onblur={handleBlur} />
 {/if}
 
 <style>

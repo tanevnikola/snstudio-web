@@ -3,14 +3,14 @@
 
   let { yaml, mnemonic, spec, onchange = () => {} } = $props();
 
-  function handleInput(e) {
+  function handleBlur(e) {
     const v = /** @type {HTMLInputElement} */ (e.target).value;
     const num = Number(v);
     onchange(v === '' ? null : {t: mnemonic, v: isNaN(num) ? v : num});
   }
 </script>
 
-<input type="text" value={getPrimitiveValue(yaml, spec)} oninput={handleInput} />
+<input type="text" value={getPrimitiveValue(yaml, spec)} onblur={handleBlur} />
 
 <style>
   input {
