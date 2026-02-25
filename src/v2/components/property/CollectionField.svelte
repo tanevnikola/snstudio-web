@@ -61,6 +61,10 @@ import ParameterField from './ParameterField.svelte';
     align-items: flex-start;
     gap: 4px;
     margin-bottom: 6px;
+    padding: 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: #fafafa;
   }
   .entry-value {
     flex: 1;

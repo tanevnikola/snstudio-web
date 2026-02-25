@@ -18,36 +18,56 @@
 
 </script>
 
-<div class="field">
-  {#if !isDelegating(parameterSpec)}
+{#if isDelegating(parameterSpec)}
+  {#if isMapInjection(parameterSpec)}
+    <MapField
+      yaml={parameterYaml}
+      parameterSpec={parameterSpec}
+      onchange={notifyChange}
+    />
+  {:else if isCollectionInjection(parameterSpec)}
+    <CollectionField
+      yaml={parameterYaml}
+      parameterSpec={parameterSpec}
+      onchange={notifyChange}
+    />
+  {:else}
+    <DirectField
+      yaml={parameterYaml}
+      parameterSpec={parameterSpec}
+      onchange={notifyChange}
+    />
+  {/if}
+{:else}
+  <div class="field">
     <span class="label">
       {parameterSpec.name}
       {#if parameterSpec.required}<span class="required">*</span>{/if}
     </span>
-  {/if}
 
-  <div class="value">
-    {#if isMapInjection(parameterSpec)}
-      <MapField 
-        yaml={parameterYaml} 
-        parameterSpec={parameterSpec} 
-        onchange={notifyChange} 
-      />
-    {:else if isCollectionInjection(parameterSpec)}
-      <CollectionField 
-        yaml={parameterYaml} 
-        parameterSpec={parameterSpec} 
-        onchange={notifyChange} 
-      />
-    {:else}
-      <DirectField 
-        yaml={parameterYaml} 
-        parameterSpec={parameterSpec} 
-        onchange={notifyChange} 
-      />
-    {/if}
+    <div class="value">
+      {#if isMapInjection(parameterSpec)}
+        <MapField
+          yaml={parameterYaml}
+          parameterSpec={parameterSpec}
+          onchange={notifyChange}
+        />
+      {:else if isCollectionInjection(parameterSpec)}
+        <CollectionField
+          yaml={parameterYaml}
+          parameterSpec={parameterSpec}
+          onchange={notifyChange}
+        />
+      {:else}
+        <DirectField
+          yaml={parameterYaml}
+          parameterSpec={parameterSpec}
+          onchange={notifyChange}
+        />
+      {/if}
+    </div>
   </div>
-</div>
+{/if}
 
 <style>
   .field {
