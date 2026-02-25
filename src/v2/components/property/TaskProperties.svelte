@@ -5,7 +5,7 @@
   import { flush } from '../composer/dragState.js';
   import ParameterField from './ParameterField.svelte';
   import YamlContainer from '../YamlContainer.svelte';
-  import { dumpAsText, extractParameterYaml, extractTaskMnemonic, extractTaskYaml } from '../../yamlUtils.js';
+  import { dumpYamlAsText, extractParameterYaml, extractTaskMnemonic, extractTaskYaml } from '../../yamlUtils.js';
 
   let yaml = $derived(getSelectionYaml());
 
@@ -31,9 +31,10 @@
     return getNonDomainFunctionParameters(mnemonicSpec);
   });
   let dirty = $derived(isDirty());
-  let taskYamlText = $derived(dumpAsText(taskYaml));
+  let taskYamlText = $derived(dumpYamlAsText(taskYaml));
 
   function onchange(yaml) {
+    console.log(dumpYamlAsText(yaml))
   }
 
   function handleSave() {

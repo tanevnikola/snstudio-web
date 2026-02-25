@@ -21,7 +21,7 @@
       fetchSpec(mnemonic).then((fetched) => { mnemonicSpec = fetched; });
     }
     untrack(() =>{
-      if (isImplementing(yaml.t, mnemonic) || mnemonic === 'Object') {
+      if (isImplementing(yaml.t, mnemonic) || yaml.t != 'Object' && mnemonic === 'Object') {
         selectedMnemonic = yaml.t
         finalYaml[selectedMnemonic] = yaml;
       }
@@ -107,7 +107,7 @@
     {#if selectedMnemonic}
       {#key selectedMnemonic}
         <Self 
-          yaml={{ t: selectedMnemonic, v: finalYaml[selectedMnemonic].v ??  finalYaml[selectedMnemonic].factory}} 
+          yaml={{ t: selectedMnemonic, v: finalYaml?.[selectedMnemonic]?.v ??  finalYaml?.[selectedMnemonic]?.factory}} 
           mnemonic={selectedMnemonic}
           onchange={notifyChange}
         />
