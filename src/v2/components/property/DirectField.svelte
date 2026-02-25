@@ -5,6 +5,7 @@
   import NumberValue from './value/NumberValue.svelte';
   import BooleanValue from './value/BooleanValue.svelte';
   import EnumValue from './value/EnumValue.svelte';
+  import ReadOnlyValue from './value/ReadOnlyValue.svelte';
   import InjectionField from './InjectionField.svelte';
   import MnemonicField from './MnemonicField.svelte';
     import { unmount } from 'svelte';

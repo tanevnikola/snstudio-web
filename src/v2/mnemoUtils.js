@@ -148,6 +148,7 @@ export function getNonDomainFunctionParameters(mnemonicSpec) {
   if (!mnemonicSpec?.parameters) return [];
   return Object.entries(mnemonicSpec.parameters)
     .filter(([, p]) => p.mnemonic !== 'DomainFunction')
+    .filter(([, p]) => !p.hidden)
     .sort(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0))
     .map(([name, p]) => ({ name, ...p }));
 }

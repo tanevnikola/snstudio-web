@@ -19,10 +19,12 @@
 </script>
 
 <div class="field">
-  <span class="label">
-    {parameterSpec.name}
-    {#if parameterSpec.required}<span class="required">*</span>{/if}
-  </span>
+  {#if !isDelegating(parameterSpec)}
+    <span class="label">
+      {parameterSpec.name}
+      {#if parameterSpec.required}<span class="required">*</span>{/if}
+    </span>
+  {/if}
 
   <div class="value">
     {#if isMapInjection(parameterSpec)}
@@ -50,6 +52,10 @@
 <style>
   .field {
     margin-bottom: 8px;
+    padding: 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: #fafafa;
     width: 100%;
   }
   .label {

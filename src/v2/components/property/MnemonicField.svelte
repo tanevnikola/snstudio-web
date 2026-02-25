@@ -106,8 +106,8 @@
     <!-- Render the mnemonic impl -->
     {#if selectedMnemonic}
       {#key selectedMnemonic}
-        <Self 
-          yaml={{ t: selectedMnemonic, v: finalYaml?.[selectedMnemonic]?.v ??  finalYaml?.[selectedMnemonic]?.factory}} 
+        <Self
+          yaml={{ t: selectedMnemonic, v: finalYaml?.[selectedMnemonic]?.v ??  finalYaml?.[selectedMnemonic]?.factory}}
           mnemonic={selectedMnemonic}
           onchange={notifyChange}
         />
@@ -116,9 +116,9 @@
   {:else}
     <!-- Render Mnemonic parameters -->
     {#each params as param (param.name)}
-      <ParameterField 
-        parameterYaml={extractParameterYaml(yaml.v ?? yaml.factory ?? null, param)} 
-        parameterSpec={param} 
+      <ParameterField
+        parameterYaml={extractParameterYaml(yaml.v ?? yaml.factory ?? null, param)}
+        parameterSpec={param}
         onchange={onchange}
       />
     {/each}
