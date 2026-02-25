@@ -41,13 +41,13 @@
     <InjectionField yaml={yaml} onchange={notifyChange} />
   {:else if isPrim}
     {#if isEnum}
-      <EnumValue yaml={yaml} mnemonic={mnemonic} options={enumValues} onchange={notifyChange} />
+      <EnumValue yaml={yaml} mnemonic={mnemonic} spec={parameterSpec} options={enumValues} onchange={notifyChange} />
     {:else if isBooleanPrimitive(mnemonic)}
-      <BooleanValue yaml={yaml} mnemonic={mnemonic} onchange={notifyChange} />
+      <BooleanValue yaml={yaml} mnemonic={mnemonic} spec={parameterSpec} onchange={notifyChange} />
     {:else if isNumberPrimitive(mnemonic)}
-      <NumberValue yaml={yaml} mnemonic={mnemonic} onchange={notifyChange} />
+      <NumberValue yaml={yaml} mnemonic={mnemonic} spec={parameterSpec} onchange={notifyChange} />
     {:else if isStringPrimitive(mnemonic)}
-      <StringValue yaml={yaml} mnemonic={mnemonic} onchange={notifyChange} />
+      <StringValue yaml={yaml} mnemonic={mnemonic} spec={parameterSpec} onchange={notifyChange} />
     {:else}
       {console.error(`DirectField: unhandled primitive category for mnemonic "${mnemonic}"`)}
     {/if}

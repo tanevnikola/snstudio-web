@@ -1,5 +1,7 @@
 <script>
-  let { yaml, mnemonic, options = [], onchange = () => {} } = $props();
+    import { getPrimitiveValue } from "../../../yamlUtils";
+
+  let { yaml, mnemonic, spec, options = [], onchange = () => {} } = $props();
 
   function handleChange(e) {
     const v = /** @type {HTMLSelectElement} */ (e.target).value
@@ -7,7 +9,7 @@
   }
 </script>
 
-<select value={yaml.v} onchange={handleChange}>
+<select value={getPrimitiveValue(yaml, spec)} onchange={handleChange}>
   <option value="">—</option>
   {#each options as opt}
     <option value={opt}>{opt}</option>

@@ -27,10 +27,10 @@ export function isInjectionAllowed(parameterSpec) {
 }
 
 export function deriveMapItemSpec(parameterSpec) {
-  return {...parameterSpec, name: '@delegating@', injectionStrategy: 'DIRECT'}
+  return {...parameterSpec, name: '@delegating@', injectionStrategy: 'DIRECT', defaultValue: null}
 }
 
 export function deriveCollectionItemSpec(parameterSpec) {
-  return {...parameterSpec, name: '@delegating@', injectionStrategy: 'DIRECT'}
+  return {...parameterSpec, name: '@delegating@', injectionStrategy: 'DIRECT', defaultValue: null}
 }
 

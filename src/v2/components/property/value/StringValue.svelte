@@ -1,5 +1,7 @@
 <script>
-  let { yaml, mnemonic, onchange = () => {} } = $props();
+    import { getPrimitiveValue } from "../../../yamlUtils";
+
+  let { yaml, mnemonic, spec, onchange = () => {} } = $props();
   let multiline = $state(false);
 
   function handleInput(e) {
@@ -17,9 +19,9 @@
     </svg>
   </button>
   {#if multiline}
-    <textarea rows="4" value={yaml.v} oninput={handleInput}></textarea>
+    <textarea rows="4" value={getPrimitiveValue(yaml, spec)} oninput={handleInput}></textarea>
   {:else}
-    <input type="text" value={yaml.v} oninput={handleInput} />
+    <input type="text" value={getPrimitiveValue(yaml, spec)} oninput={handleInput} />
   {/if}
 </div>
 

@@ -1,5 +1,7 @@
 <script>
-  let { yaml, mnemonic, onchange = () => {} } = $props();
+    import { getPrimitiveValue } from "../../../yamlUtils";
+
+  let { yaml, mnemonic, spec, onchange = () => {} } = $props();
 
   function handleInput(e) {
     const v = /** @type {HTMLInputElement} */ (e.target).value;
@@ -8,7 +10,7 @@
   }
 </script>
 
-<input type="text" value={yaml.v} oninput={handleInput} />
+<input type="text" value={getPrimitiveValue(yaml, spec)} oninput={handleInput} />
 
 <style>
   input {

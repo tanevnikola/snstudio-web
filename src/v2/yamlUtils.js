@@ -7,13 +7,6 @@ export function dumpAsText(yaml) {
 }
 
 export function extractParameterYaml(yaml, parameterSpec) {
-    const a = extractParameterYaml1(yaml, parameterSpec);
-    if (a.t == 'Object') {
-        console.log("ekstraktisnishen", a, "from", yaml, "and spec", parameterSpec)
-    }
-    return a;
-}
-export function extractParameterYaml1(yaml, parameterSpec) {
     const paramYaml = isDelegating(parameterSpec) 
         ? yaml
         : yaml?.[parameterSpec?.name];
@@ -53,4 +46,11 @@ export function extractTaskYaml(yaml) {
 
 export function extractTaskMnemonic(taskYaml) {
     return taskYaml?.t ?? null;
+}
+
+export function getPrimitiveValue(primitiveYaml, parameterSpec) {
+    if (primitiveYaml.v == null) {
+        return parameterSpec.defaultValue;
+    }
+    return primitiveYaml.v;
 }

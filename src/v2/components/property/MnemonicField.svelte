@@ -21,8 +21,7 @@
       fetchSpec(mnemonic).then((fetched) => { mnemonicSpec = fetched; });
     }
     untrack(() =>{
-      if (yaml.t == 'Object') console.log("objeeeect", yaml)
-      if (isImplementing(yaml.t, mnemonic) || yaml.t != 'Object' && mnemonic === 'Object') {
+      if (isImplementing(yaml.t, mnemonic) || mnemonic === 'Object') {
         selectedMnemonic = yaml.t
         finalYaml[selectedMnemonic] = yaml;
       }

@@ -1,5 +1,7 @@
 <script>
-  let { yaml, mnemonic, onchange = () => {} } = $props();
+    import { getPrimitiveValue } from "../../../yamlUtils";
+
+  let { yaml, mnemonic, spec, onchange = () => {} } = $props();
 
   function handleChange(e) {
     const v = /** @type {HTMLInputElement} */ (e.target).checked;
@@ -7,7 +9,7 @@
   }
 </script>
 
-<input type="checkbox" checked={yaml.v} onchange={handleChange} />
+<input type="checkbox" checked={getPrimitiveValue(yaml, spec)} onchange={handleChange} />
 
 <style>
   input[type="checkbox"] {

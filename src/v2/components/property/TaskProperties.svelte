@@ -13,23 +13,22 @@
   let mnemonic = $derived(extractTaskMnemonic(taskYaml));
 
   let mnemonicSpec = $state(null);
+  let specForMnemonic = $state(null);
 
   // load mnemonicSpec
   $effect(() => {
     const m = mnemonic;
-    if (!m) { mnemonicSpec = null; return; }
+    if (!m) { mnemonicSpec = null; specForMnemonic = null; return; }
     fetchSpec(m).then(s => {
-      if (mnemonic === m) mnemonicSpec = s;
+      if (mnemonic === m) { mnemonicSpec = s; specForMnemonic = m; }
     }).catch(() => {
-      if (mnemonic === m) mnemonicSpec = null;
+      if (mnemonic === m) { mnemonicSpec = null; specForMnemonic = m; }
     });
   });
 
   let parameters = $derived.by(() => {
-    var params = getNonDomainFunctionParameters(mnemonicSpec);
-      console.log("Task params", params);
-
-    return params;
+    if (specForMnemonic !== mnemonic) return [];
+    return getNonDomainFunctionParameters(mnemonicSpec);
   });
   let dirty = $derived(isDirty());
   let taskYamlText = $derived(dumpAsText(taskYaml));
