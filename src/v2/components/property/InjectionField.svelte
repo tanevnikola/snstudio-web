@@ -56,6 +56,7 @@
     font-size: 13px;
     box-sizing: border-box;
     background: white;
+    margin-bottom: 6px;
   }
   .injector-select:focus {
     outline: none;
