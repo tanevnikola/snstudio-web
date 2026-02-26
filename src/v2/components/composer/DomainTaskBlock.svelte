@@ -5,7 +5,7 @@
   import DomainFunctionCollectionBlock from './DomainFunctionCollectionBlock.svelte';
   import { fetchSpec } from '../../mnemoUtils.js';
   import { setDragHeight, setDragItem, setRemoveSource, clearDragItem, flush } from './dragState.js';
-  import { select, setSelectionYaml } from './selectionState.svelte.js';
+  import { select, setSelectionYaml, setSelectedTaskRef } from './selectionState.svelte.js';
 
   let { yaml = {}, detail = '', parent = null, onremove = () => {}, ondragstart = (/** @type {DragEvent} */ _e) => {}, ondragend = (/** @type {DragEvent} */ _e) => {} } = $props();
 
@@ -29,12 +29,14 @@
     selected = true;
     select(() => { selected = false; });
     setSelectionYaml(parent ?? yaml);
+    setSelectedTaskRef(yaml);
   }
 
   // Re-push fresh references into selection when props change after re-parse
   $effect(() => {
     if (selected) {
       setSelectionYaml(parent ?? yaml);
+      setSelectedTaskRef(yaml);
     }
   });
 

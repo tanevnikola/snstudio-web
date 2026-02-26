@@ -4,13 +4,57 @@
 
   hljs.registerLanguage('yaml', yamlLang);
 
-  let { yamlText = '', readonly = true, onchange = () => {} } = $props();
+  let { yamlText = '', highlightText = '', readonly = true, onchange = () => {} } = $props();
 
+  let editorEl;
+  let highlightEl;
   let textareaEl;
 
   let highlighted = $derived(
     yamlText ? hljs.highlight(yamlText, { language: 'yaml' }).value : ''
   );
+
+  /** Find the line range [startLine, endLine) of highlightText within yamlText. */
+  let highlightRange = $derived.by(() => {
+    if (!highlightText || !yamlText) return null;
+    const hLines = highlightText.replace(/\n$/, '').split('\n');
+    const yLines = yamlText.split('\n');
+    if (hLines.length === 0) return null;
+
+    const firstKey = hLines[0].trim();
+    for (let i = 0; i < yLines.length; i++) {
+      const trimmed = yLines[i].trim();
+      if (trimmed !== firstKey) continue;
+
+      // Determine indentation offset
+      const indent = yLines[i].length - yLines[i].trimStart().length;
+      let match = true;
+      for (let j = 1; j < hLines.length; j++) {
+        if (i + j >= yLines.length) { match = false; break; }
+        const expected = ' '.repeat(indent) + hLines[j];
+        if (yLines[i + j] !== expected) { match = false; break; }
+      }
+      if (match) return { start: i, end: i + hLines.length };
+    }
+    return null;
+  });
+
+  $effect(() => {
+    if (highlightEl && editorEl) {
+      // Access highlightRange to subscribe to changes
+      highlightRange;
+      // Tick: wait for DOM to update position
+      requestAnimationFrame(() => {
+        if (!highlightEl || !editorEl) return;
+        const containerRect = editorEl.getBoundingClientRect();
+        const hlRect = highlightEl.getBoundingClientRect();
+        // If highlight is not fully visible, scroll it into view
+        if (hlRect.top < containerRect.top || hlRect.bottom > containerRect.bottom) {
+          highlightEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      });
+    }
+  });
 
   function onInput(e) {
     if (readonly) return;
@@ -31,8 +75,15 @@
   }
 </script>
 
-<div class="yaml-editor">
+<div class="yaml-editor" bind:this={editorEl}>
   <div class="yaml-overlay">
+    {#if highlightRange}
+      <div
+        class="line-highlight"
+        bind:this={highlightEl}
+        style="top: calc(0.75rem + {highlightRange.start} * 1.17rem); height: calc({highlightRange.end - highlightRange.start} * 1.17rem)"
+      ></div>
+    {/if}
     <pre class="yaml-highlight" aria-hidden="true"><code>{@html highlighted}&nbsp;</code></pre>
     <textarea
       class="yaml-input"
@@ -60,9 +111,21 @@
     display: grid;
     padding: 0.75rem;
     min-height: 100%;
+    position: relative;
   }
 
-  .yaml-overlay > * {
+  .line-highlight {
+    position: absolute;
+    left: 0.5rem;
+    right: 0.5rem;
+    border: 1px solid rgba(137, 180, 250, 0.35);
+    border-radius: 3px;
+    background: rgba(137, 180, 250, 0.07);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .yaml-overlay > :not(.line-highlight) {
     grid-area: 1 / 1;
     font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Menlo, Consolas, monospace;
     font-size: 0.78rem;

@@ -4,6 +4,9 @@ let _ondeselect = null;
 /** The yaml object of the currently selected task. Raw (not deep-proxied). */
 let _yaml = $state.raw(null);
 
+/** The yaml object of the selected task (for highlighting in editor). */
+let _taskRef = $state.raw(null);
+
 /**
  * Select a task. Deselects the previous one via callback.
  * @param {Function} ondeselect - called when this task gets deselected
@@ -18,6 +21,7 @@ export function deselect() {
   _ondeselect?.();
   _ondeselect = null;
   _yaml = null;
+  _taskRef = null;
 }
 
 /** Set the yaml reference of the selected task. */
@@ -28,4 +32,14 @@ export function setSelectionYaml(yaml) {
 /** Get the yaml reference of the selected task. */
 export function getSelectionYaml() {
   return _yaml;
+}
+
+/** Set the direct task reference (for yaml editor highlighting). */
+export function setSelectedTaskRef(ref) {
+  _taskRef = ref;
+}
+
+/** Get the direct task reference. */
+export function getSelectedTaskRef() {
+  return _taskRef;
 }

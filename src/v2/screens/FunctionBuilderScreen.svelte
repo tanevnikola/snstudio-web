@@ -3,6 +3,8 @@
   import FunctionComposer from '../components/composer/FunctionComposer.svelte';
   import TaskProperties from '../components/composer/TaskProperties.svelte';
   import YamlContainer from '../components/yaml/YamlContainer.svelte';
+  import { getSelectedTaskRef } from '../components/composer/selectionState.svelte.js';
+  import { dumpYamlAsText } from '../yamlUtils.js';
 
   let { yaml = '' } = $props();
 
@@ -14,6 +16,7 @@
   let resizingRight = $state(false);
   let resizingYaml = $state(false);
   let yamlHeight = $state(null);
+  let highlightText = $derived(dumpYamlAsText(getSelectedTaskRef()));
 
   function startResizeLeft(e) {
     e.preventDefault();
@@ -84,7 +87,7 @@
       </div>
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <div class="resize-handle horizontal" class:active={resizingYaml} onmousedown={startResizeYaml} role="separator" aria-label="Resize YAML panel"></div>
-      <YamlContainer yamlText={composerYaml} style={yamlHeight ? `flex: 0 0 ${yamlHeight}px` : ''} onchange={(text) => { composerYaml = text; }} />
+      <YamlContainer yamlText={composerYaml} {highlightText} style={yamlHeight ? `flex: 0 0 ${yamlHeight}px` : ''} onchange={(text) => { composerYaml = text; }} />
     </div>
     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <div class="resize-handle vertical" class:active={resizingRight} onmousedown={startResizeRight} role="separator" aria-label="Resize properties"></div>
