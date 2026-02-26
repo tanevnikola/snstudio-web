@@ -5,66 +5,40 @@
   import CollectionField from './CollectionField.svelte';
   
   let { parameterYaml, parameterSpec, onchange = () => {} } = $props();
-
-  
-
-  function notifyChange(value) {
-    if (isDelegating(parameterSpec)) {
-      onchange(value)
-    } else {
-      onchange({ [parameterSpec.name]: value })
-    }
-  }
-
 </script>
 
-{#if isDelegating(parameterSpec)}
+{#snippet fieldContent()}
   {#if isMapInjection(parameterSpec)}
     <MapField
       yaml={parameterYaml}
       parameterSpec={parameterSpec}
-      onchange={notifyChange}
+      onchange={onchange}
     />
   {:else if isCollectionInjection(parameterSpec)}
     <CollectionField
       yaml={parameterYaml}
       parameterSpec={parameterSpec}
-      onchange={notifyChange}
+      onchange={onchange}
     />
   {:else}
     <DirectField
       yaml={parameterYaml}
       parameterSpec={parameterSpec}
-      onchange={notifyChange}
+      onchange={onchange}
     />
   {/if}
+{/snippet}
+
+{#if isDelegating(parameterSpec)}
+  {@render fieldContent()}
 {:else}
   <div class="field">
     <span class="label">
       {parameterSpec.name}
       {#if parameterSpec.required}<span class="required">*</span>{/if}
     </span>
-
     <div class="value">
-      {#if isMapInjection(parameterSpec)}
-        <MapField
-          yaml={parameterYaml}
-          parameterSpec={parameterSpec}
-          onchange={notifyChange}
-        />
-      {:else if isCollectionInjection(parameterSpec)}
-        <CollectionField
-          yaml={parameterYaml}
-          parameterSpec={parameterSpec}
-          onchange={notifyChange}
-        />
-      {:else}
-        <DirectField
-          yaml={parameterYaml}
-          parameterSpec={parameterSpec}
-          onchange={notifyChange}
-        />
-      {/if}
+      {@render fieldContent()}
     </div>
   </div>
 {/if}

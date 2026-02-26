@@ -1,17 +1,17 @@
 import jsYaml from 'js-yaml';
 import { isCollectionInjection, isDelegating, isMapInjection } from "./parameterSpecUtils";
-import { isImplementing } from './mnemoUtils';
+import { isImplementing, isResourceInjector } from './mnemoUtils';
 
 export function dumpYamlAsText(yaml) {
     return yaml ? jsYaml.dump(yaml, { lineWidth: -1, noRefs: true }) : ''
 }
 
 export function extractParameterYaml(yaml, parameterSpec) {
-    const paramYaml = isDelegating(parameterSpec) 
+    const parameterYaml = isDelegating(parameterSpec) 
         ? yaml
         : yaml?.[parameterSpec?.name];
         
-    if (paramYaml == null) {
+    if (parameterYaml == null) {
         if (isCollectionInjection(parameterSpec)) {
             return [];
         }
@@ -21,26 +21,24 @@ export function extractParameterYaml(yaml, parameterSpec) {
         return  { t: parameterSpec.mnemonic };
     }
 
-    if (isImplementing(paramYaml.t, "ResourceInjector") 
-        || isMapInjection(parameterSpec) 
-        || isCollectionInjection(parameterSpec)) {
-        return paramYaml;
-    }
-
-    return normalizeParameterValue(paramYaml, parameterSpec);
+    return normalizeParameterValue(parameterYaml, parameterSpec);
 }
 
 export function normalizeParameterValue(parameterYaml, parameterSpec) {
+    if (isMapInjection(parameterSpec) || isCollectionInjection(parameterSpec)) {
+        return parameterYaml;
+    }
+
     if (parameterYaml?.t == null) {
         return { t: parameterSpec.mnemonic, v: parameterYaml ?? null };
     }
     return parameterYaml;
 }
 
-export function extractTaskYaml(yaml) {
-    return yaml?.task ?? (
-        yaml?.tasks 
-            ? { t: 'Task.Chain', v: yaml.tasks } 
+export function extractTaskYaml(functionYaml) {
+    return functionYaml?.task ?? (
+        functionYaml?.tasks 
+            ? { t: 'Task.Chain', v: functionYaml.tasks } 
             : null);
 }
 

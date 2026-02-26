@@ -11,44 +11,14 @@
   let mnemonicSpec = $state(null);
   let implementations = $derived(mnemonicSpec ? getImplementations(mnemonic) : []);
   let selectedMnemonic = $state(null);
-  let yamlStates = $state({});
 
-  $effect(() => {
-    const cached = getSpec(mnemonic);
-    if (cached) {
-      mnemonicSpec = cached;
-    } else {
-      fetchSpec(mnemonic).then((fetched) => { mnemonicSpec = fetched; });
-    }
-    untrack(() =>{
-      if (isImplementing(yaml.t, mnemonic) || yaml.t != 'Object' && mnemonic === 'Object') {
-        selectedMnemonic = yaml.t
-        yamlStates[selectedMnemonic] = yaml;
-      }
-    })
-  });
+
 
   function handleImplementationChange(e) {
     selectedMnemonic = /** @type {HTMLSelectElement} */ (e.target).value || null;
+    onchange({ t: selectedMnemonic })
   }
 
-  function notifyChange(value) {
-    yamlStates[selectedMnemonic] = { ...yamlStates[selectedMnemonic], ...value };
-    onchange({t: selectedMnemonic, v: yamlStates[selectedMnemonic]})
-  }
-
-  // called with (paramName, value) from the template below
-  function parameterChange(paramName, value) {
-    if (!yamlStates[selectedMnemonic]) {
-      yamlStates[selectedMnemonic] = {};
-    }
-    if (paramName !== '@delegating@') {
-      yamlStates[selectedMnemonic][paramName] = { ...yamlStates[selectedMnemonic][paramName], ...value };
-    } else {
-      yamlStates[selectedMnemonic] = { ...yamlStates[selectedMnemonic], ...value };
-    }
-    notifyChange(yamlStates[selectedMnemonic]);
-  }
   /**
    * Handle parameters
    */
@@ -96,6 +66,34 @@
     clearTimeout(docsHoverTimer);
   }
 
+
+  $effect(() => {
+    const cached = getSpec(mnemonic);
+    if (cached) {
+      mnemonicSpec = cached;
+    } else {
+      fetchSpec(mnemonic).then((fetched) => { mnemonicSpec = fetched; });
+    }
+    untrack(() =>{
+      if (isImplementing(yaml.t, mnemonic) || yaml.t != 'Object' && mnemonic === 'Object') {
+        selectedMnemonic = yaml.t
+      }
+    })
+
+
+  });
+
+  function parameterChange(paramName, value) {
+    if (paramName === '@delegating@') {
+      onchange({ ...yaml, v: value });
+    } else {
+      onchange({ ...yaml, v: { ...yaml.v, [paramName]: value } });
+    }
+  }
+
+  function nestedMnemonicChange(value) {
+    onchange(value)
+  }
 </script>
 
 <div class="mnemonic-value">
@@ -116,18 +114,17 @@
           onkeydown={onDocsClick}>i</span>
       {/if}
     </div>
-    <!-- Render the mnemonic impl -->
     {#if selectedMnemonic}
       {#key selectedMnemonic}
         <Self
-          yaml={{ t: selectedMnemonic, v: yamlStates?.[selectedMnemonic]?.v ??  yamlStates?.[selectedMnemonic]?.factory}}
+          yaml={yaml}
           mnemonic={selectedMnemonic}
-          onchange={notifyChange}
+          onchange={nestedMnemonicChange}
         />
       {/key}
     {/if}
   {:else}
-    <!-- Render Mnemonic parameters -->
+    <!-- When this is a concrete implementation, render the parameters -->
     {#each params as param (param.name)}
       <ParameterField
         parameterYaml={extractParameterYaml(yaml.v ?? yaml.factory ?? null, param)}

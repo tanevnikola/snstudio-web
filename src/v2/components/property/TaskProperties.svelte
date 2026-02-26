@@ -1,15 +1,15 @@
 <script>
   import jsYaml from 'js-yaml';
   import { fetchSpec, getNonDomainFunctionParameters } from '../../mnemoUtils.js';
-  import { getSelectionYaml, isDirty, clearDirty } from '../composer/selectionState.svelte.js';
-  import { flush } from '../composer/dragState.js';
+  import { getSelectionYaml, setSelectionYaml } from '../composer/selectionState.svelte.js';
   import ParameterField from './ParameterField.svelte';
   import YamlContainer from '../YamlContainer.svelte';
   import { dumpYamlAsText, extractParameterYaml, extractTaskMnemonic, extractTaskYaml } from '../../yamlUtils.js';
+  import { flush } from '../composer/dragState.js';
 
-  let yaml = $derived(getSelectionYaml());
+  let functionYaml = $derived(getSelectionYaml());
 
-  let taskYaml = $derived(extractTaskYaml(yaml));
+  let taskYaml = $derived(extractTaskYaml(functionYaml));
   let mnemonic = $derived(extractTaskMnemonic(taskYaml));
 
   let mnemonicSpec = $state(null);
@@ -30,31 +30,39 @@
     if (specForMnemonic !== mnemonic) return [];
     return getNonDomainFunctionParameters(mnemonicSpec);
   });
-  let dirty = $derived(isDirty());
   let taskYamlText = $derived(dumpYamlAsText(taskYaml));
 
-  function onchange(yaml) {
-    console.log(dumpYamlAsText(yaml))
+  function onParamChange(paramName, paramYaml) {
+    const sel = getSelectionYaml();
+    const updated = { ...sel };
+    if (paramName == '@delegating@') {
+      if (JSON.stringify(updated.task.v) === JSON.stringify(paramYaml)) return;
+      updated.task.v = paramYaml;
+    } else {
+      if (JSON.stringify(updated.task.v[paramName]) === JSON.stringify(paramYaml)) return;
+      updated.task.v[paramName] = paramYaml;
+    }
+    console.log("sel", $state.snapshot(sel))
+    console.log("updated", $state.snapshot(updated))
+
+
+    setSelectionYaml(updated);
+    flush();
   }
 
-  function handleSave() {
-    flush();
-    clearDirty();
-  }
 </script>
 
 {#if mnemonic}
   <div class="header">
     <span class="mnemonic">{mnemonic}</span>
-    <button class="save-btn" class:dirty disabled={!dirty} onclick={handleSave}>Save</button>
   </div>
-  {#key yaml}
+  {#key functionYaml}
     <div class="params">
       {#each parameters as param (param.name)}
         <ParameterField
           parameterYaml={extractParameterYaml(taskYaml.v, param)}
           parameterSpec={param}
-          onchange={onchange}
+          onchange={(paramYaml) => onParamChange(param.name, paramYaml)}
         />
       {/each}
     </div>
@@ -80,24 +88,6 @@
     font-size: 13px;
     font-weight: 600;
     color: #333;
-  }
-  .save-btn {
-    padding: 4px 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background: #f5f5f5;
-    font-size: 12px;
-    cursor: not-allowed;
-    color: #999;
-  }
-  .save-btn.dirty {
-    background: #4a90d9;
-    border-color: #3a7bc8;
-    color: white;
-    cursor: pointer;
-  }
-  .save-btn.dirty:hover {
-    background: #3a7bc8;
   }
   .params {
     padding: 8px 12px;

@@ -23,9 +23,6 @@
 
   let injecting = $state(isInjectorSet);
 
-  function notifyChange(value) {
-    onchange(value)
-  }
 </script>
 
 <div class="direct-field">
@@ -36,21 +33,21 @@
   {/if}
 
   {#if injecting}
-    <MnemonicField yaml={yaml} mnemonic={ 'ResourceInjector' } onchange={notifyChange} />
+    <MnemonicField yaml={yaml} mnemonic={ 'ResourceInjector' } onchange={onchange} />
   {:else if isPrim}
     {#if isEnum}
-      <EnumValue yaml={yaml} mnemonic={mnemonic} spec={parameterSpec} options={enumValues} onchange={notifyChange} />
+      <EnumValue yaml={yaml} mnemonic={mnemonic} spec={parameterSpec} options={enumValues} onchange={onchange} />
     {:else if isBooleanPrimitive(mnemonic)}
-      <BooleanValue yaml={yaml} mnemonic={mnemonic} spec={parameterSpec} onchange={notifyChange} />
+      <BooleanValue yaml={yaml} mnemonic={mnemonic} spec={parameterSpec} onchange={onchange} />
     {:else if isNumberPrimitive(mnemonic)}
-      <NumberValue yaml={yaml} mnemonic={mnemonic} spec={parameterSpec} onchange={notifyChange} />
+      <NumberValue yaml={yaml} mnemonic={mnemonic} spec={parameterSpec} onchange={onchange} />
     {:else if isStringPrimitive(mnemonic)}
-      <StringValue yaml={yaml} mnemonic={mnemonic} spec={parameterSpec} onchange={notifyChange} />
+      <StringValue yaml={yaml} mnemonic={mnemonic} spec={parameterSpec} onchange={onchange} />
     {:else}
       {console.error(`DirectField: unhandled primitive category for mnemonic "${mnemonic}"`)}
     {/if}
   {:else}
-    <MnemonicField yaml={yaml} mnemonic={ parameterSpec.mnemonic } onchange={notifyChange} />
+    <MnemonicField yaml={yaml} mnemonic={ parameterSpec.mnemonic } onchange={onchange} />
   {/if}
 </div>
 

@@ -49,7 +49,7 @@ import ParameterField from './ParameterField.svelte';
         <button class="remove-btn" onclick={() => removeEntry(entry.id)} title="Remove entry">&times;</button>
         <input type="text" class="key-input" placeholder="key"
           value={entry.key}
-          oninput={(e) => handleKeyChange(entry.id, /** @type {HTMLInputElement} */ (e.target).value)} />
+          onblur={(e) => handleKeyChange(entry.id, /** @type {HTMLInputElement} */ (e.target).value)} />
       </div>
       <ParameterField
         parameterYaml={normalizeParameterValue(entry.value, entrySpec)}
