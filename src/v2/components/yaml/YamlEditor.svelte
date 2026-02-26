@@ -4,56 +4,28 @@
 
   hljs.registerLanguage('yaml', yamlLang);
 
-  let { yamlText = '', highlightText = '', readonly = true, onchange = () => {} } = $props();
+  let { yamlText = '', highlightRange = null, readonly = true, onchange = () => {} } = $props();
 
   let editorEl;
-  let highlightEl;
   let textareaEl;
 
   let highlighted = $derived(
     yamlText ? hljs.highlight(yamlText, { language: 'yaml' }).value : ''
   );
 
-  /** Find the line range [startLine, endLine) of highlightText within yamlText. */
-  let highlightRange = $derived.by(() => {
-    if (!highlightText || !yamlText) return null;
-    const hLines = highlightText.replace(/\n$/, '').split('\n');
-    const yLines = yamlText.split('\n');
-    if (hLines.length === 0) return null;
-
-    const firstKey = hLines[0].trim();
-    for (let i = 0; i < yLines.length; i++) {
-      const trimmed = yLines[i].trim();
-      if (trimmed !== firstKey) continue;
-
-      // Determine indentation offset
-      const indent = yLines[i].length - yLines[i].trimStart().length;
-      let match = true;
-      for (let j = 1; j < hLines.length; j++) {
-        if (i + j >= yLines.length) { match = false; break; }
-        const expected = ' '.repeat(indent) + hLines[j];
-        if (yLines[i + j] !== expected) { match = false; break; }
-      }
-      if (match) return { start: i, end: i + hLines.length };
-    }
-    return null;
-  });
-
   $effect(() => {
-    if (highlightEl && editorEl) {
-      // Access highlightRange to subscribe to changes
-      highlightRange;
-      // Tick: wait for DOM to update position
-      requestAnimationFrame(() => {
-        if (!highlightEl || !editorEl) return;
-        const containerRect = editorEl.getBoundingClientRect();
-        const hlRect = highlightEl.getBoundingClientRect();
-        // If highlight is not fully visible, scroll it into view
-        if (hlRect.top < containerRect.top || hlRect.bottom > containerRect.bottom) {
-          highlightEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-      });
-    }
+    const range = highlightRange;
+    if (!range || !editorEl) return;
+    // Compute highlight top from range (line height = 0.78rem * 1.5 = 1.17rem)
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const lineH = 1.17 * rem;
+    const pad = 0.75 * rem;
+    const hlTop = pad + range.start * lineH;
+    // Always scroll so the highlight top aligns with the top of the view
+    requestAnimationFrame(() => {
+      if (!editorEl) return;
+      editorEl.scrollTo({ top: Math.max(0, hlTop - pad), behavior: 'smooth' });
+    });
   });
 
   function onInput(e) {
@@ -80,7 +52,6 @@
     {#if highlightRange}
       <div
         class="line-highlight"
-        bind:this={highlightEl}
         style="top: calc(0.75rem + {highlightRange.start} * 1.17rem); height: calc({highlightRange.end - highlightRange.start} * 1.17rem)"
       ></div>
     {/if}

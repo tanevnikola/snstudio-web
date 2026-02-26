@@ -1,7 +1,7 @@
 <script>
   import YamlEditor from './YamlEditor.svelte';
 
-  let { yamlText = '', highlightText = '', style = '', collapsed = false, canEdit = true, onchange = () => {} } = $props();
+  let { yamlText = '', highlightRange = null, style = '', collapsed = false, canEdit = true, onchange = () => {} } = $props();
 
   let readonlyMode = $state(true);
   let copyLabel = $state('Copy');
@@ -28,7 +28,7 @@
     </span>
   </div>
   {#if !collapsed}
-    <YamlEditor {yamlText} {highlightText} readonly={readonlyMode} {onchange} />
+    <YamlEditor {yamlText} {highlightRange} readonly={readonlyMode} {onchange} />
   {/if}
 </div>
 

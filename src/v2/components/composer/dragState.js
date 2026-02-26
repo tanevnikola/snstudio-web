@@ -3,6 +3,7 @@ let _dragHeight = 0;
 let _flush = null;
 let _dragItem = null;
 let _removeSource = null;
+let _parsed = null;
 
 export function setDragHeight(h) {
   _dragHeight = h;
@@ -64,4 +65,14 @@ export function setRemoveSource(fn) {
 /** Call to remove the dragged item from its source location. */
 export function removeSource() {
   _removeSource?.();
+}
+
+/** Store the parsed yaml tree (called by FunctionComposer). */
+export function setParsedTree(tree) {
+  _parsed = tree;
+}
+
+/** Get the parsed yaml tree. */
+export function getParsedTree() {
+  return _parsed;
 }

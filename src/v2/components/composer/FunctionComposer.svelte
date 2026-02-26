@@ -1,7 +1,7 @@
 <script>
   import yaml from 'js-yaml';
   import DomainFunctionBlock from './DomainFunctionBlock.svelte';
-  import { registerFlush } from './dragState.js';
+  import { registerFlush, setParsedTree } from './dragState.js';
 
   let { yaml: yamlText = '', onyamlchange = (/** @type {string} */ _text) => {} } = $props();
 
@@ -12,6 +12,8 @@
     } catch {}
     return null;
   });
+
+  $effect(() => { setParsedTree(parsed); });
 
   registerFlush(() => {
     if (!parsed) return;

@@ -4,7 +4,8 @@
   import TaskProperties from '../components/composer/TaskProperties.svelte';
   import YamlContainer from '../components/yaml/YamlContainer.svelte';
   import { getSelectedTaskRef } from '../components/composer/selectionState.svelte.js';
-  import { dumpYamlAsText } from '../yamlUtils.js';
+  import { getParsedTree } from '../components/composer/dragState.js';
+  import jsYaml from 'js-yaml';
 
   let { yaml = '' } = $props();
 
@@ -16,7 +17,44 @@
   let resizingRight = $state(false);
   let resizingYaml = $state(false);
   let yamlHeight = $state(null);
-  let highlightText = $derived(dumpYamlAsText(getSelectedTaskRef()));
+
+  const MARKER = '__hl__';
+
+  /** Find highlight line range by injecting a marker into the task ref, dumping, and locating it. */
+  let highlightRange = $derived.by(() => {
+    const ref = getSelectedTaskRef();
+    const tree = getParsedTree();
+    if (!ref || !tree) return null;
+
+    // Inject temporary marker
+    ref[MARKER] = 1;
+    const marked = jsYaml.dump(tree, { lineWidth: -1, noRefs: true });
+    delete ref[MARKER];
+
+    const lines = marked.split('\n');
+    const mi = lines.findIndex(l => l.trim() === MARKER + ': 1');
+    if (mi < 0) return null;
+
+    const markerIndent = lines[mi].search(/\S/);
+
+    // Scan backward to find start of this object
+    let start = mi;
+    while (start > 0) {
+      const prev = lines[start - 1];
+      if (prev.trim() === '') { start--; continue; }
+      const prevIndent = prev.search(/\S/);
+      if (prevIndent < markerIndent) {
+        // Check if it's an array item start: "  - key:" where - is at indent-2
+        if (prevIndent === markerIndent - 2 && prev.trimStart().startsWith('- ')) {
+          start--;
+        }
+        break;
+      }
+      start--;
+    }
+
+    return { start, end: mi };
+  });
 
   function startResizeLeft(e) {
     e.preventDefault();
@@ -87,7 +125,7 @@
       </div>
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <div class="resize-handle horizontal" class:active={resizingYaml} onmousedown={startResizeYaml} role="separator" aria-label="Resize YAML panel"></div>
-      <YamlContainer yamlText={composerYaml} {highlightText} style={yamlHeight ? `flex: 0 0 ${yamlHeight}px` : ''} onchange={(text) => { composerYaml = text; }} />
+      <YamlContainer yamlText={composerYaml} {highlightRange} style={yamlHeight ? `flex: 0 0 ${yamlHeight}px` : ''} onchange={(text) => { composerYaml = text; }} />
     </div>
     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <div class="resize-handle vertical" class:active={resizingRight} onmousedown={startResizeRight} role="separator" aria-label="Resize properties"></div>
