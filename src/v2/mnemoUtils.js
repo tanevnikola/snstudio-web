@@ -19,41 +19,6 @@ export async function fetchSpec(mnemonic) {
   return spec;
 }
 
-export async function fetchAllSpecs(roots = [
-  'Speck', 'Object',
-  'int', 'long', 'double', 'float', 'boolean', 'byte',
-  'int[]', 'long[]', 'double[]', 'float[]', 'boolean[]', 'byte[]',
-], onProgress) {
-  const seedList = Array.isArray(roots) ? roots : [roots];
-  const visited = new Set();
-  const queue = [...seedList];
-  let loaded = 0;
-  let total = seedList.length;
-
-  while (queue.length > 0) {
-    const m = queue.shift();
-    if (visited.has(m)) continue;
-    visited.add(m);
-
-    try {
-      const spec = await fetchSpec(m);
-      if (spec.implementations?.length) {
-        for (const impl of spec.implementations) {
-          if (!visited.has(impl)) {
-            queue.push(impl);
-            total++;
-          }
-        }
-      }
-    } catch { /* skip failed */ }
-
-    loaded++;
-    onProgress?.(loaded, total);
-    await new Promise(r => setTimeout(r, 1));
-  }
-
-  return loaded;
-}
 
 export function getSpec(mnemonic) {
   return cache.get(mnemonic) ?? null;

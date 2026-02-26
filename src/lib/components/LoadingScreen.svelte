@@ -1,5 +1,5 @@
 <script>
-  import { fetchAllSpecs } from '../../v2/mnemoUtils.js';
+  import { fetchSpec } from '../../v2/mnemoUtils.js';
 
   let { onready } = $props();
 
@@ -7,8 +7,42 @@
   let total = $state(0);
   let error = $state(null);
 
+  async function fetchAllSpecs(onProgress) {
+    const roots = [
+      'Speck', 'Object',
+      'int', 'long', 'double', 'float', 'boolean', 'byte',
+      'int[]', 'long[]', 'double[]', 'float[]', 'boolean[]', 'byte[]',
+    ];
+    const visited = new Set();
+    const queue = [...roots];
+    let l = 0;
+    let t = roots.length;
+
+    while (queue.length > 0) {
+      const m = queue.shift();
+      if (visited.has(m)) continue;
+      visited.add(m);
+
+      try {
+        const spec = await fetchSpec(m);
+        if (spec.implementations?.length) {
+          for (const impl of spec.implementations) {
+            if (!visited.has(impl)) {
+              queue.push(impl);
+              t++;
+            }
+          }
+        }
+      } catch { /* skip failed */ }
+
+      l++;
+      onProgress?.(l, t);
+      await new Promise(r => setTimeout(r, 0));
+    }
+  }
+
   $effect(() => {
-    fetchAllSpecs(undefined, (l, t) => {
+    fetchAllSpecs((l, t) => {
       loaded = l;
       total = t;
     })
