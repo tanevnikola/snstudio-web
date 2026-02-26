@@ -1,11 +1,13 @@
 <script>
   import { getPrimitiveValue } from "../../yamlUtils";
+  import JsEditor from '../editor/JsEditor.svelte';
 
   let { yaml, mnemonic, spec, onchange = () => {} } = $props();
 
   let textareaEl;
   let value = $derived(getPrimitiveValue(yaml, spec) ?? '');
   let isMultiline = $derived(typeof value === 'string' && value.includes('\n'));
+  let isGraalJs = $derived(spec?.hints?.includes('GraalJs'));
 
   function handleInput(e) {
     autoResize(e.target);
@@ -14,6 +16,10 @@
   function handleBlur(e) {
     const v = /** @type {HTMLTextAreaElement} */ (e.target).value;
     onchange(v === '' ? null : {t: mnemonic, v: v});
+  }
+
+  function handleJsChange(text) {
+    onchange(text === '' ? null : {t: mnemonic, v: text});
   }
 
   function autoResize(el) {
@@ -28,7 +34,9 @@
   });
 </script>
 
-{#if isMultiline}
+{#if isGraalJs}
+  <JsEditor text={value} canEdit={true} onchange={handleJsChange} />
+{:else if isMultiline}
   <textarea
     bind:this={textareaEl}
     value={value}

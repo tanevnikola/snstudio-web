@@ -1,15 +1,12 @@
 <script>
   import { getSelectionYaml, setSelectionYaml } from './selectionState.svelte.js';
   import ObjectProperties from '../property/ObjectProperties.svelte';
-  import YamlEditor from '../editor/YamlEditor.svelte';
-  import { dumpYamlAsText, extractTaskMnemonic, extractTaskYaml } from '../../yamlUtils.js';
+  import { extractTaskMnemonic, extractTaskYaml } from '../../yamlUtils.js';
   import { flush } from './dragState.js';
 
   let functionYaml = $derived(getSelectionYaml());
   let taskYaml = $derived(extractTaskYaml(functionYaml));
   let mnemonic = $derived(extractTaskMnemonic(taskYaml));
-  let taskYamlText = $derived(dumpYamlAsText(taskYaml));
-
   function onchange(updatedTaskYaml) {
     const sel = getSelectionYaml();
     const task = sel.task ?? sel;
@@ -29,12 +26,6 @@
   {#key mnemonic}
     <ObjectProperties yaml={taskYaml} onchange={onchange} />
   {/key}
-  <YamlEditor
-    yamlText={taskYamlText}
-    collapsed={true}
-    canEdit={false}
-    style="max-height: 450px"
-  />
 {/if}
 
 <style>
