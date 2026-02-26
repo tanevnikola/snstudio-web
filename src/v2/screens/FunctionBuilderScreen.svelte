@@ -20,34 +20,29 @@
 
   const MARKER = '__hl__';
 
-  /** Find highlight line range by injecting a marker into the task ref, dumping, and locating it. */
   let highlightRange = $derived.by(() => {
     const ref = getSelectedTaskRef();
     const tree = getParsedTree();
     if (!ref || !tree) return null;
 
-    // Inject temporary marker
+    // Inject temporary marker into task ref, dump, find it
     ref[MARKER] = 1;
-    const marked = jsYaml.dump(tree, { lineWidth: -1, noRefs: true });
+    const dump = jsYaml.dump(tree, { lineWidth: -1, noRefs: true });
     delete ref[MARKER];
 
-    const lines = marked.split('\n');
+    const lines = dump.split('\n');
     const mi = lines.findIndex(l => l.trim() === MARKER + ': 1');
     if (mi < 0) return null;
 
+    // Scan backward from marker to find object start
     const markerIndent = lines[mi].search(/\S/);
-
-    // Scan backward to find start of this object
     let start = mi;
     while (start > 0) {
       const prev = lines[start - 1];
       if (prev.trim() === '') { start--; continue; }
       const prevIndent = prev.search(/\S/);
       if (prevIndent < markerIndent) {
-        // Check if it's an array item start: "  - key:" where - is at indent-2
-        if (prevIndent === markerIndent - 2 && prev.trimStart().startsWith('- ')) {
-          start--;
-        }
+        if (prevIndent === markerIndent - 2 && prev.trimStart().startsWith('- ')) start--;
         break;
       }
       start--;
