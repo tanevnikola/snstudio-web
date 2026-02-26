@@ -14,7 +14,7 @@
   }
 </script>
 
-<div class="yaml-screen" class:collapsed {style}>
+<div class="yaml-screen" class:collapsed style={collapsed ? '' : style}>
   <div class="header">
     <button class="collapse-btn" onclick={() => (collapsed = !collapsed)}>
       <span class="arrow">{collapsed ? '▶' : '▼'}</span>
