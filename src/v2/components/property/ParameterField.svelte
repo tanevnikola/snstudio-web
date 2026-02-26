@@ -1,4 +1,5 @@
 <script>
+  import { marked } from 'marked';
   import { isMapInjection, isCollectionInjection, isDelegating, isInjectionAllowed } from '../../parameterSpecUtils.js';
   import { getSpec, isImplementing, isPrimitive, isStringPrimitive, isBooleanPrimitive, isNumberPrimitive, isEnumPrimitive } from '../../mnemoUtils.js';
   import MapValue from './MapValue.svelte';
@@ -22,6 +23,12 @@
   let enumValues = $derived(getSpec(mnemonic)?.constraints?.values ?? []);
 
   let injecting = $state(isInjectorSet);
+
+  let descriptionHtml = $derived(parameterSpec?.description ? marked.parseInline(parameterSpec.description) : '');
+  let showTooltip = $state(false);
+
+  let isMnemonicField = $derived(!isPrim && !isMapInjection(parameterSpec) && !isCollectionInjection(parameterSpec) && !isDelegating(parameterSpec));
+  let collapsed = $state(false);
 </script>
 
 {#snippet fieldContent()}
@@ -70,13 +77,29 @@
   {@render fieldContent()}
 {:else}
   <div class="field">
-    <span class="label">
-      {parameterSpec.name}
-      {#if parameterSpec.required}<span class="required">*</span>{/if}
-    </span>
-    <div class="value">
-      {@render fieldContent()}
+    <div class="field-header">
+      {#if isMnemonicField}
+        <button class="collapse-toggle" onclick={() => collapsed = !collapsed}>
+          {collapsed ? '▶' : '▼'}
+        </button>
+      {/if}
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <span class="label" onmouseenter={() => showTooltip = true} onmouseleave={() => showTooltip = false}>
+        {parameterSpec.name}
+        {#if parameterSpec.required}<span class="required">*</span>{/if}
+        {#if showTooltip && descriptionHtml}
+          <span class="tooltip">{@html descriptionHtml}</span>
+        {/if}
+      </span>
+      <span class="meta">
+        ({parameterSpec.mnemonic}{#if parameterSpec.injectionStrategy}, {parameterSpec.injectionStrategy}{/if})
+      </span>
     </div>
+    {#if !collapsed}
+      <div class="value">
+        {@render fieldContent()}
+      </div>
+    {/if}
   </div>
 {/if}
 
@@ -89,16 +112,63 @@
     background: #fafafa;
     width: 100%;
   }
+  .field-header {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  .collapse-toggle {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 8px;
+    color: #999;
+    cursor: pointer;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .collapse-toggle:hover {
+    color: #555;
+  }
   .label {
-    display: block;
+    display: inline;
     font-size: 12px;
     font-weight: 500;
     color: #555;
-    margin-bottom: 2px;
+    position: relative;
+    cursor: help;
   }
+  .tooltip {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    z-index: 100;
+    background: #333;
+    color: #eee;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.5;
+    max-width: 320px;
+    width: max-content;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    pointer-events: none;
+  }
+  .tooltip :global(p) { margin: 0.2rem 0; }
+  .tooltip :global(code) { background: rgba(255,255,255,0.15); padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 10px; }
+  .tooltip :global(strong) { color: #fff; }
+  .tooltip :global(a) { color: #7ab8ff; }
   .required {
     color: #e53935;
     margin-left: 2px;
+  }
+  .meta {
+    display: block;
+    font-size: 10px;
+    color: #999;
+    margin-bottom: 4px;
   }
   .value {
     display: flex;

@@ -13,7 +13,8 @@
 
 <style>
   input[type="checkbox"] {
-    margin: 0;
+    margin: 4px 0;
     cursor: pointer;
+    flex: 0 0 auto !important;
   }
 </style>

@@ -12,8 +12,12 @@
 
   function onchange(updatedTaskYaml) {
     const sel = getSelectionYaml();
-    if (JSON.stringify(sel.task) === JSON.stringify(updatedTaskYaml)) return;
-    setSelectionYaml({ ...sel, task: updatedTaskYaml });
+    const task = sel.task ?? sel;
+    if (JSON.stringify(task) === JSON.stringify(updatedTaskYaml)) return;
+    // Mutate in-place so flush() sees the changes on the parsed tree
+    Object.keys(task).forEach(k => { if (!(k in updatedTaskYaml)) delete task[k]; });
+    Object.assign(task, updatedTaskYaml);
+    setSelectionYaml({...sel});
     flush();
   }
 </script>
@@ -22,7 +26,7 @@
   <div class="header">
     <span class="mnemonic">{mnemonic}</span>
   </div>
-  {#key functionYaml}
+  {#key mnemonic}
     <ObjectProperties yaml={taskYaml} onchange={onchange} />
   {/key}
   <YamlContainer
