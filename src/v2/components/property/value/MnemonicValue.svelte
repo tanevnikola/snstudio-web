@@ -1,9 +1,9 @@
 <script>
-  import { getSpec, fetchSpec, getImplementations, getNonDomainFunctionParameters, isImplementing } from '../../mnemoUtils.js';
-  import ParameterField from './ParameterField.svelte';
-  import DocsPopover from '../DocsPopover.svelte';
-  import Self from './MnemonicField.svelte';
-    import { extractParameterYaml } from '../../yamlUtils.js';
+  import { getSpec, fetchSpec, getImplementations, getNonDomainFunctionParameters, isImplementing } from '../../../mnemoUtils.js';
+  import ParameterField from '../ParameterField.svelte';
+  import DocsPopover from '../../DocsPopover.svelte';
+  import Self from './MnemonicValue.svelte';
+    import { extractParameterYaml } from '../../../yamlUtils.js';
     import { untrack } from 'svelte';
 
   let { yaml, mnemonic, onchange = () => {} } = $props();

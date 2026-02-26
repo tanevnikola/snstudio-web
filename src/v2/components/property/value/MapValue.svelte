@@ -1,60 +1,46 @@
 <script>
-  import { deriveMapItemSpec } from '../../parameterSpecUtils';
-  import { normalizeParameterValue } from '../../yamlUtils';
-import ParameterField from './ParameterField.svelte';
+  import { deriveMapItemSpec } from '../../../parameterSpecUtils';
+  import { normalizeParameterValue } from '../../../yamlUtils';
+  import ParameterField from '../ParameterField.svelte';
 
   let { yaml = null, parameterSpec = null, onchange = () => {} } = $props();
 
   let entrySpec = $derived(deriveMapItemSpec(parameterSpec));
-  let entries = $state([]);
+  let keys = $derived(yaml ? Object.keys(yaml) : []);
 
-  function emitMap() {
-    onchange(Object.fromEntries(entries.map(e => [e.key, e.value])));
+  function handleValueChange(key, value) {
+    onchange({ ...yaml, [key]: value });
   }
 
-  function handleEntryChange(id, value) {
-    const entry = entries.find(e => e.id === id);
-    if (entry) entry.value = value;
-    emitMap();
-  }
-
-  function handleKeyChange(id, newKey) {
-    const entry = entries.find(e => e.id === id);
-    if (entry) entry.key = newKey;
-    emitMap();
+  function handleKeyChange(oldKey, newKey) {
+    if (oldKey === newKey) return;
+    const { [oldKey]: value, ...rest } = yaml;
+    onchange({ ...rest, [newKey]: value });
   }
 
   function addEntry() {
-    entries.push({ id: crypto.randomUUID(), key: '' });
-    emitMap();
+    onchange({ ...yaml, '': null });
   }
 
-  function removeEntry(id) {
-    entries = entries.filter((e) => e.id !== id);
-    emitMap();
+  function removeEntry(key) {
+    const { [key]: _, ...rest } = yaml;
+    onchange(rest);
   }
-
-  $effect(() => {
-    const map = yaml;
-    if (map && typeof map === 'object' && !Array.isArray(map)) {
-      entries = Object.keys(map).map(key => ({ id: crypto.randomUUID(), key, value: map[key] }));
-    }
-  });
 </script>
 
 <div class="map-value">
-  {#each entries as entry (entry.id)}
+  {#each keys as key (key)}
     <div class="entry">
       <div class="entry-header">
-        <button class="remove-btn" onclick={() => removeEntry(entry.id)} title="Remove entry">&times;</button>
+        <button class="remove-btn" onclick={() => removeEntry(key)} title="Remove entry">&times;</button>
         <input type="text" class="key-input" placeholder="key"
-          value={entry.key}
-          onblur={(e) => handleKeyChange(entry.id, /** @type {HTMLInputElement} */ (e.target).value)} />
+          value={key}
+          onblur={(e) => handleKeyChange(key, /** @type {HTMLInputElement} */ (e.target).value)} />
       </div>
       <ParameterField
-        parameterYaml={normalizeParameterValue(entry.value, entrySpec)}
+        parameterYaml={normalizeParameterValue(yaml[key], entrySpec)}
         parameterSpec={entrySpec}
-        onchange={(value) => handleEntryChange(entry.id, value)}
+        onchange={(value) => handleValueChange(key, value)}
       />
     </div>
   {/each}
