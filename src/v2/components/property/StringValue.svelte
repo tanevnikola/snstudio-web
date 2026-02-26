@@ -1,6 +1,7 @@
 <script>
   import { getPrimitiveValue } from "../../yamlUtils";
   import JsEditor from '../editor/JsEditor.svelte';
+  import PebbleEditor from '../editor/PebbleEditor.svelte';
 
   let { yaml, mnemonic, spec, onchange = () => {} } = $props();
 
@@ -8,6 +9,7 @@
   let value = $derived(getPrimitiveValue(yaml, spec) ?? '');
   let isMultiline = $derived(typeof value === 'string' && value.includes('\n'));
   let isGraalJs = $derived(spec?.hints?.includes('GraalJs'));
+  let isPebble = $derived(spec?.hints?.includes('Pebble'));
 
   function handleInput(e) {
     autoResize(e.target);
@@ -36,6 +38,8 @@
 
 {#if isGraalJs}
   <JsEditor text={value} canEdit={true} onchange={handleJsChange} />
+{:else if isPebble}
+  <PebbleEditor text={value} canEdit={true} onchange={handleJsChange} />
 {:else if isMultiline}
   <textarea
     bind:this={textareaEl}
