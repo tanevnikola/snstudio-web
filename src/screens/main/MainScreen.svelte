@@ -43,7 +43,7 @@
       {/if}
     </div>
 
-    <span class="app-title">SNStudio</span>
+    <span class="app-title">Swarmnet Studio</span>
 
     <div class="topbar-right">
       {#if current.screen !== 'settings'}

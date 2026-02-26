@@ -55,7 +55,7 @@
 
 <div class="loading-screen">
   <div class="content">
-    <h1 class="title">SNStudio</h1>
+    <h1 class="title">Swarmnet Studio</h1>
     {#if error}
       <div class="error">
         <p>Failed to load specifications</p>
