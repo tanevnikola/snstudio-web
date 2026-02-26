@@ -1,7 +1,7 @@
 <script>
   import { getSelectionYaml, setSelectionYaml } from './selectionState.svelte.js';
   import ObjectProperties from '../property/ObjectProperties.svelte';
-  import YamlContainer from '../yaml/YamlContainer.svelte';
+  import YamlEditor from '../editor/YamlEditor.svelte';
   import { dumpYamlAsText, extractTaskMnemonic, extractTaskYaml } from '../../yamlUtils.js';
   import { flush } from './dragState.js';
 
@@ -29,7 +29,7 @@
   {#key mnemonic}
     <ObjectProperties yaml={taskYaml} onchange={onchange} />
   {/key}
-  <YamlContainer
+  <YamlEditor
     yamlText={taskYamlText}
     collapsed={true}
     canEdit={false}

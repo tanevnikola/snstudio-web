@@ -1,10 +1,18 @@
 <script>
-  import YamlEditor from './YamlEditor.svelte';
+  import hljs from 'highlight.js/lib/core';
+  import yamlLang from 'highlight.js/lib/languages/yaml';
+  import CodeEditor from './CodeEditor.svelte';
+
+  hljs.registerLanguage('yaml', yamlLang);
 
   let { yamlText = '', highlightRange = null, style = '', collapsed = false, canEdit = true, onchange = () => {} } = $props();
 
   let readonlyMode = $state(true);
   let copyLabel = $state('Copy');
+
+  let highlightedHtml = $derived(
+    yamlText ? hljs.highlight(yamlText, { language: 'yaml' }).value : ''
+  );
 
   function copyYaml() {
     navigator.clipboard.writeText(yamlText).then(() => {
@@ -28,7 +36,7 @@
     </span>
   </div>
   {#if !collapsed}
-    <YamlEditor {yamlText} {highlightRange} readonly={readonlyMode} {onchange} />
+    <CodeEditor text={yamlText} {highlightedHtml} {highlightRange} readonly={readonlyMode} {onchange} />
   {/if}
 </div>
 
@@ -131,5 +139,40 @@
     color: #a6e3a1;
     border-color: #a6e3a1;
     background: rgba(166, 227, 161, 0.1);
+  }
+
+  /* Catppuccin Mocha syntax colors for YAML */
+  .yaml-screen :global(.hljs-attr) {
+    color: #89b4fa;
+  }
+
+  .yaml-screen :global(.hljs-string) {
+    color: #a6e3a1;
+  }
+
+  .yaml-screen :global(.hljs-number) {
+    color: #fab387;
+  }
+
+  .yaml-screen :global(.hljs-literal) {
+    color: #fab387;
+  }
+
+  .yaml-screen :global(.hljs-bullet) {
+    color: #94e2d5;
+  }
+
+  .yaml-screen :global(.hljs-comment) {
+    color: #6c7086;
+    font-style: italic;
+  }
+
+  .yaml-screen :global(.hljs-meta) {
+    color: #f5c2e7;
+  }
+
+  .yaml-screen :global(.hljs-section) {
+    color: #89b4fa;
+    font-weight: 600;
   }
 </style>
