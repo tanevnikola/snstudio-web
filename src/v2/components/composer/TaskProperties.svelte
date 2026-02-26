@@ -1,7 +1,7 @@
 <script>
   import { getSelectionYaml, setSelectionYaml } from './selectionState.svelte.js';
   import ObjectProperties from '../property/ObjectProperties.svelte';
-  import YamlContainer from '../YamlContainer.svelte';
+  import YamlContainer from '../yaml/YamlContainer.svelte';
   import { dumpYamlAsText, extractTaskMnemonic, extractTaskYaml } from '../../yamlUtils.js';
   import { flush } from './dragState.js';
 

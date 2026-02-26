@@ -10,12 +10,12 @@
     html = '';
     fetch(url)
       .then((r) => r.text())
-      .then((text) => {
-        html = marked(text);
+      .then(async (text) => {
+        html = await marked(text);
         loading = false;
       })
       .catch(() => {
-        html = '<p class="error">Failed to load documentation.</p>';
+        html = '<p>Failed to load documentation.</p>';
         loading = false;
       });
   });
@@ -39,8 +39,7 @@
 <svelte:window onkeydown={onKeydown} />
 
 {#if pinned}
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="backdrop" onclick={onBackdropClick}>
+  <div class="backdrop" role="button" tabindex="0" onclick={onBackdropClick} onkeydown={onKeydown}>
     <div class="popover pinned">
       <div class="header">
         <span class="title">{title}</span>
@@ -256,8 +255,4 @@
     font-size: 0.8rem;
   }
 
-  .error {
-    padding: 1rem;
-    color: #999;
-  }
 </style>

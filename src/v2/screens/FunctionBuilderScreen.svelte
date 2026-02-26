@@ -2,7 +2,7 @@
   import ComponentsPalette from '../components/palette/ComponentsPalette.svelte';
   import FunctionComposer from '../components/composer/FunctionComposer.svelte';
   import TaskProperties from '../components/composer/TaskProperties.svelte';
-  import YamlContainer from '../components/YamlContainer.svelte';
+  import YamlContainer from '../components/yaml/YamlContainer.svelte';
 
   let { yaml = '' } = $props();
 

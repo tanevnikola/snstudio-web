@@ -1,7 +1,7 @@
 <script>
-  import { deriveMapItemSpec } from '../../../parameterSpecUtils';
-  import { normalizeParameterValue } from '../../../yamlUtils';
-  import ParameterField from '../ParameterField.svelte';
+  import { deriveMapItemSpec } from '../../parameterSpecUtils';
+  import { normalizeParameterValue } from '../../yamlUtils';
+  import ParameterField from './ParameterField.svelte';
 
   let { yaml = null, parameterSpec = null, onchange = () => {} } = $props();
 

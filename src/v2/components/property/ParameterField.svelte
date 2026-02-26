@@ -1,13 +1,13 @@
 <script>
   import { isMapInjection, isCollectionInjection, isDelegating, isInjectionAllowed } from '../../parameterSpecUtils.js';
   import { getSpec, isImplementing, isPrimitive, isStringPrimitive, isBooleanPrimitive, isNumberPrimitive, isEnumPrimitive } from '../../mnemoUtils.js';
-  import MapValue from './value/MapValue.svelte';
-  import CollectionValue from './value/CollectionValue.svelte';
-  import MnemonicValue from './value/MnemonicValue.svelte';
-  import StringValue from './value/StringValue.svelte';
-  import NumberValue from './value/NumberValue.svelte';
-  import BooleanValue from './value/BooleanValue.svelte';
-  import EnumValue from './value/EnumValue.svelte';
+  import MapValue from './MapValue.svelte';
+  import CollectionValue from './CollectionValue.svelte';
+  import MnemonicValue from './MnemonicValue.svelte';
+  import StringValue from './StringValue.svelte';
+  import NumberValue from './NumberValue.svelte';
+  import BooleanValue from './BooleanValue.svelte';
+  import EnumValue from './EnumValue.svelte';
 
   let { parameterYaml, parameterSpec, onchange = () => {} } = $props();
 
