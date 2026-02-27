@@ -1,6 +1,7 @@
 <script>
   import DomainFunctionBlock from './DomainFunctionBlock.svelte';
-  import { getDragHeight, getDragItem, isDragDescendant, removeSource, clearDragItem, flush } from './dragState.js';
+  import { getDragHeight, getDragItem, isDragDescendant, removeSource, clearDragItem } from './dragState.js';
+  import { flush } from './composerState.js';
   import { isInjectionCollection, getSpec, fetchSpec } from '../../mnemoUtils.js';
 
   let { yaml = [] } = $props();

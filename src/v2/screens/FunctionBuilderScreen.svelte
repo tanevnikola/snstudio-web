@@ -4,7 +4,7 @@
   import TaskProperties from '../components/composer/TaskProperties.svelte';
   import YamlEditor from '../components/editor/YamlEditor.svelte';
   import { getSelectedTaskRef } from '../components/composer/selectionState.svelte.js';
-  import { getParsedTree } from '../components/composer/dragState.js';
+  import { getParsedTree } from '../components/composer/composerState.js';
   import jsYaml from 'js-yaml';
     import FunctionProperties from '../components/composer/FunctionProperties.svelte';
 

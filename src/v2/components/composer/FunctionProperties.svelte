@@ -2,7 +2,7 @@
   import { getSelectionYaml, setSelectionYaml } from './selectionState.svelte.js';
   import ObjectProperties from '../property/ObjectProperties.svelte';
   import { extractFunctionPropertiesYaml } from '../../yamlUtils.js';
-  import { flush } from './dragState.js';
+  import { flush } from './composerState.js';
 
   let functionYaml = $derived(getSelectionYaml());
   let functionProperties = $derived(extractFunctionPropertiesYaml(functionYaml));

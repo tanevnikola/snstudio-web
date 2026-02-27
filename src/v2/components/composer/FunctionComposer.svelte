@@ -1,7 +1,7 @@
 <script>
   import yaml from 'js-yaml';
   import DomainFunctionBlock from './DomainFunctionBlock.svelte';
-  import { registerFlush, setParsedTree } from './dragState.js';
+  import { registerFlush, setParsedTree } from './composerState.js';
 
   let { yaml: yamlText = '', onyamlchange = (/** @type {string} */ _text) => {} } = $props();
 

@@ -2,7 +2,8 @@
   import ConfirmDeleteButton from '../ConfirmDeleteButton.svelte';
   import DomainTaskBlock from './DomainTaskBlock.svelte';
   import { select, setSelectionYaml, setSelectedTaskRef } from './selectionState.svelte.js';
-  import { setDragHeight, setDragItem, setRemoveSource, clearDragItem, flush } from './dragState.js';
+  import { setDragHeight, setDragItem, setRemoveSource, clearDragItem } from './dragState.js';
+  import { flush } from './composerState.js';
   import { fetchSpec } from '../../mnemoUtils.js';
 
   let { yaml = {}, parent = null, onremove = () => {} } = $props();
