@@ -1,18 +1,41 @@
 <script>
   import hljs from 'highlight.js/lib/core';
   import yamlLang from 'highlight.js/lib/languages/yaml';
+  import jsYaml from 'js-yaml';
   import CodeEditor from './CodeEditor.svelte';
 
   hljs.registerLanguage('yaml', yamlLang);
 
-  let { yamlText = '', highlightRange = null, style = '', collapsed = false, canEdit = true, onchange = () => {} } = $props();
+  let { yamlText = '', highlightRange = null, style = '', collapsed = false, canEdit = true, oninput = null, onchange = () => {} } = $props();
 
   let readonlyMode = $state(true);
   let copyLabel = $state('Copy');
+  let liveText = $state(yamlText);
+
+  $effect(() => { liveText = yamlText; });
 
   let highlightedHtml = $derived(
-    yamlText ? hljs.highlight(yamlText, { language: 'yaml' }).value : ''
+    liveText ? hljs.highlight(liveText, { language: 'yaml' }).value : ''
   );
+
+  function handleInput(text) {
+    liveText = text;
+    oninput?.(text);
+  }
+
+  /** Normalize edited YAML: parse and re-dump to strip comments/blank lines. */
+  function handleChange(text) {
+    try {
+      const obj = jsYaml.load(text);
+      if (obj != null) {
+        const normalized = jsYaml.dump(obj, { lineWidth: -1, noRefs: true });
+        liveText = normalized;
+        onchange(normalized);
+        return;
+      }
+    } catch {}
+    onchange(text);
+  }
 
   function copyYaml() {
     navigator.clipboard.writeText(yamlText).then(() => {
@@ -36,7 +59,7 @@
     </span>
   </div>
   {#if !collapsed}
-    <CodeEditor text={yamlText} {highlightedHtml} {highlightRange} readonly={readonlyMode} {onchange} />
+    <CodeEditor text={liveText} {highlightedHtml} {highlightRange} readonly={readonlyMode} oninput={handleInput} onchange={handleChange} />
   {/if}
 </div>
 

@@ -1,5 +1,5 @@
 <script>
-  let { text = '', highlightedHtml = '', highlightRange = null, readonly = true, onchange = () => {} } = $props();
+  let { text = '', highlightedHtml = '', highlightRange = null, readonly = true, oninput = null, onchange = () => {} } = $props();
 
   let editorEl;
   let textareaEl;
@@ -17,7 +17,12 @@
     });
   });
 
-  function onInput(e) {
+  function handleInput(e) {
+    if (readonly) return;
+    oninput?.(e.target.value);
+  }
+
+  function handleBlur(e) {
     if (readonly) return;
     onchange(e.target.value);
   }
@@ -31,7 +36,7 @@
       const end = ta.selectionEnd;
       ta.value = ta.value.substring(0, start) + '  ' + ta.value.substring(end);
       ta.selectionStart = ta.selectionEnd = start + 2;
-      onchange(ta.value);
+      oninput?.(ta.value);
     }
   }
 </script>
@@ -49,7 +54,8 @@
       class="code-input"
       class:readonly
       value={text}
-      oninput={onInput}
+      oninput={handleInput}
+      onblur={handleBlur}
       onkeydown={onKeydown}
       spellcheck="false"
       autocomplete="off"
