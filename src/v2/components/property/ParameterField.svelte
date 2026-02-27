@@ -10,19 +10,22 @@
   import BooleanValue from './BooleanValue.svelte';
   import EnumValue from './EnumValue.svelte';
 
-  let { parameterYaml, parameterSpec, context = {}, factory = false, onFactoryChange = () => {}, onchange = () => {} } = $props();
+  let { parameterYaml, parameterSpec, context = {}, onFactoryChange = () => {}, onchange = () => {} } = $props();
 
   let mnemonic = $derived(parameterSpec?.mnemonic ?? null);
-  let canInject = $derived(isInjectionAllowed(parameterSpec));
 
   let currentType = $derived(parameterYaml?.t ?? null);
+
+  let isFactoryEnabled = $derived(context.isFactory === true);
+
   let isInjectorSet = $derived(currentType ? isImplementing(currentType, 'ResourceInjector') : false);
+  let injecting = $state(isInjectorSet);
+  let canInject = $derived(isInjectionAllowed(parameterSpec, context.isFactory, context.isWithinFactory));
 
   let isPrim = $derived(isPrimitive(mnemonic));
   let isEnum = $derived(isEnumPrimitive(mnemonic));
   let enumValues = $derived(getSpec(mnemonic)?.constraints?.values ?? []);
 
-  let injecting = $state(isInjectorSet);
 
   let descriptionHtml = $derived(parameterSpec?.description ? marked.parseInline(parameterSpec.description) : '');
   let showTooltip = $state(false);
@@ -38,12 +41,14 @@
     <MapValue
       yaml={parameterYaml}
       parameterSpec={parameterSpec}
+      context={context}
       onchange={onchange}
     />
   {:else if isCollectionInjection(parameterSpec)}
     <CollectionValue
       yaml={parameterYaml}
       parameterSpec={parameterSpec}
+      context={context}
       onchange={onchange}
     />
   {:else}
@@ -69,7 +74,7 @@
           {console.error(`ParameterField: unhandled primitive category for mnemonic "${mnemonic}"`)}
         {/if}
       {:else}
-        <MnemonicValue yaml={parameterYaml} mnemonic={parameterSpec.mnemonic} onchange={onchange} />
+        <MnemonicValue yaml={parameterYaml} mnemonic={parameterSpec.mnemonic} context={context} onchange={onchange} />
       {/if}
     </div>
   {/if}
@@ -99,7 +104,7 @@
       {#if isRepresentingMnemonic}
         <label class="factory-toggle">
           <span class="factory-label">Factory</span>
-          <input type="checkbox" checked={factory} onchange={(e) => onFactoryChange(/** @type {HTMLInputElement} */(e.target).checked)} />
+          <input type="checkbox" checked={isFactoryEnabled} onchange={(e) => onFactoryChange(/** @type {HTMLInputElement} */(e.target).checked)} />
         </label>
       {/if}
     </div>

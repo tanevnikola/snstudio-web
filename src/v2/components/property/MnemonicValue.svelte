@@ -6,7 +6,7 @@
     import { extractParameterYaml } from '../../yamlUtils.js';
     import { untrack } from 'svelte';
 
-  let { yaml, mnemonic, onchange = () => {} } = $props();
+  let { yaml, mnemonic, onchange = () => {}, context = {} } = $props();
 
   let mnemonicSpec = $state(null);
   let implementations = $derived(mnemonicSpec ? getImplementations(mnemonic) : []);
@@ -83,11 +83,32 @@
 
   });
 
+  let childContext = $derived({
+    ...context,
+    isWithinFactory: context.isFactory === true || context.isWithinFactory === true
+  });
+
   function parameterChange(paramName, value) {
     if (paramName === '@delegating@') {
       onchange({ ...yaml, v: value });
     } else {
       onchange({ ...yaml, v: { ...yaml.v, [paramName]: value } });
+    }
+  }
+
+  function handleFactoryChange(paramName, isFactory) {
+    if (isFactory && yaml.v?.[paramName]) {
+      // Rename v to factory
+      const { [paramName]: paramVal, ...restV } = yaml.v;
+      const newFactory = { ...yaml.factory, [paramName]: paramVal };
+      const newV = Object.keys(restV).length > 0 ? restV : undefined;
+      onchange({ ...yaml, v: newV, factory: newFactory });
+    } else if (!isFactory && yaml.factory?.[paramName]) {
+      // Rename factory to v
+      const { [paramName]: paramVal, ...restFactory } = yaml.factory;
+      const newV = { ...yaml.v, [paramName]: paramVal };
+      const newFactory = Object.keys(restFactory).length > 0 ? restFactory : undefined;
+      onchange({ ...yaml, v: newV, factory: newFactory });
     }
   }
 
@@ -119,6 +140,7 @@
         <Self
           yaml={yaml}
           mnemonic={selectedMnemonic}
+          context={childContext}
           onchange={nestedMnemonicChange}
         />
       {/key}
@@ -129,6 +151,8 @@
       <ParameterField
         parameterYaml={extractParameterYaml(yaml.v ?? yaml.factory ?? null, param)}
         parameterSpec={param}
+        context={{...childContext, isFactory: yaml.factory?.[param.name] !== undefined}}
+        onFactoryChange={(checked) => handleFactoryChange(param.name, checked)}
         onchange={(value) => parameterChange(param.name, value)}
       />
     {/each}

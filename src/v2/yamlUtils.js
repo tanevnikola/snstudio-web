@@ -42,6 +42,12 @@ export function extractTaskYaml(functionYaml) {
             : null);
 }
 
+export function extractFunctionPropertiesYaml(functionYaml) {
+    if (!functionYaml) return { task: null, cleaned: null };
+    const { task, tasks, ...rest } = functionYaml;
+    return { t: 'DomainFunction', v: rest } ;
+}
+
 export function extractTaskMnemonic(taskYaml) {
     return taskYaml?.t ?? null;
 }

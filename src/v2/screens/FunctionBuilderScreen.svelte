@@ -6,6 +6,7 @@
   import { getSelectedTaskRef } from '../components/composer/selectionState.svelte.js';
   import { getParsedTree } from '../components/composer/dragState.js';
   import jsYaml from 'js-yaml';
+    import FunctionProperties from '../components/composer/FunctionProperties.svelte';
 
   let { yaml = '' } = $props();
 
@@ -127,6 +128,7 @@
     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <div class="resize-handle vertical" class:active={resizingRight} onmousedown={startResizeRight} role="separator" aria-label="Resize properties"></div>
     <div class="properties">
+      <FunctionProperties />
       <TaskProperties />
     </div>
   </div>

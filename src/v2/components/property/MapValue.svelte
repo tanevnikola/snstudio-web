@@ -3,7 +3,7 @@
   import { normalizeParameterValue } from '../../yamlUtils';
   import ParameterField from './ParameterField.svelte';
 
-  let { yaml = null, parameterSpec = null, onchange = () => {} } = $props();
+  let { yaml = null, parameterSpec = null, context = {}, onchange = () => {} } = $props();
 
   let entrySpec = $derived(deriveMapItemSpec(parameterSpec));
   let keys = $derived(yaml ? Object.keys(yaml) : []);
@@ -40,6 +40,7 @@
       <ParameterField
         parameterYaml={normalizeParameterValue(yaml[key], entrySpec)}
         parameterSpec={entrySpec}
+        context={context}
         onchange={(value) => handleValueChange(key, value)}
       />
     </div>

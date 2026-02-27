@@ -22,8 +22,8 @@ export function isInjectionEager(parameterSpec) {
   return parameterSpec?.eager === true;
 }
 
-export function isInjectionAllowed(parameterSpec) {
-  return isInjectionPoint(parameterSpec) && !isInjectionEager(parameterSpec);
+export function isInjectionAllowed(parameterSpec, isFactory, isWithinFactory) {
+  return isInjectionPoint(parameterSpec) && (!isInjectionEager(parameterSpec || isFactory || isWithinFactory));
 }
 
 export function deriveMapItemSpec(parameterSpec) {
