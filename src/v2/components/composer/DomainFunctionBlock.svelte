@@ -1,7 +1,7 @@
 <script>
   import ConfirmDeleteButton from '../ConfirmDeleteButton.svelte';
   import DomainTaskBlock from './DomainTaskBlock.svelte';
-  import { select, setSelectionYaml, setSelectedTaskRef } from './selectionState.svelte.js';
+  import { select, setSelectionYaml } from './selectionState.svelte.js';
   import { setDragHeight, setDragItem, setRemoveSource, clearDragItem } from './dragState.js';
   import { flush } from './composerState.js';
   import { fetchSpec } from '../../mnemoUtils.js';
@@ -50,7 +50,6 @@
     selected = true;
     select(() => { selected = false; });
     setSelectionYaml(yaml);
-    setSelectedTaskRef(taskYaml);
   }
 
   function handleDragStart(e) {
@@ -76,7 +75,6 @@
   $effect(() => {
     if (selected) {
       setSelectionYaml(yaml);
-      setSelectedTaskRef(taskYaml);
     }
   });
 </script>

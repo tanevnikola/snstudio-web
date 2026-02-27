@@ -33,13 +33,3 @@ export function setSelectionYaml(yaml) {
 export function getSelectionYaml() {
   return _yaml;
 }
-
-/** Set the direct task reference (for yaml editor highlighting). */
-export function setSelectedTaskRef(ref) {
-  _taskRef = ref;
-}
-
-/** Get the direct task reference. */
-export function getSelectedTaskRef() {
-  return _taskRef;
-}

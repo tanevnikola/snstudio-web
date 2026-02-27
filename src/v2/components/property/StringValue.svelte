@@ -16,12 +16,12 @@
   }
 
   function handleBlur(e) {
-    const v = /** @type {HTMLTextAreaElement} */ (e.target).value;
-    onchange(v === '' ? null : {t: mnemonic, v: v});
+    const text = /** @type {HTMLTextAreaElement} */ (e.target).value;
+    onchange(text === '' ? null : text);
   }
 
-  function handleJsChange(text) {
-    onchange(text === '' ? null : {t: mnemonic, v: text});
+  function handleEditorChange(text) {
+    onchange(text === '' ? null : text);
   }
 
   function autoResize(el) {
@@ -37,9 +37,9 @@
 </script>
 
 {#if isGraalJs}
-  <JsEditor text={value} canEdit={true} onchange={handleJsChange} />
+  <JsEditor text={value} canEdit={true} onchange={handleEditorChange} />
 {:else if isPebble}
-  <PebbleEditor text={value} canEdit={true} onchange={handleJsChange} />
+  <PebbleEditor text={value} canEdit={true} onchange={handleEditorChange} />
 {:else if isMultiline}
   <textarea
     bind:this={textareaEl}

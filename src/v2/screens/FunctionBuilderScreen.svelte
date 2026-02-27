@@ -3,7 +3,7 @@
   import FunctionComposer from '../components/composer/FunctionComposer.svelte';
   import TaskProperties from '../components/composer/TaskProperties.svelte';
   import YamlEditor from '../components/editor/YamlEditor.svelte';
-  import { getSelectedTaskRef } from '../components/composer/selectionState.svelte.js';
+  import { getSelectionYaml } from '../components/composer/selectionState.svelte.js';
   import { getParsedTree } from '../components/composer/composerState.js';
   import jsYaml from 'js-yaml';
     import FunctionProperties from '../components/composer/FunctionProperties.svelte';
@@ -22,7 +22,7 @@
   const MARKER = '__hl__';
 
   let highlightRange = $derived.by(() => {
-    const ref = getSelectedTaskRef();
+    const ref = getSelectionYaml();
     const tree = getParsedTree();
     if (!ref || !tree) return null;
 

@@ -20,25 +20,38 @@
     flush();
   }
 
-  $effect(() => console.log($state.snapshot(functionProperties)))
+  let collapsed = $state(true);
 </script>
 
-<div class="header">
-  <span class="mnemonic">DomainFunction</span>
+<div class="header" role="button" tabindex="0" onclick={() => collapsed = !collapsed} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); collapsed = !collapsed; } }}>
+  <span class="chevron">{collapsed ? '▶' : '▼'}</span>
+  <span class="mnemonic">Function</span>
 </div>
-{#key functionYaml}
-  <ObjectProperties yaml={functionProperties} onchange={onchange} />
-{/key}
+{#if !collapsed}
+  {#key functionYaml}
+    <ObjectProperties yaml={functionProperties} onchange={onchange} />
+  {/key}
+{/if}
 
 
 <style>
   .header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 6px;
     padding: 8px 12px;
     border-bottom: 1px solid var(--border-default);
-    margin-bottom: 8px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .header:hover {
+    background: var(--surface-3);
+  }
+  .chevron {
+    font-size: 8px;
+    color: var(--text-muted);
+    width: 10px;
+    flex-shrink: 0;
   }
   .mnemonic {
     font-size: 13px;
