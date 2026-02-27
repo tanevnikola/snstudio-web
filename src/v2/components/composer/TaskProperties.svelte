@@ -23,7 +23,7 @@
   <div class="header">
     <span class="mnemonic">{mnemonic}</span>
   </div>
-  {#key mnemonic}
+  {#key functionYaml}
     <ObjectProperties yaml={taskYaml} onchange={onchange} />
   {/key}
 {/if}

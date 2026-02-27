@@ -10,7 +10,7 @@
   import BooleanValue from './BooleanValue.svelte';
   import EnumValue from './EnumValue.svelte';
 
-  let { parameterYaml, parameterSpec, onchange = () => {} } = $props();
+  let { parameterYaml, parameterSpec, context = {}, factory = false, onFactoryChange = () => {}, onchange = () => {} } = $props();
 
   let mnemonic = $derived(parameterSpec?.mnemonic ?? null);
   let canInject = $derived(isInjectionAllowed(parameterSpec));
@@ -27,7 +27,9 @@
   let descriptionHtml = $derived(parameterSpec?.description ? marked.parseInline(parameterSpec.description) : '');
   let showTooltip = $state(false);
 
-  let isMnemonicField = $derived(!isPrim && !isMapInjection(parameterSpec) && !isCollectionInjection(parameterSpec) && !isDelegating(parameterSpec));
+  let isRepresentingMnemonic = $derived(!injecting && (!isPrim && !isMapInjection(parameterSpec) && !isCollectionInjection(parameterSpec)));
+  let isMnemonicLike = $derived(injecting || isRepresentingMnemonic);
+
   let collapsed = $state(false);
 </script>
 
@@ -78,7 +80,7 @@
 {:else}
   <div class="field">
     <div class="field-header">
-      {#if isMnemonicField}
+      {#if isMnemonicLike}
         <button class="collapse-toggle" onclick={() => collapsed = !collapsed}>
           {collapsed ? '▶' : '▼'}
         </button>
@@ -94,6 +96,12 @@
       <span class="meta">
         ({parameterSpec.mnemonic}{#if parameterSpec.injectionStrategy}, {parameterSpec.injectionStrategy}{/if})
       </span>
+      {#if isRepresentingMnemonic}
+        <label class="factory-toggle">
+          <span class="factory-label">Factory</span>
+          <input type="checkbox" checked={factory} onchange={(e) => onFactoryChange(/** @type {HTMLInputElement} */(e.target).checked)} />
+        </label>
+      {/if}
     </div>
     {#if !collapsed}
       <div class="value">
@@ -169,6 +177,22 @@
     font-size: 10px;
     color: var(--text-muted);
     margin-bottom: 4px;
+  }
+  .factory-toggle {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .factory-label {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .factory-toggle input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
   }
   .value {
     display: flex;
