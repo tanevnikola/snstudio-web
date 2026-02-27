@@ -1,5 +1,11 @@
-:root {
-  /* Surfaces (Stratos Blue scale) */
+/* ── Default (Dark — Stratos Blue) ──────────────────────── */
+:root,
+[data-theme="dark"] {
+  /* Surfaces (Stratos Blue scale)
+     0 = recessed / canvas
+     1 = secondary
+     2 = panels / topbar
+     3 = cards / hover */
   --surface-0: #00031f;
   --surface-1: #00073f;
   --surface-2: #191f52;
@@ -35,4 +41,48 @@
   /* Handles */
   --handle: #4c5178;
   --handle-active: #999bb2;
+}
+
+/* ── Light — Sandstone ─────────────────────────────────── */
+[data-theme="light"] {
+  /* Surfaces (warm grey scale)
+     0 = recessed / canvas
+     1 = secondary
+     2 = panels / topbar
+     3 = cards / hover */
+  --surface-0: #d5d0ca;
+  --surface-1: #dedad5;
+  --surface-2: #e8e5e0;
+  --surface-3: #f2f0ed;
+
+  /* Borders */
+  --border-default: #bab4ac;
+  --border-subtle: #ccc7c0;
+  --border-strong: #9e978f;
+
+  /* Text */
+  --text-primary: #1c1917;
+  --text-secondary: #57534e;
+  --text-muted: #a8a29e;
+
+  /* Primary accent (Burnt Orange) */
+  --primary: #cc5500;
+  --primary-hover: #b34a00;
+  --primary-subtle: rgba(204, 85, 0, 0.10);
+
+  /* Danger */
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --danger-subtle: rgba(220, 38, 38, 0.08);
+
+  /* Editor (dark code editors even in light theme) */
+  --editor-bg: #1e1e2e;
+  --editor-header: #181825;
+  --editor-text: #cdd6f4;
+  --editor-muted: #6c7086;
+  --editor-border: #45475a;
+
+  /* Handles */
+  --handle: #bab4ac;
+  --handle-active: #6d665f;
 }

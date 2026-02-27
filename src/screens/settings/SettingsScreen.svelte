@@ -1,14 +1,20 @@
 <script>
-  import { settings, persistSettings } from '../../lib/settings.svelte.js';
+  import { settings, persistSettings, applyTheme } from '../../lib/settings.svelte.js';
 
   const categories = [
+    { id: 'appearance', label: 'Appearance' },
     { id: 'codeEditor', label: 'Function Builder' },
-    { id: 'debug', label: 'Debug' },
   ];
 
-  let selectedCategory = $state('codeEditor');
+  let selectedCategory = $state('appearance');
 
   function onChange() {
+    persistSettings();
+  }
+
+  function onThemeChange(e) {
+    settings.theme = e.target.value;
+    applyTheme(settings.theme);
     persistSettings();
   }
 </script>
@@ -24,18 +30,22 @@
             class:active={selectedCategory === cat.id}
             onclick={() => (selectedCategory = cat.id)}
           >
-            {#if cat.id === 'codeEditor'}
+            {#if cat.id === 'appearance'}
+              <svg class="cat-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="4"/>
+                <path d="M12 2v2"/>
+                <path d="M12 20v2"/>
+                <path d="m4.93 4.93 1.41 1.41"/>
+                <path d="m17.66 17.66 1.41 1.41"/>
+                <path d="M2 12h2"/>
+                <path d="M20 12h2"/>
+                <path d="m6.34 17.66-1.41 1.41"/>
+                <path d="m19.07 4.93-1.41 1.41"/>
+              </svg>
+            {:else if cat.id === 'codeEditor'}
               <svg class="cat-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <polyline points="16 18 22 12 16 6"/>
                 <polyline points="8 6 2 12 8 18"/>
-              </svg>
-            {:else if cat.id === 'debug'}
-              <svg class="cat-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0"/>
-                <path d="M12 2a4 4 0 0 1 4 4v1a2 2 0 0 1 2 2v1h2"/>
-                <path d="M4 10h2v-1a2 2 0 0 1 2-2V6a4 4 0 0 1 4-4"/>
-                <path d="M20 14h-2v1a2 2 0 0 1-2 2v1a4 4 0 0 1-4 4"/>
-                <path d="M4 14h2v1a2 2 0 0 1 2 2v1a4 4 0 0 1 4 4"/>
               </svg>
             {/if}
             <span>{cat.label}</span>
@@ -47,13 +57,24 @@
 
   <section class="panel">
     <div class="panel-content">
-      {#if selectedCategory === 'codeEditor'}
+      {#if selectedCategory === 'appearance'}
+        <h2 class="panel-title">Appearance</h2>
+
+        <div class="settings-group">
+          <div class="setting-row setting-row--inline">
+            <div class="setting-label">
+              <span class="setting-name">Theme</span>
+              <span class="setting-desc">Choose between dark and light interface themes.</span>
+            </div>
+            <select class="ctrl ctrl--select-inline" value={settings.theme} onchange={onThemeChange}>
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+          </div>
+        </div>
+      {:else if selectedCategory === 'codeEditor'}
         <h2 class="panel-title">Function Builder</h2>
 
-        <!--
-          Inline row: label left, compact control right.
-          Use for: toggles, number inputs, small selects, checkboxes.
-        -->
         <div class="settings-group">
           <div class="setting-row setting-row--inline">
             <div class="setting-label">
@@ -70,40 +91,6 @@
             />
           </div>
         </div>
-
-        <!--
-          Stacked row example (commented out — shows the pattern for future settings
-          that need full-width controls like text inputs, textareas, selects with long options):
-
-          <div class="settings-group">
-            <div class="setting-row setting-row--stacked">
-              <div class="setting-label">
-                <span class="setting-name">Custom Header</span>
-                <span class="setting-desc">Inserted at the top of every generated YAML file.</span>
-              </div>
-              <textarea class="ctrl ctrl--textarea" rows="3"></textarea>
-            </div>
-          </div>
-        -->
-      {:else if selectedCategory === 'debug'}
-        <h2 class="panel-title">Debug</h2>
-
-        <div class="settings-group">
-          <div class="setting-row setting-row--inline">
-            <div class="setting-label">
-              <span class="setting-name">Debug Mode</span>
-              <span class="setting-desc">Show rules engine facts on parameter labels in the properties panel.</span>
-            </div>
-            <label class="ctrl--toggle">
-              <input
-                type="checkbox"
-                bind:checked={settings.debug}
-                onchange={onChange}
-              />
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
-          </div>
-        </div>
       {/if}
     </div>
   </section>
@@ -114,7 +101,7 @@
     display: flex;
     height: 100%;
     font-family: system-ui, -apple-system, sans-serif;
-    background: var(--surface-1);
+    background: var(--surface-2);
   }
 
   /* ── Sidebar ──────────────────────────────────────────────── */
@@ -194,7 +181,7 @@
 
   /* ── Settings group (card) ────────────────────────────────── */
   .settings-group {
-    background: var(--surface-2);
+    background: var(--surface-3);
     border: 1px solid var(--border-default);
     border-radius: 10px;
     overflow: hidden;
@@ -305,6 +292,11 @@
   .ctrl--select {
     width: 100%;
     flex-shrink: unset;
+  }
+
+  /* Compact inline select */
+  .ctrl--select-inline {
+    width: 120px;
   }
 
   /* Toggle switch */

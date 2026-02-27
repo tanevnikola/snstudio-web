@@ -1,10 +1,10 @@
 const STORAGE_KEY = 'snstudio_settings';
 
 const defaults = {
+  theme: 'dark',
   codeEditor: {
     maxCodeHistory: 10,
   },
-  debug: false,
 };
 
 function load() {
@@ -13,8 +13,8 @@ function load() {
     if (raw) {
       const parsed = JSON.parse(raw);
       return {
+        theme: parsed.theme ?? defaults.theme,
         codeEditor: { ...defaults.codeEditor, ...parsed.codeEditor },
-        debug: parsed.debug ?? defaults.debug,
       };
     }
   } catch {
@@ -24,6 +24,13 @@ function load() {
 }
 
 export const settings = $state(load());
+
+export function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+}
+
+// Apply saved theme immediately
+applyTheme(settings.theme);
 
 export function persistSettings() {
   try {

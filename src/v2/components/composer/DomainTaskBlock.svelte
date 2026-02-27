@@ -286,7 +286,7 @@
     position: absolute;
     top: -0.55rem;
     left: 0.5rem;
-    background: var(--surface-2);
+    background: var(--surface-1);
     padding: 0 0.3rem;
     font-size: 0.65rem;
     font-weight: 600;

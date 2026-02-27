@@ -168,8 +168,8 @@
     margin: 0.1rem 0;
     font-size: 0.78rem;
     color: var(--text-primary);
-    background: var(--surface-2);
-    border: 1px solid var(--border-subtle);
+    background: var(--surface-3);
+    border: 1px solid var(--border-default);
     border-radius: 4px;
     cursor: grab;
     user-select: none;

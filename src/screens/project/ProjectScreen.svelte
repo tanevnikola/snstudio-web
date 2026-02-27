@@ -39,7 +39,7 @@
     width: 220px;
     min-width: 160px;
     flex-shrink: 0;
-    background: var(--surface-1);
+    background: var(--surface-2);
     border-right: 1px solid var(--border-default);
     overflow-y: auto;
   }
@@ -48,7 +48,7 @@
     flex: 1;
     padding: 1.5rem 2rem;
     overflow-y: auto;
-    background: var(--surface-1);
+    background: var(--surface-2);
     min-width: 0;
   }
 

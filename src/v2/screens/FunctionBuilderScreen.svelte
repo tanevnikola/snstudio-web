@@ -116,7 +116,9 @@
     <div class="resize-handle vertical" class:active={resizingLeft} onmousedown={startResizeLeft} role="separator" aria-label="Resize palette"></div>
     <div class="center-column">
       <div class="composer">
-        <FunctionComposer yaml={composerYaml} onyamlchange={(text) => { composerYaml = text; }} />
+        <div class="composer-card">
+          <FunctionComposer yaml={composerYaml} onyamlchange={(text) => { composerYaml = text; }} />
+        </div>
       </div>
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <div class="resize-handle horizontal" class:active={resizingYaml} onmousedown={startResizeYaml} role="separator" aria-label="Resize YAML panel"></div>
@@ -145,7 +147,7 @@
   }
 
   .palette {
-    background: var(--surface-1);
+    background: var(--surface-2);
     overflow-y: auto;
     min-width: 0;
   }
@@ -181,11 +183,22 @@
     flex: 2;
     overflow-y: auto;
     min-height: 0;
+    background: var(--surface-0);
+    padding: 1rem 4rem;
+  }
+
+  .composer-card {
     background: var(--surface-1);
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow:
+      0 4px 16px rgba(0, 0, 0, 0.3),
+      0 1px 4px rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(255, 255, 255, 0.04);
   }
 
   .properties {
-    background: var(--surface-1);
+    background: var(--surface-2);
     overflow-y: auto;
     min-width: 0;
   }
