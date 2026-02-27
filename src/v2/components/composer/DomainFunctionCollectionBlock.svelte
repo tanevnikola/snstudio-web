@@ -108,13 +108,13 @@
   }
 
   .drop-placeholder {
-    border: 2px dashed #aaa;
+    border: 2px dashed var(--primary);
     border-radius: 6px;
-    background: rgba(0, 0, 0, 0.02);
+    background: var(--primary-subtle);
     margin-left: 1.25rem;
   }
 
   .drop-placeholder.empty {
-    border-color: #ccc;
+    border-color: var(--border-default);
   }
 </style>

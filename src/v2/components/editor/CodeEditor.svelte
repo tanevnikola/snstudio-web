@@ -64,7 +64,7 @@
     flex: 1;
     min-height: 0;
     overflow: auto;
-    background: #1e1e2e;
+    background: var(--editor-bg);
   }
 
   .code-overlay {
@@ -78,9 +78,9 @@
     position: absolute;
     left: 0.5rem;
     right: 0.5rem;
-    border: 1px solid rgba(137, 180, 250, 0.35);
+    border: 1px solid var(--primary);
     border-radius: 3px;
-    background: rgba(137, 180, 250, 0.07);
+    background: var(--primary-subtle);
     pointer-events: none;
     z-index: 1;
   }
@@ -96,7 +96,7 @@
 
   .code-highlight {
     margin: 0;
-    color: #cdd6f4;
+    color: var(--editor-text);
     pointer-events: none;
   }
 
@@ -113,11 +113,11 @@
     resize: none;
     background: transparent;
     color: transparent;
-    caret-color: #cdd6f4;
+    caret-color: var(--editor-text);
     overflow: hidden;
   }
 
   .code-input::selection {
-    background: rgba(137, 180, 250, 0.3);
+    background: rgba(204, 85, 0, 0.3);
   }
 </style>

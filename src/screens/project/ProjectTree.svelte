@@ -400,7 +400,7 @@
   }
 
   .tree-row.selected {
-    background: #007aff;
+    background: var(--primary);
     color: white;
   }
 
@@ -420,7 +420,7 @@
 
   .project-icon {
     font-size: 0.5rem;
-    color: #999;
+    color: var(--text-secondary);
     width: 18px;
     display: flex;
     align-items: center;
@@ -445,12 +445,12 @@
 
   .project-section-row {
     padding-left: 1.1rem;
-    background: #eaeaea;
+    background: var(--surface-2);
     margin-top: 0.15rem;
   }
 
   .project-section-row:hover {
-    background: #e0e0e0;
+    background: var(--surface-3);
   }
 
   /* ── Actor / Section / Service rows ─────────────────────── */
@@ -477,7 +477,7 @@
   .service-row:hover:not(.selected),
   .function-row:hover:not(.selected),
   .directory-row:hover {
-    background: #eee;
+    background: var(--surface-3);
   }
 
   .function-row {
@@ -507,7 +507,7 @@
   .arrow {
     font-size: 0.5rem;
     line-height: 1;
-    color: #999;
+    color: var(--text-secondary);
   }
 
   .arrow-spacer {
@@ -551,13 +551,13 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: #888;
+    color: var(--text-secondary);
     flex: 1;
   }
 
   .section-count {
     font-size: 0.65rem;
-    color: #aaa;
+    color: var(--text-muted);
     margin-right: 0.25rem;
   }
 
@@ -582,12 +582,12 @@
   }
 
   .tree-row:hover .action-btn {
-    color: #bbb;
+    color: var(--text-muted);
   }
 
   .tree-row:hover .action-btn:hover {
-    color: #d32f2f;
-    background: rgba(211, 47, 47, 0.08);
+    color: var(--danger);
+    background: var(--danger-subtle);
   }
 
   /* ── Inline rename ─────────────────────────────────────── */
@@ -596,13 +596,13 @@
     flex: 1;
     min-width: 0;
     padding: 0.1rem 0.25rem;
-    border: 1px solid #007aff;
+    border: 1px solid var(--primary);
     border-radius: 3px;
     font-family: inherit;
     font-size: inherit;
     outline: none;
-    background: white;
-    color: #111;
+    background: var(--surface-2);
+    color: var(--text-primary);
   }
 
   /* ── Section add button ───────────────────────────────── */
@@ -641,11 +641,11 @@
   }
 
   .tree-row:hover .section-add-btn {
-    color: #007aff;
+    color: var(--primary);
   }
 
   .tree-row:hover .section-add-btn:hover {
-    background: rgba(0, 122, 255, 0.08);
+    background: var(--primary-subtle);
   }
 
   /* ── Add dropdown ────────────────────────────────────── */
@@ -659,8 +659,8 @@
   .add-dropdown {
     position: fixed;
     z-index: 100;
-    background: white;
-    border: 1px solid #d0d0d0;
+    background: var(--surface-2);
+    border: 1px solid var(--border-default);
     border-radius: 6px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     padding: 0.25rem 0;
@@ -676,12 +676,12 @@
     cursor: pointer;
     font-family: inherit;
     font-size: 0.8rem;
-    color: #333;
+    color: var(--text-primary);
     text-align: left;
   }
 
   .add-dropdown-item:hover {
-    background: #f0f0f0;
+    background: var(--surface-3);
   }
 
   /* ── Children indentation ──────────────────────────────── */

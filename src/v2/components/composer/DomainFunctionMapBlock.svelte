@@ -29,7 +29,7 @@
 
   .map-entry {
     position: relative;
-    border: 1px dashed #ccc;
+    border: 1px dashed var(--border-default);
     border-radius: 6px;
     padding: 0.5rem 0.5rem 0.5rem 0.5rem;
   }
@@ -38,10 +38,10 @@
     position: absolute;
     top: -0.55rem;
     left: 0.5rem;
-    background: white;
+    background: var(--surface-2);
     padding: 0 0.3rem;
     font-size: 0.65rem;
     font-weight: 600;
-    color: #888;
+    color: var(--text-secondary);
   }
 </style>

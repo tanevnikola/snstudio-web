@@ -84,7 +84,7 @@
     align-items: center;
     justify-content: center;
     height: 100vh;
-    background: #fafafa;
+    background: var(--surface-1);
     font-family: system-ui, -apple-system, sans-serif;
   }
 
@@ -96,7 +96,7 @@
   .title {
     font-size: 2rem;
     font-weight: 700;
-    color: #333;
+    color: var(--text-primary);
     margin: 0 0 2rem 0;
   }
 
@@ -108,26 +108,26 @@
 
   .progress-bar {
     height: 4px;
-    background: #e0e0e0;
+    background: var(--border-default);
     border-radius: 2px;
     overflow: hidden;
   }
 
   .progress-fill {
     height: 100%;
-    background: #4a90d9;
+    background: var(--primary);
     border-radius: 2px;
     transition: none;
   }
 
   .progress-text {
     font-size: 0.85rem;
-    color: #888;
+    color: var(--text-secondary);
     margin: 0;
   }
 
   .error {
-    color: #d32f2f;
+    color: var(--danger);
   }
 
   .error p {
@@ -136,20 +136,21 @@
 
   .error-detail {
     font-size: 0.8rem;
-    color: #888;
+    color: var(--text-secondary);
   }
 
   .retry-btn {
     margin-top: 1rem;
     padding: 0.5rem 1.5rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-default);
     border-radius: 4px;
-    background: white;
+    background: var(--surface-2);
+    color: var(--text-primary);
     cursor: pointer;
     font-size: 0.85rem;
   }
 
   .retry-btn:hover {
-    background: #f5f5f5;
+    background: var(--surface-3);
   }
 </style>

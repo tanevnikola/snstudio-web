@@ -145,7 +145,7 @@
   }
 
   .palette {
-    background: white;
+    background: var(--surface-1);
     overflow-y: auto;
     min-width: 0;
   }
@@ -153,21 +153,21 @@
   .resize-handle.vertical {
     width: 5px;
     cursor: col-resize;
-    background: #ddd;
+    background: var(--handle);
     transition: background 0.15s;
   }
 
   .resize-handle.horizontal {
     height: 5px;
     cursor: row-resize;
-    background: #ddd;
+    background: var(--handle);
     transition: background 0.15s;
     flex-shrink: 0;
   }
 
   .resize-handle:hover,
   .resize-handle.active {
-    background: #999;
+    background: var(--handle-active);
   }
 
   .center-column {
@@ -181,10 +181,11 @@
     flex: 2;
     overflow-y: auto;
     min-height: 0;
+    background: var(--surface-1);
   }
 
   .properties {
-    background: white;
+    background: var(--surface-1);
     overflow-y: auto;
     min-width: 0;
   }

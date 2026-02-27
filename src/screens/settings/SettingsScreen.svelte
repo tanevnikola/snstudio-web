@@ -114,7 +114,7 @@
     display: flex;
     height: 100%;
     font-family: system-ui, -apple-system, sans-serif;
-    background: #f5f5f5;
+    background: var(--surface-1);
   }
 
   /* ── Sidebar ──────────────────────────────────────────────── */
@@ -122,8 +122,8 @@
     width: 190px;
     min-width: 140px;
     flex-shrink: 0;
-    background: #ebebeb;
-    border-right: 1px solid #d8d8d8;
+    background: var(--surface-2);
+    border-right: 1px solid var(--border-subtle);
     padding: 0.75rem 0.5rem;
     overflow-y: auto;
   }
@@ -147,7 +147,7 @@
     border-radius: 6px;
     background: none;
     font-size: 0.82rem;
-    color: #333;
+    color: var(--text-primary);
     cursor: pointer;
     text-align: left;
     transition: background 0.1s;
@@ -155,11 +155,11 @@
   }
 
   .category-item:hover:not(.active) {
-    background: #dedede;
+    background: var(--surface-3);
   }
 
   .category-item.active {
-    background: #007aff;
+    background: var(--primary);
     color: white;
   }
 
@@ -188,14 +188,14 @@
     margin: 0 0 1rem;
     font-size: 1rem;
     font-weight: 600;
-    color: #111;
+    color: var(--text-primary);
     letter-spacing: -0.01em;
   }
 
   /* ── Settings group (card) ────────────────────────────────── */
   .settings-group {
-    background: white;
-    border: 1px solid #e0e0e0;
+    background: var(--surface-2);
+    border: 1px solid var(--border-default);
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
@@ -212,7 +212,7 @@
   }
 
   .settings-group .setting-row + .setting-row {
-    border-top: 1px solid #efefef;
+    border-top: 1px solid var(--border-subtle);
   }
 
   /*
@@ -252,12 +252,12 @@
   .setting-name {
     font-size: 0.85rem;
     font-weight: 500;
-    color: #111;
+    color: var(--text-primary);
   }
 
   .setting-desc {
     font-size: 0.75rem;
-    color: #999;
+    color: var(--text-secondary);
     line-height: 1.4;
   }
 
@@ -266,19 +266,19 @@
   /* Shared base for all control elements */
   .ctrl {
     padding: 0.28rem 0.5rem;
-    border: 1px solid #d0d0d0;
+    border: 1px solid var(--border-default);
     border-radius: 6px;
     font-size: 0.85rem;
-    color: #111;
-    background: #fafafa;
+    color: var(--text-primary);
+    background: var(--surface-1);
     font-family: inherit;
     flex-shrink: 0;
   }
 
   .ctrl:focus {
     outline: none;
-    border-color: #007aff;
-    box-shadow: 0 0 0 2.5px rgba(0, 122, 255, 0.18);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2.5px var(--primary-subtle);
   }
 
   /* Compact number stepper */
@@ -325,7 +325,7 @@
   .toggle-track {
     width: 40px;
     height: 24px;
-    background: #ccc;
+    background: var(--border-default);
     border-radius: 12px;
     transition: background 0.2s;
     display: flex;
@@ -334,7 +334,7 @@
   }
 
   .ctrl--toggle input:checked + .toggle-track {
-    background: #007aff;
+    background: var(--primary);
   }
 
   .toggle-thumb {

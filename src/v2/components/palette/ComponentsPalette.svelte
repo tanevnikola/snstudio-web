@@ -49,7 +49,7 @@
 
   .section-arrow {
     font-size: 0.5rem;
-    color: #999;
+    color: var(--text-muted);
     width: 14px;
     display: flex;
     align-items: center;
@@ -60,22 +60,22 @@
   .section-title {
     font-size: 0.9rem;
     font-weight: 600;
-    color: #555;
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
 
   .section-count {
     font-size: 0.65rem;
-    color: #aaa;
+    color: var(--text-muted);
     margin-left: auto;
   }
 
   .section-header:hover .section-title {
-    color: #333;
+    color: var(--text-primary);
   }
 
   .section-header:hover .section-arrow {
-    color: #666;
+    color: var(--text-secondary);
   }
 </style>

@@ -56,7 +56,7 @@
   .js-screen {
     display: flex;
     flex-direction: column;
-    background: #1e1e2e;
+    background: var(--editor-bg);
     overflow: auto;
     resize: vertical;
   }
@@ -70,7 +70,7 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.4rem 0.75rem;
-    background: #181825;
+    background: var(--editor-header);
     flex-shrink: 0;
   }
 
@@ -87,19 +87,19 @@
 
   .collapse-btn:hover .title,
   .collapse-btn:hover .arrow {
-    color: #cdd6f4;
+    color: var(--editor-text);
   }
 
   .arrow {
     font-size: 0.55rem;
-    color: #6c7086;
+    color: var(--editor-muted);
     width: 0.65rem;
   }
 
   .title {
     font-size: 0.7rem;
     font-weight: 600;
-    color: #6c7086;
+    color: var(--editor-muted);
     text-transform: uppercase;
     letter-spacing: 0.08em;
   }
@@ -114,42 +114,42 @@
 
   .copy-btn {
     background: none;
-    border: 1px solid #45475a;
+    border: 1px solid var(--editor-border);
     border-radius: 4px;
     padding: 0.15rem 0.5rem;
     font-size: 0.65rem;
-    color: #6c7086;
+    color: var(--editor-muted);
     cursor: pointer;
     transition: color 0.15s, border-color 0.15s;
     font-family: inherit;
   }
 
   .copy-btn:hover {
-    color: #cdd6f4;
-    border-color: #6c7086;
+    color: var(--editor-text);
+    border-color: var(--editor-muted);
   }
 
   .edit-toggle {
     background: none;
-    border: 1px solid #45475a;
+    border: 1px solid var(--editor-border);
     border-radius: 4px;
     padding: 0.15rem 0.5rem;
     font-size: 0.65rem;
-    color: #6c7086;
+    color: var(--editor-muted);
     cursor: pointer;
     transition: color 0.15s, border-color 0.15s, background 0.15s;
     font-family: inherit;
   }
 
   .edit-toggle:hover {
-    color: #cdd6f4;
-    border-color: #6c7086;
+    color: var(--editor-text);
+    border-color: var(--editor-muted);
   }
 
   .edit-toggle.active {
-    color: #a6e3a1;
-    border-color: #a6e3a1;
-    background: rgba(166, 227, 161, 0.1);
+    color: var(--primary);
+    border-color: var(--primary);
+    background: var(--primary-subtle);
   }
 
   /* Catppuccin Mocha syntax colors for JavaScript */

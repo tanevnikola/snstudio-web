@@ -26,17 +26,17 @@
   }
 
   .close {
-    color: #888;
+    color: var(--text-muted);
     background: transparent;
   }
 
   .close:hover {
-    color: #666;
-    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-secondary);
+    background: var(--surface-3);
   }
 
   .check {
     color: white;
-    background: #d32f2f;
+    background: var(--danger);
   }
 </style>

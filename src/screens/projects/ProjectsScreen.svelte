@@ -116,11 +116,11 @@
 
   .empty-text {
     font-size: 0.9rem;
-    color: #bbb;
+    color: var(--text-muted);
   }
 
   .create-btn {
-    background: #007aff;
+    background: var(--primary);
     border: none;
     border-radius: 8px;
     padding: 0.5rem 1.2rem;
@@ -132,7 +132,7 @@
   }
 
   .create-btn:hover {
-    background: #0066d6;
+    background: var(--primary-hover);
   }
 
   /* ── Content ──────────────────────────────────────────── */
@@ -155,7 +155,7 @@
     margin: 0;
     font-size: 1.1rem;
     font-weight: 600;
-    color: #222;
+    color: var(--text-primary);
   }
 
   .add-btn {
@@ -164,13 +164,13 @@
     cursor: pointer;
     font-family: inherit;
     font-size: 0.8rem;
-    color: #007aff;
+    color: var(--primary);
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
   }
 
   .add-btn:hover {
-    background: rgba(0, 122, 255, 0.08);
+    background: var(--primary-subtle);
   }
 
   /* ── Project rows ─────────────────────────────────────── */
@@ -185,7 +185,7 @@
     display: flex;
     align-items: center;
     padding: 0.6rem 0.75rem;
-    border: 1px solid #e8e8e8;
+    border: 1px solid var(--border-default);
     border-radius: 8px;
     cursor: pointer;
     transition: background 0.12s, border-color 0.12s;
@@ -193,15 +193,15 @@
   }
 
   .project-row:hover {
-    background: #f8f8f8;
-    border-color: #d0d0d0;
+    background: var(--surface-3);
+    border-color: var(--border-default);
   }
 
   .project-name {
     flex: 1;
     font-size: 0.88rem;
     font-weight: 500;
-    color: #222;
+    color: var(--text-primary);
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -212,14 +212,14 @@
     flex: 1;
     min-width: 0;
     padding: 0.15rem 0.3rem;
-    border: 1px solid #007aff;
+    border: 1px solid var(--primary);
     border-radius: 4px;
     font-family: inherit;
     font-size: 0.88rem;
     font-weight: 500;
     outline: none;
-    background: white;
-    color: #222;
+    background: var(--surface-2);
+    color: var(--text-primary);
   }
 
   .delete-btn {
@@ -241,11 +241,11 @@
   }
 
   .project-row:hover .delete-btn {
-    color: #bbb;
+    color: var(--text-muted);
   }
 
   .project-row:hover .delete-btn:hover {
-    color: #d32f2f;
-    background: rgba(211, 47, 47, 0.08);
+    color: var(--danger);
+    background: var(--danger-subtle);
   }
 </style>

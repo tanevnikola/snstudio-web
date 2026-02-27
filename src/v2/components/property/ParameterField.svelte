@@ -107,9 +107,9 @@
   .field {
     margin-bottom: 8px;
     padding: 8px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border-default);
     border-radius: 6px;
-    background: #fafafa;
+    background: var(--surface-2);
     width: 100%;
   }
   .field-header {
@@ -123,19 +123,19 @@
     border: none;
     padding: 0;
     font-size: 8px;
-    color: #999;
+    color: var(--text-muted);
     cursor: pointer;
     line-height: 1;
     flex-shrink: 0;
   }
   .collapse-toggle:hover {
-    color: #555;
+    color: var(--text-secondary);
   }
   .label {
     display: inline;
     font-size: 12px;
     font-weight: 500;
-    color: #555;
+    color: var(--text-secondary);
     position: relative;
     cursor: help;
   }
@@ -144,8 +144,8 @@
     left: 0;
     top: 100%;
     z-index: 100;
-    background: #333;
-    color: #eee;
+    background: var(--surface-0);
+    color: var(--text-primary);
     padding: 6px 10px;
     border-radius: 6px;
     font-size: 11px;
@@ -153,21 +153,21 @@
     line-height: 1.5;
     max-width: 320px;
     width: max-content;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     pointer-events: none;
   }
   .tooltip :global(p) { margin: 0.2rem 0; }
-  .tooltip :global(code) { background: rgba(255,255,255,0.15); padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 10px; }
-  .tooltip :global(strong) { color: #fff; }
-  .tooltip :global(a) { color: #7ab8ff; }
+  .tooltip :global(code) { background: rgba(255,255,255,0.1); padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 10px; }
+  .tooltip :global(strong) { color: var(--text-primary); }
+  .tooltip :global(a) { color: var(--primary-hover); }
   .required {
-    color: #e53935;
+    color: var(--danger);
     margin-left: 2px;
   }
   .meta {
     display: block;
     font-size: 10px;
-    color: #999;
+    color: var(--text-muted);
     margin-bottom: 4px;
   }
   .value {
@@ -194,20 +194,20 @@
     width: 24px;
     height: 24px;
     padding: 0;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-default);
     border-radius: 4px;
-    background: #f5f5f5;
-    color: #999;
+    background: var(--surface-3);
+    color: var(--text-muted);
     cursor: pointer;
     margin-right: 4px;
   }
   .inject-toggle:hover {
-    color: #666;
-    border-color: #999;
+    color: var(--text-secondary);
+    border-color: var(--border-strong);
   }
   .inject-toggle.active {
-    background: #fff3e0;
-    border-color: #ff9800;
-    color: #ff9800;
+    background: var(--primary-subtle);
+    border-color: var(--primary);
+    color: var(--primary);
   }
 </style>

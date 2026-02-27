@@ -98,36 +98,36 @@
   .field-label {
     font-size: 0.75rem;
     font-weight: 600;
-    color: #888;
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
 
   .field-input {
     padding: 0.4rem 0.6rem;
-    border: 1px solid #d0d0d0;
+    border: 1px solid var(--border-default);
     border-radius: 6px;
     font-size: 0.9rem;
     font-family: inherit;
-    color: #111;
-    background: white;
+    color: var(--text-primary);
+    background: var(--surface-2);
   }
 
   .field-input:focus,
   .field-select:focus {
     outline: none;
-    border-color: #007aff;
-    box-shadow: 0 0 0 2.5px rgba(0, 122, 255, 0.18);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2.5px var(--primary-subtle);
   }
 
   .field-select {
     padding: 0.4rem 0.6rem;
-    border: 1px solid #d0d0d0;
+    border: 1px solid var(--border-default);
     border-radius: 6px;
     font-size: 0.9rem;
     font-family: inherit;
-    color: #111;
-    background: white;
+    color: var(--text-primary);
+    background: var(--surface-2);
   }
 
   .fb-section {
@@ -141,7 +141,7 @@
   .section-label {
     font-size: 0.75rem;
     font-weight: 600;
-    color: #888;
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.04em;
     padding: 0 2rem 0.4rem;
@@ -158,12 +158,12 @@
 
   .delete-btn {
     background: none;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border-default);
     border-radius: 6px;
     padding: 0.4rem 0.75rem;
     font-size: 0.82rem;
     font-family: inherit;
-    color: #d32f2f;
+    color: var(--danger);
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
     flex-shrink: 0;
@@ -171,7 +171,7 @@
   }
 
   .delete-btn:hover {
-    background: rgba(211, 47, 47, 0.06);
-    border-color: #d32f2f;
+    background: var(--danger-subtle);
+    border-color: var(--danger);
   }
 </style>

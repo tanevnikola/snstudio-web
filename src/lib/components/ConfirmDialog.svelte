@@ -40,7 +40,7 @@
   }
 
   .dialog {
-    background: white;
+    background: var(--surface-2);
     border-radius: 12px;
     padding: 1.25rem 1.5rem;
     max-width: 340px;
@@ -51,7 +51,7 @@
   .message {
     margin: 0 0 1rem;
     font-size: 0.88rem;
-    color: #222;
+    color: var(--text-primary);
     line-height: 1.45;
   }
 
@@ -72,20 +72,20 @@
   }
 
   .btn-cancel {
-    background: #f0f0f0;
-    color: #555;
+    background: var(--surface-3);
+    color: var(--text-secondary);
   }
 
   .btn-cancel:hover {
-    background: #e4e4e4;
+    background: var(--border-default);
   }
 
   .btn-confirm {
-    background: #d32f2f;
+    background: var(--danger);
     color: white;
   }
 
   .btn-confirm:hover {
-    background: #b71c1c;
+    background: var(--danger-hover, #b71c1c);
   }
 </style>

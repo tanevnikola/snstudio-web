@@ -39,8 +39,8 @@
     width: 220px;
     min-width: 160px;
     flex-shrink: 0;
-    background: #f5f5f5;
-    border-right: 1px solid #e0e0e0;
+    background: var(--surface-1);
+    border-right: 1px solid var(--border-default);
     overflow-y: auto;
   }
 
@@ -48,7 +48,7 @@
     flex: 1;
     padding: 1.5rem 2rem;
     overflow-y: auto;
-    background: white;
+    background: var(--surface-1);
     min-width: 0;
   }
 
@@ -66,6 +66,6 @@
 
   .empty-text {
     font-size: 0.85rem;
-    color: #bbb;
+    color: var(--text-muted);
   }
 </style>

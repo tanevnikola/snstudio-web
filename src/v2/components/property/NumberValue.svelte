@@ -16,13 +16,15 @@
   input {
     width: 100%;
     padding: 4px 8px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-default);
     border-radius: 4px;
     font-size: 13px;
     box-sizing: border-box;
+    background: var(--surface-2);
+    color: var(--text-primary);
   }
   input:focus {
     outline: none;
-    border-color: #4a9eff;
+    border-color: var(--primary);
   }
 </style>

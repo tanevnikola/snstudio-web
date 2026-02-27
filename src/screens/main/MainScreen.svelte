@@ -92,8 +92,8 @@
     align-items: center;
     padding: 0 0.75rem;
     height: 48px;
-    background: white;
-    border-bottom: 1px solid #e0e0e0;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border-default);
     flex-shrink: 0;
   }
 
@@ -103,7 +103,7 @@
   .app-title {
     font-size: 1rem;
     font-weight: 600;
-    color: #222;
+    color: var(--text-primary);
     letter-spacing: -0.01em;
     text-align: center;
     pointer-events: none;
@@ -119,18 +119,18 @@
     background: none;
     border: none;
     border-radius: 6px;
-    color: #888;
+    color: var(--text-secondary);
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
   }
 
   .icon-btn:hover {
-    background: #f0f0f0;
-    color: #333;
+    background: var(--surface-3);
+    color: var(--text-primary);
   }
 
   .back-btn {
-    color: #555;
+    color: var(--text-secondary);
   }
 
   .content {

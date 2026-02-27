@@ -90,7 +90,7 @@
     <button class="collapse-btn" class:hidden={domainFunctionParams.length === 0} onclick={(e) => { e.stopPropagation(); collapsed = !collapsed; }}>
       <span class="chevron">&#9662;</span>
     </button>
-    <div class="block" style="border: 2px solid {selected ? '#4a90d9' : '#e0e0e0'}">
+    <div class="block" style="border: 2px solid {selected ? 'var(--primary)' : 'var(--border-default)'}">
       <div
         class="drag-handle"
         role="button"
@@ -154,16 +154,16 @@
     align-items: center;
     justify-content: center;
     width: 1.5rem;
-    border-right: 1px solid #e0e0e0;
+    border-right: 1px solid var(--border-default);
     cursor: grab;
-    color: #bbb;
+    color: var(--text-muted);
     font-size: 0.85rem;
     user-select: none;
   }
 
   .drag-handle:hover {
-    color: #777;
-    background: #f5f5f5;
+    color: var(--text-secondary);
+    background: var(--surface-3);
   }
 
   .drag-handle:active {
@@ -173,7 +173,7 @@
   .block {
     display: flex;
     align-items: stretch;
-    background: white;
+    background: var(--surface-2);
     border-radius: 6px;
     overflow: hidden;
     flex: 1;
@@ -191,7 +191,7 @@
     background: transparent;
     cursor: pointer;
     padding: 0;
-    color: #999;
+    color: var(--text-secondary);
     font-size: 0.7rem;
   }
 
@@ -200,7 +200,7 @@
   }
 
   .collapse-btn:hover {
-    color: #555;
+    color: var(--text-primary);
   }
 
   .chevron {
@@ -215,7 +215,7 @@
   .delete {
     display: flex;
     flex-shrink: 0;
-    border-right: 1px solid #e0e0e0;
+    border-right: 1px solid var(--border-default);
     padding: 0 0.4rem;
     align-items: center;
   }
@@ -232,7 +232,7 @@
   .title {
     font-size: 0.85rem;
     font-weight: 600;
-    color: #222;
+    color: var(--text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -240,8 +240,8 @@
 
   .detail {
     font-size: 0.7rem;
-    color: #888;
-    background: #f0f0f0;
+    color: var(--text-secondary);
+    background: var(--surface-3);
     padding: 0.1rem 0.4rem;
     border-radius: 4px;
     white-space: nowrap;
@@ -255,7 +255,7 @@
     top: 100%;
     height: 0;
     width: 2px;
-    background: #d0d0d0;
+    background: var(--border-default);
     border-radius: 1px;
   }
 
@@ -277,7 +277,7 @@
   .children.named {
     margin-top: 0.6rem;
     position: relative;
-    border: 1px dashed #ccc;
+    border: 1px dashed var(--border-default);
     border-radius: 6px;
     padding: 0.5rem;
   }
@@ -286,10 +286,10 @@
     position: absolute;
     top: -0.55rem;
     left: 0.5rem;
-    background: white;
+    background: var(--surface-2);
     padding: 0 0.3rem;
     font-size: 0.65rem;
     font-weight: 600;
-    color: #888;
+    color: var(--text-secondary);
   }
 </style>

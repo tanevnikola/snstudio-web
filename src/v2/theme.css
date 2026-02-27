@@ -1,0 +1,38 @@
+:root {
+  /* Surfaces (Stratos Blue scale) */
+  --surface-0: #00031f;
+  --surface-1: #00073f;
+  --surface-2: #191f52;
+  --surface-3: #323865;
+
+  /* Borders */
+  --border-default: #4c5178;
+  --border-subtle: #323865;
+  --border-strong: #666a8b;
+
+  /* Text */
+  --text-primary: #e5e6eb;
+  --text-secondary: #999bb2;
+  --text-muted: #666a8b;
+
+  /* Primary accent (Burnt Orange) */
+  --primary: #cc5500;
+  --primary-hover: #d67632;
+  --primary-subtle: rgba(204, 85, 0, 0.15);
+
+  /* Danger */
+  --danger: #e53935;
+  --danger-hover: #b71c1c;
+  --danger-subtle: rgba(229, 57, 53, 0.12);
+
+  /* Editor */
+  --editor-bg: #000638;
+  --editor-header: #00031f;
+  --editor-text: #cdd6f4;
+  --editor-muted: #6c7086;
+  --editor-border: #45475a;
+
+  /* Handles */
+  --handle: #4c5178;
+  --handle-active: #999bb2;
+}

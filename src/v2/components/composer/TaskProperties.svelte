@@ -34,12 +34,12 @@
     align-items: center;
     justify-content: space-between;
     padding: 8px 12px;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--border-default);
     margin-bottom: 8px;
   }
   .mnemonic {
     font-size: 13px;
     font-weight: 600;
-    color: #333;
+    color: var(--text-primary);
   }
 </style>

@@ -122,7 +122,7 @@
 <style>
   .loading {
     font-size: 0.7rem;
-    color: #ccc;
+    color: var(--text-muted);
     padding: 0.2rem 0.5rem;
   }
 
@@ -140,7 +140,7 @@
     border: none;
     font-size: 0.8rem;
     font-weight: 600;
-    color: #555;
+    color: var(--text-secondary);
     cursor: pointer;
     border-radius: 4px;
     text-align: left;
@@ -148,7 +148,7 @@
   }
 
   .group-header:hover {
-    background: #eee;
+    background: var(--surface-3);
   }
 
   .arrow {
@@ -167,11 +167,13 @@
     padding: 0.3rem 0.5rem;
     margin: 0.1rem 0;
     font-size: 0.78rem;
-    background: white;
-    border: 1px solid #ddd;
+    color: var(--text-primary);
+    background: var(--surface-2);
+    border: 1px solid var(--border-subtle);
     border-radius: 4px;
     cursor: grab;
     user-select: none;
+    transition: background 0.15s, border-color 0.15s;
   }
 
   .arrow-spacer {
@@ -192,8 +194,8 @@
     width: 13px;
     height: 13px;
     border-radius: 50%;
-    background: #ddd;
-    color: #777;
+    background: var(--surface-3);
+    color: var(--text-muted);
     font-size: 0.5rem;
     font-style: italic;
     font-family: Georgia, serif;
@@ -209,13 +211,13 @@
   }
 
   .info-icon:hover {
-    background: #ccc;
-    color: #444;
+    background: var(--border-default);
+    color: var(--text-primary);
   }
 
   .palette-item:hover {
-    border-color: #999;
-    background: #f9f9f9;
+    border-color: var(--primary);
+    background: var(--primary-subtle);
   }
 
   .palette-item:active {

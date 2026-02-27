@@ -62,9 +62,9 @@ import ParameterField from './ParameterField.svelte';
     gap: 4px;
     margin-bottom: 6px;
     padding: 8px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border-default);
     border-radius: 6px;
-    background: #fafafa;
+    background: var(--surface-2);
   }
   .entry-value {
     flex: 1;
@@ -78,7 +78,7 @@ import ParameterField from './ParameterField.svelte';
     border: none;
     border-radius: 4px;
     background: none;
-    color: #999;
+    color: var(--text-muted);
     font-size: 16px;
     cursor: pointer;
     display: inline-flex;
@@ -86,22 +86,22 @@ import ParameterField from './ParameterField.svelte';
     justify-content: center;
   }
   .remove-btn:hover {
-    background: #fee;
-    color: #e53935;
+    background: var(--danger-subtle);
+    color: var(--danger);
   }
   .add-btn {
     align-self: flex-start;
     padding: 2px 8px;
-    border: 1px dashed #ccc;
+    border: 1px dashed var(--border-default);
     border-radius: 4px;
     background: none;
-    color: #888;
+    color: var(--text-secondary);
     font-size: 12px;
     cursor: pointer;
   }
   .add-btn:hover {
-    border-color: #999;
-    color: #555;
-    background: #fafafa;
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+    background: var(--surface-3);
   }
 </style>
