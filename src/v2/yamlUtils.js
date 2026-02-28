@@ -43,9 +43,12 @@ export function extractTaskYaml(functionYaml) {
 }
 
 export function extractFunctionPropertiesYaml(functionYaml) {
-    if (!functionYaml) return { task: null, cleaned: null };
-    const { task, tasks, ...rest } = functionYaml;
-    return { t: 'DomainFunction', v: rest } ;
+    if (!functionYaml) return { t: 'DomainFunction', v: {} };
+    // Root block: { t: 'DomainFunction', v: { tasks/task: ..., ...props } }
+    // Inner block: { task/tasks: ..., ...props }
+    const inner = functionYaml.v ?? functionYaml;
+    const { task, tasks, ...rest } = inner;
+    return { t: 'DomainFunction', v: rest };
 }
 
 export function extractTaskMnemonic(taskYaml) {

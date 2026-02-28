@@ -7,7 +7,8 @@
     function onchange(updatedProperties) {
         const sel = getSelectionYaml();
         if (!sel) return;
-        Object.assign(sel, updatedProperties.v);
+        const target = "v" in sel ? sel.v : sel;
+        Object.assign(target, updatedProperties.v);
         flush();
     }
 
