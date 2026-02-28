@@ -3,6 +3,7 @@
     import DomainFunctionBlock from "./DomainFunctionBlock.svelte";
     import DomainFunctionCollectionBlock from "./DomainFunctionCollectionBlock.svelte";
     import DomainFunctionMapBlock from "./DomainFunctionMapBlock.svelte";
+    import DomainFunctionSlotBlock from "./DomainFunctionSlotBlock.svelte";
     import DomainTaskBlock from "./DomainTaskBlock.svelte";
     import {
         setSelectionYaml,
@@ -173,9 +174,17 @@
                                 ancestorParams={[...ancestorParams, ...paramKeys]}
                             />
                         {:else}
-                            <DomainFunctionBlock
+                            <DomainFunctionSlotBlock
                                 yaml={getParamYaml(param)}
                                 ancestorParams={[...ancestorParams, ...paramKeys]}
+                                onset={(value) => {
+                                    if (param.name === "@delegating@") {
+                                        taskYaml.v = value;
+                                    } else {
+                                        if (!taskYaml.v) taskYaml.v = {};
+                                        taskYaml.v[param.name] = value;
+                                    }
+                                }}
                                 onremove={() => {
                                     if (param.name === "@delegating@") {
                                         taskYaml.v = null;
