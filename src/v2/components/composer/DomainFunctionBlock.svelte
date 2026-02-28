@@ -1,17 +1,22 @@
 <script>
     import ConfirmDeleteButton from "../ConfirmDeleteButton.svelte";
     import DomainTaskBlock from "./DomainTaskBlock.svelte";
-    import { select, setSelectionYaml } from "./selectionState.svelte.js";
+    import { setSelectionYaml, getSelectionYaml, flush } from "./composerState.svelte.js";
     import {
         setDragHeight,
         setDragItem,
         setRemoveSource,
         clearDragItem,
     } from "./dragState.js";
-    import { flush } from "./composerState.js";
     import { fetchSpec } from "../../mnemoUtils.js";
 
-    let { yaml = {}, parent = null, onremove = () => {}, selectOnMount = false, onAutoSelected = () => {} } = $props();
+    let {
+        yaml = {},
+        parent = null,
+        onremove = () => {},
+        selectOnMount = false,
+        onAutoSelected = () => {},
+    } = $props();
 
     let v = $derived(yaml?.v ?? yaml ?? {});
     let hasTask = $derived(v != null && typeof v === "object" && "task" in v);
@@ -52,12 +57,10 @@
     });
 
     let blockEl;
-    let selected = $state(false);
+    let selected = $derived(getSelectionYaml() === yaml);
     let dragging = $state(false);
 
     function doSelect() {
-        selected = true;
-        select(() => { selected = false; });
         setSelectionYaml(yaml);
     }
 
@@ -85,12 +88,6 @@
         onremove();
         flush();
     }
-
-    $effect(() => {
-        if (selected) {
-            setSelectionYaml(yaml);
-        }
-    });
 
     $effect(() => {
         if (selectOnMount) {

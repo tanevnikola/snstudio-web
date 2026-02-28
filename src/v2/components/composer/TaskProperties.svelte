@@ -1,11 +1,7 @@
 <script>
-    import {
-        getSelectionYaml,
-        setSelectionYaml,
-    } from "./selectionState.svelte.js";
+    import { getSelectionYaml, flush } from "./composerState.svelte.js";
     import ObjectProperties from "../property/ObjectProperties.svelte";
     import { extractTaskMnemonic, extractTaskYaml } from "../../yamlUtils.js";
-    import { flush } from "./composerState.js";
 
     let functionYaml = $derived(getSelectionYaml());
     let taskYaml = $derived(extractTaskYaml(functionYaml));
@@ -20,7 +16,6 @@
             if (!(k in updatedTaskYaml)) delete task[k];
         });
         Object.assign(task, updatedTaskYaml);
-        setSelectionYaml({ ...sel });
         flush();
     }
 </script>

@@ -1,18 +1,13 @@
 <script>
-    import {
-        getSelectionYaml,
-        setSelectionYaml,
-    } from "./selectionState.svelte.js";
+    import { getSelectionYaml, flush } from "./composerState.svelte.js";
     import ObjectProperties from "../property/ObjectProperties.svelte";
     import { extractFunctionPropertiesYaml } from "../../yamlUtils.js";
-    import { flush } from "./composerState.js";
 
     let functionYaml = $derived(getSelectionYaml());
     function onchange(updatedProperties) {
         const sel = getSelectionYaml();
         if (!sel) return;
         Object.assign(sel, updatedProperties.v);
-        setSelectionYaml({ ...sel });
         flush();
     }
 

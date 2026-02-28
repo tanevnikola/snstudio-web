@@ -7,7 +7,7 @@
         removeSource,
         clearDragItem,
     } from "./dragState.js";
-    import { flush } from "./composerState.js";
+    import { flush } from "./composerState.svelte.js";
     import {
         isInjectionCollection,
         getSpec,

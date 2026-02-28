@@ -1,7 +1,7 @@
 <script>
     import yaml from "js-yaml";
     import DomainFunctionBlock from "./DomainFunctionBlock.svelte";
-    import { registerFlush, setParsedTree } from "./composerState.js";
+    import { registerFlush, setParsedTree, refreshYaml } from "./composerState.svelte.js";
 
     let {
         yaml: yamlText = "",
@@ -18,6 +18,7 @@
 
     $effect(() => {
         setParsedTree(parsed);
+        refreshYaml(parsed);
     });
 
     registerFlush(() => {
