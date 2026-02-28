@@ -75,10 +75,6 @@
         display: flex;
         flex-direction: column;
         margin-bottom: 6px;
-        padding: 8px;
-        border: 1px solid var(--border-default);
-        border-radius: 6px;
-        background: var(--surface-2);
     }
     .entry-header {
         display: flex;

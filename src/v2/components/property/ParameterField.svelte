@@ -212,10 +212,8 @@
 <style>
     .field {
         margin-bottom: 8px;
-        padding: 8px;
-        border: 1px solid var(--border-default);
-        border-radius: 6px;
-        background: var(--surface-2);
+        padding-left: 12px;
+        border-left: 2px dashed var(--border-default);
         width: 100%;
     }
     .field-header {
@@ -223,6 +221,7 @@
         align-items: baseline;
         gap: 4px;
         margin-bottom: 4px;
+        margin-left: -12px;
     }
     .collapse-toggle {
         background: none;

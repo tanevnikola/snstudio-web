@@ -77,10 +77,6 @@
         align-items: flex-start;
         gap: 4px;
         margin-bottom: 6px;
-        padding: 8px;
-        border: 1px solid var(--border-default);
-        border-radius: 6px;
-        background: var(--surface-2);
     }
     .entry-value {
         flex: 1;
