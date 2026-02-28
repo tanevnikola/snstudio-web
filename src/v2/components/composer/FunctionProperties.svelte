@@ -1,61 +1,70 @@
 <script>
-  import { getSelectionYaml, setSelectionYaml } from './selectionState.svelte.js';
-  import ObjectProperties from '../property/ObjectProperties.svelte';
-  import { extractFunctionPropertiesYaml } from '../../yamlUtils.js';
-  import { flush } from './composerState.js';
+    import {
+        getSelectionYaml,
+        setSelectionYaml,
+    } from "./selectionState.svelte.js";
+    import ObjectProperties from "../property/ObjectProperties.svelte";
+    import { extractFunctionPropertiesYaml } from "../../yamlUtils.js";
+    import { flush } from "./composerState.js";
 
-  let functionYaml = $derived(getSelectionYaml());
-  let functionProperties = $derived(extractFunctionPropertiesYaml(functionYaml));
-  function onchange(updatedProperties) {
-    const sel = getSelectionYaml();
-    if (!sel) return;
+    let functionYaml = $derived(getSelectionYaml());
+    function onchange(updatedProperties) {
+        const sel = getSelectionYaml();
+        if (!sel) return;
+        Object.assign(sel, updatedProperties.v);
+        setSelectionYaml({ ...sel });
+        flush();
+    }
 
-    const {task, tasks, ...rest} = sel;
-    // sel.delete(task)
-    // sel.delete(tasks)
-    // Merge back only the extracted (non task/tasks) props
-    Object.assign(sel, updatedProperties.v);
-    // Object.assign(sel, task ? { task } : { tasks })
-    setSelectionYaml({ ...sel });
-    flush();
-  }
-
-  let collapsed = $state(true);
+    let collapsed = $state(true);
 </script>
 
-<div class="header" role="button" tabindex="0" onclick={() => collapsed = !collapsed} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); collapsed = !collapsed; } }}>
-  <span class="chevron">{collapsed ? '▶' : '▼'}</span>
-  <span class="mnemonic">Function</span>
+<div
+    class="header"
+    role="button"
+    tabindex="0"
+    onclick={() => (collapsed = !collapsed)}
+    onkeydown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            collapsed = !collapsed;
+        }
+    }}
+>
+    <span class="chevron">{collapsed ? "▶" : "▼"}</span>
+    <span class="mnemonic">Function</span>
 </div>
 {#if !collapsed}
-  {#key functionYaml}
-    <ObjectProperties yaml={functionProperties} onchange={onchange} />
-  {/key}
+    {#key functionYaml}
+        <ObjectProperties
+            yaml={extractFunctionPropertiesYaml(functionYaml)}
+            {onchange}
+        />
+    {/key}
 {/if}
 
-
 <style>
-  .header {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border-default);
-    cursor: pointer;
-    user-select: none;
-  }
-  .header:hover {
-    background: var(--surface-3);
-  }
-  .chevron {
-    font-size: 8px;
-    color: var(--text-muted);
-    width: 10px;
-    flex-shrink: 0;
-  }
-  .mnemonic {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-primary);
-  }
+    .header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--border-default);
+        cursor: pointer;
+        user-select: none;
+    }
+    .header:hover {
+        background: var(--surface-3);
+    }
+    .chevron {
+        font-size: 8px;
+        color: var(--text-muted);
+        width: 10px;
+        flex-shrink: 0;
+    }
+    .mnemonic {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
 </style>

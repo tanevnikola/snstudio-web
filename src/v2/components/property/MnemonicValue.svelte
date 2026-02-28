@@ -1,5 +1,5 @@
 <script>
-  import { getSpec, fetchSpec, getImplementations, getNonDomainFunctionParameters, isImplementing } from '../../mnemoUtils.js';
+  import { getSpec, fetchSpec, getImplementations, getObjectProperties, isImplementing } from '../../mnemoUtils.js';
   import ParameterField from './ParameterField.svelte';
   import DocsPopover from '../DocsPopover.svelte';
   import Self from './MnemonicValue.svelte';
@@ -22,7 +22,7 @@
   /**
    * Handle parameters
    */
-  let params = $derived(getNonDomainFunctionParameters(mnemonicSpec));
+  let params = $derived(getObjectProperties(mnemonicSpec));
 
   /**
    * Documentation stuff

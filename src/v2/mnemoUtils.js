@@ -109,10 +109,11 @@ export function getImplementations(mnemonic) {
   return [...result].sort();
 }
 
-export function getNonDomainFunctionParameters(mnemonicSpec) {
+export function getObjectProperties(mnemonicSpec) {
   if (!mnemonicSpec?.parameters) return [];
   return Object.entries(mnemonicSpec.parameters)
     .filter(([, p]) => p.mnemonic !== 'DomainFunction')
+    .filter(([, p]) => p.mnemonic !== 'DomainTask')
     .filter(([, p]) => !p.hidden)
     .sort(([, a], [, b]) => (a.order ?? 0) - (b.order ?? 0))
     .map(([name, p]) => ({ name, ...p }));
