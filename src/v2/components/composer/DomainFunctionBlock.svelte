@@ -39,10 +39,17 @@
 
     $effect(() => {
         const m = mnemonic;
-        if (!m) { mnemonicSpec = null; return; }
+        if (!m) {
+            mnemonicSpec = null;
+            return;
+        }
         fetchSpec(m)
-            .then((spec) => { if (mnemonic === m) mnemonicSpec = spec; })
-            .catch(() => { if (mnemonic === m) mnemonicSpec = null; });
+            .then((spec) => {
+                if (mnemonic === m) mnemonicSpec = spec;
+            })
+            .catch(() => {
+                if (mnemonic === m) mnemonicSpec = null;
+            });
     });
 
     let domainFunctionParams = $derived.by(() => {
@@ -59,17 +66,33 @@
     );
 
     let paramGroups = $derived([
-        ...paramKeys.filter((k) => !ancestorParams.includes(k)).map((k) => ({ k, cls: "param-new" })),
-        ...paramKeys.filter((k) =>  ancestorParams.includes(k)).map((k) => ({ k, cls: "param-override" })),
-        ...ancestorParams.filter((k) => !paramKeys.includes(k)).map((k) => ({ k, cls: "param-ancestor" })),
+        ...paramKeys
+            .filter((k) => !ancestorParams.includes(k))
+            .map((k) => ({ k, cls: "param-new" })),
+        ...paramKeys
+            .filter((k) => ancestorParams.includes(k))
+            .map((k) => ({ k, cls: "param-override" })),
+        ...ancestorParams
+            .filter((k) => !paramKeys.includes(k))
+            .map((k) => ({ k, cls: "param-ancestor" })),
     ]);
 
     function getParamYaml(param) {
         if (param.name === "@delegating@") return taskYaml?.v;
-        if (taskYaml?.v && param.injectionStrategy === "COLLECTION" && !Array.isArray(taskYaml.v[param.name])) {
+        if (
+            taskYaml?.v &&
+            param.injectionStrategy === "COLLECTION" &&
+            !Array.isArray(taskYaml.v[param.name])
+        ) {
             taskYaml.v[param.name] = [];
         }
-        if (taskYaml?.v && param.injectionStrategy === "MAP" && (taskYaml.v[param.name] == null || typeof taskYaml.v[param.name] !== "object" || Array.isArray(taskYaml.v[param.name]))) {
+        if (
+            taskYaml?.v &&
+            param.injectionStrategy === "MAP" &&
+            (taskYaml.v[param.name] == null ||
+                typeof taskYaml.v[param.name] !== "object" ||
+                Array.isArray(taskYaml.v[param.name]))
+        ) {
             taskYaml.v[param.name] = {};
         }
         return taskYaml?.v?.[param.name];
@@ -79,8 +102,13 @@
     let selected = $derived(getSelectionYaml() === yaml);
     let dragging = $state(false);
 
-    function doSelect() { setSelectionYaml(yaml); }
-    function handleSelect(e) { e.stopPropagation(); doSelect(); }
+    function doSelect() {
+        setSelectionYaml(yaml);
+    }
+    function handleSelect(e) {
+        e.stopPropagation();
+        doSelect();
+    }
 
     function handleDragStart(e) {
         e.dataTransfer.effectAllowed = "move";
@@ -93,8 +121,23 @@
         doSelect();
     }
 
-    function handleDragEnd() { dragging = false; clearDragItem(); }
-    function handleDelete() { onremove(); flush(); }
+    function handleDragEnd() {
+        dragging = false;
+        clearDragItem();
+    }
+    function handleDelete() {
+        onremove();
+        flush();
+    }
+
+    function handleChildrenDragEnter(e) {
+        e._listHandled = true;
+    }
+    function handleChildrenDragOver(e) {
+        e._listHandled = true;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = getDragItem() ? "move" : "copy";
+    }
 </script>
 
 {#if valid && taskYaml}
@@ -120,13 +163,18 @@
             <button
                 class="collapse-btn"
                 class:hidden={domainFunctionParams.length === 0}
-                onclick={(e) => { e.stopPropagation(); collapsed = !collapsed; }}
+                onclick={(e) => {
+                    e.stopPropagation();
+                    collapsed = !collapsed;
+                }}
             >
                 <span class="chevron">&#9662;</span>
             </button>
             <div
                 class="block"
-                style="border: 2px solid {selected ? 'var(--primary)' : 'var(--border-default)'}"
+                style="border: 2px solid {selected
+                    ? 'var(--primary)'
+                    : 'var(--border-default)'}"
             >
                 <div class="block-row">
                     <div
@@ -152,9 +200,14 @@
                     </div>
                 </div>
                 {#if paramGroups.length > 0}
-                    <div class="params-bar">(<!--
-                        -->{#each paramGroups as { k, cls }, i}<span class={cls}>{k}</span>{#if i < paramGroups.length - 1}, {/if}{/each}<!--
-                    -->)</div>
+                    <div class="params-bar">
+                        (<!--
+                        -->{#each paramGroups as { k, cls }, i}<span
+                                class={cls}>{k}</span
+                            >{#if i < paramGroups.length - 1},
+                            {/if}{/each}<!--
+                    -->)
+                    </div>
                 {/if}
             </div>
         </div>
@@ -163,50 +216,62 @@
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <div
                 class="children-area"
-                ondragenter={(e) => { e._listHandled = true; }}
-                ondragover={(e) => { e._listHandled = true; e.preventDefault(); e.dataTransfer.dropEffect = getDragItem() ? "move" : "copy"; }}
+                ondragenter={handleChildrenDragEnter}
+                ondragover={handleChildrenDragOver}
             >
-            {#each domainFunctionParams as param (param.name)}
-                <div class="children" class:named={param.name !== "@delegating@"}>
-                    {#if param.name !== "@delegating@"}
-                        <span class="param-label">{param.name}</span>
-                    {/if}
-                    <div class="children-content">
-                        {#if param.injectionStrategy === "COLLECTION"}
-                            <DomainFunctionCollectionBlock
-                                yaml={getParamYaml(param)}
-                                ancestorParams={[...ancestorParams, ...paramKeys]}
-                            />
-                        {:else if param.injectionStrategy === "MAP"}
-                            <DomainFunctionMapBlock
-                                yaml={getParamYaml(param)}
-                                ancestorParams={[...ancestorParams, ...paramKeys]}
-                            />
-                        {:else}
-                            <DomainFunctionSlotBlock
-                                yaml={getParamYaml(param)}
-                                ancestorParams={[...ancestorParams, ...paramKeys]}
-                                onset={(value) => {
-                                    if (param.name === "@delegating@") {
-                                        taskYaml.v = value;
-                                    } else {
-                                        if (!taskYaml.v) taskYaml.v = {};
-                                        taskYaml.v[param.name] = value;
-                                    }
-                                }}
-                                onremove={() => {
-                                    if (param.name === "@delegating@") {
-                                        taskYaml.v = null;
-                                    } else {
-                                        delete taskYaml.v[param.name];
-                                    }
-                                }}
-                            />
+                {#each domainFunctionParams as param (param.name)}
+                    <div
+                        class="children"
+                        class:named={param.name !== "@delegating@"}
+                    >
+                        {#if param.name !== "@delegating@"}
+                            <span class="param-label">{param.name}</span>
                         {/if}
+                        <div class="children-content">
+                            {#if param.injectionStrategy === "COLLECTION"}
+                                <DomainFunctionCollectionBlock
+                                    yaml={getParamYaml(param)}
+                                    ancestorParams={[
+                                        ...ancestorParams,
+                                        ...paramKeys,
+                                    ]}
+                                />
+                            {:else if param.injectionStrategy === "MAP"}
+                                <DomainFunctionMapBlock
+                                    yaml={getParamYaml(param)}
+                                    ancestorParams={[
+                                        ...ancestorParams,
+                                        ...paramKeys,
+                                    ]}
+                                />
+                            {:else}
+                                <DomainFunctionSlotBlock
+                                    yaml={getParamYaml(param)}
+                                    ancestorParams={[
+                                        ...ancestorParams,
+                                        ...paramKeys,
+                                    ]}
+                                    onset={(value) => {
+                                        if (param.name === "@delegating@") {
+                                            taskYaml.v = value;
+                                        } else {
+                                            if (!taskYaml.v) taskYaml.v = {};
+                                            taskYaml.v[param.name] = value;
+                                        }
+                                    }}
+                                    onremove={() => {
+                                        if (param.name === "@delegating@") {
+                                            taskYaml.v = null;
+                                        } else {
+                                            delete taskYaml.v[param.name];
+                                        }
+                                    }}
+                                />
+                            {/if}
+                        </div>
                     </div>
-                </div>
-            {/each}
-            <DomainTaskBlock yaml={taskYaml} />
+                {/each}
+                <DomainTaskBlock yaml={taskYaml} />
             </div>
         {/if}
     </div>
@@ -338,9 +403,15 @@
         border-top: 1px solid var(--border-default);
     }
 
-    .param-new      { color: #5dab6a; }
-    .param-override { color: #e8913a; }
-    .param-ancestor { color: var(--text-muted); }
+    .param-new {
+        color: #5dab6a;
+    }
+    .param-override {
+        color: #e8913a;
+    }
+    .param-ancestor {
+        color: var(--text-muted);
+    }
 
     .task.has-children::after {
         content: "";

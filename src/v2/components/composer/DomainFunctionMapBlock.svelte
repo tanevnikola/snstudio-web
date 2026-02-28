@@ -7,7 +7,11 @@
         removeSource,
         isDragDescendant,
     } from "./dragState.js";
-    import { fetchSpec, isInjectionCollection, getSpec } from "../../mnemoUtils.js";
+    import {
+        fetchSpec,
+        isInjectionCollection,
+        getSpec,
+    } from "../../mnemoUtils.js";
 
     let { yaml = {}, ancestorParams = [] } = $props();
 
@@ -102,13 +106,17 @@
                 value={key}
                 size={Math.max(key.length, 3)}
                 onblur={(e) => renameKey(key, e.currentTarget.value)}
-                onkeydown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
+                onkeydown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur();
+                }}
                 onclick={(e) => e.stopPropagation()}
             />
             <DomainFunctionBlock
                 yaml={value}
                 {ancestorParams}
-                onremove={() => { delete yaml[key]; }}
+                onremove={() => {
+                    delete yaml[key];
+                }}
             />
         </div>
     {/each}

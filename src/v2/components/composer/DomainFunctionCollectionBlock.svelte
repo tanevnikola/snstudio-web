@@ -11,7 +11,11 @@
         isDragDescendant,
         removeSource,
     } from "./dragState.js";
-    import { fetchSpec, isInjectionCollection, getSpec } from "../../mnemoUtils.js";
+    import {
+        fetchSpec,
+        isInjectionCollection,
+        getSpec,
+    } from "../../mnemoUtils.js";
 
     let { yaml = [], ancestorParams = [] } = $props();
 
@@ -32,18 +36,27 @@
         const children = [...listEl.children].filter(
             (el) => !el.classList.contains("drop-placeholder"),
         );
-        if (children.length === 0) { dropIndex = 0; return; }
+        if (children.length === 0) {
+            dropIndex = 0;
+            return;
+        }
 
         let idx = children.length;
         for (let i = 0; i < children.length; i++) {
             const rect = children[i].getBoundingClientRect();
-            if (e.clientY < rect.top + rect.height / 2) { idx = i; break; }
+            if (e.clientY < rect.top + rect.height / 2) {
+                idx = i;
+                break;
+            }
         }
 
         const dragItem = getDragItem();
         if (dragItem) {
             const sourceIndex = yaml.indexOf(dragItem);
-            if (sourceIndex >= 0 && (idx === sourceIndex || idx === sourceIndex + 1)) {
+            if (
+                sourceIndex >= 0 &&
+                (idx === sourceIndex || idx === sourceIndex + 1)
+            ) {
                 dropIndex = -1;
                 return;
             }
@@ -69,8 +82,10 @@
         if (item && dropIndex >= 0) {
             const sourceIndex = yaml.indexOf(item);
             removeSource();
-            const insertIndex = sourceIndex >= 0 && dropIndex > sourceIndex
-                ? dropIndex - 1 : dropIndex;
+            const insertIndex =
+                sourceIndex >= 0 && dropIndex > sourceIndex
+                    ? dropIndex - 1
+                    : dropIndex;
             yaml.splice(insertIndex, 0, item);
             setSelectionYaml(item);
             flush();
@@ -106,7 +121,9 @@
         <DomainFunctionBlock
             yaml={item}
             {ancestorParams}
-            onremove={() => { yaml.splice(i, 1); }}
+            onremove={() => {
+                yaml.splice(i, 1);
+            }}
         />
     {/each}
     {#if dropIndex === yaml.length}

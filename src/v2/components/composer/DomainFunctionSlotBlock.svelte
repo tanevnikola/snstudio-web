@@ -2,12 +2,23 @@
     import DomainFunctionBlock from "./DomainFunctionBlock.svelte";
     import { setSelectionYaml, flush } from "./composerState.svelte.js";
     import { getDragItem, clearDragItem, removeSource } from "./dragState.js";
-    import { fetchSpec, isInjectionCollection, getSpec } from "../../mnemoUtils.js";
+    import {
+        fetchSpec,
+        isInjectionCollection,
+        getSpec,
+    } from "../../mnemoUtils.js";
 
-    let { yaml = null, ancestorParams = [], onset = () => {}, onremove = () => {} } = $props();
+    let {
+        yaml = null,
+        ancestorParams = [],
+        onset = () => {},
+        onremove = () => {},
+    } = $props();
 
     let hasValue = $derived(
-        yaml != null && typeof yaml === "object" && ("task" in yaml || "tasks" in yaml),
+        yaml != null &&
+            typeof yaml === "object" &&
+            ("task" in yaml || "tasks" in yaml),
     );
 
     let isOver = $state(false);
