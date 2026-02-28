@@ -69,6 +69,9 @@
         if (taskYaml?.v && param.injectionStrategy === "COLLECTION" && !Array.isArray(taskYaml.v[param.name])) {
             taskYaml.v[param.name] = [];
         }
+        if (taskYaml?.v && param.injectionStrategy === "MAP" && (taskYaml.v[param.name] == null || typeof taskYaml.v[param.name] !== "object" || Array.isArray(taskYaml.v[param.name]))) {
+            taskYaml.v[param.name] = {};
+        }
         return taskYaml?.v?.[param.name];
     }
 
@@ -157,6 +160,12 @@
         </div>
 
         {#if !collapsed}
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <div
+                class="children-area"
+                ondragenter={(e) => { e._listHandled = true; }}
+                ondragover={(e) => { e._listHandled = true; e.preventDefault(); e.dataTransfer.dropEffect = getDragItem() ? "move" : "copy"; }}
+            >
             {#each domainFunctionParams as param (param.name)}
                 <div class="children" class:named={param.name !== "@delegating@"}>
                     {#if param.name !== "@delegating@"}
@@ -198,6 +207,7 @@
                 </div>
             {/each}
             <DomainTaskBlock yaml={taskYaml} />
+            </div>
         {/if}
     </div>
 {/if}
