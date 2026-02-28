@@ -1,226 +1,237 @@
 <script>
-  import PaletteNode from './PaletteNode.svelte';
-  import DocsPopover from '../DocsPopover.svelte';
-  import { fetchSpec } from '../../mnemoUtils.js';
+    import PaletteNode from "./PaletteNode.svelte";
+    import DocsPopover from "../DocsPopover.svelte";
+    import { fetchSpec } from "../../mnemoUtils.js";
 
-  let { mnemonic, depth = 0, defaultCollapsed = true } = $props();
+    let { mnemonic, depth = 0, defaultCollapsed = true } = $props();
 
-  let spec = $state(null);
-  let loading = $state(true);
-  let collapsed = $state(defaultCollapsed);
-  let showDocs = $state(false);
-  let pinned = $state(false);
-  let hoverTimer = null;
+    let spec = $state(null);
+    let loading = $state(true);
+    let collapsed = $state(defaultCollapsed);
+    let showDocs = $state(false);
+    let pinned = $state(false);
+    let hoverTimer = null;
 
-  $effect(() => {
-    loading = true;
-    spec = null;
-    fetchSpec(mnemonic).then((s) => {
-      spec = s;
-      loading = false;
-    }).catch(() => {
-      loading = false;
+    $effect(() => {
+        loading = true;
+        spec = null;
+        fetchSpec(mnemonic)
+            .then((s) => {
+                spec = s;
+                loading = false;
+            })
+            .catch(() => {
+                loading = false;
+            });
     });
-  });
 
-  function shortName(m) {
-    return m.replace(/^Task\./, '');
-  }
-
-  function onDragStart(e) {
-    e.dataTransfer.setData('text/plain', mnemonic);
-    e.dataTransfer.effectAllowed = 'copy';
-  }
-
-  function onIconEnter() {
-    clearTimeout(hoverTimer);
-    if (!pinned) showDocs = true;
-  }
-
-  function onIconLeave() {
-    if (!pinned) {
-      hoverTimer = setTimeout(() => { showDocs = false; }, 200);
+    function shortName(m) {
+        return m.replace(/^Task\./, "");
     }
-  }
 
-  function onPopoverEnter() {
-    clearTimeout(hoverTimer);
-  }
-
-  function onPopoverLeave() {
-    if (!pinned) {
-      hoverTimer = setTimeout(() => { showDocs = false; }, 200);
+    function onDragStart(e) {
+        e.dataTransfer.setData("text/plain", mnemonic);
+        e.dataTransfer.effectAllowed = "copy";
     }
-  }
 
-  function onIconClick(e) {
-    e.stopPropagation();
-    e.preventDefault();
-    pinned = true;
-    showDocs = true;
-  }
+    function onIconEnter() {
+        clearTimeout(hoverTimer);
+        if (!pinned) showDocs = true;
+    }
 
-  function closeDocs() {
-    showDocs = false;
-    pinned = false;
-    clearTimeout(hoverTimer);
-  }
+    function onIconLeave() {
+        if (!pinned) {
+            hoverTimer = setTimeout(() => {
+                showDocs = false;
+            }, 200);
+        }
+    }
+
+    function onPopoverEnter() {
+        clearTimeout(hoverTimer);
+    }
+
+    function onPopoverLeave() {
+        if (!pinned) {
+            hoverTimer = setTimeout(() => {
+                showDocs = false;
+            }, 200);
+        }
+    }
+
+    function onIconClick(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        pinned = true;
+        showDocs = true;
+    }
+
+    function closeDocs() {
+        showDocs = false;
+        pinned = false;
+        clearTimeout(hoverTimer);
+    }
 </script>
 
 {#if loading}
-  <div class="loading">...</div>
+    <div class="loading">...</div>
 {:else if spec}
-  {#if spec.category === 'ABSTRACT' && spec.implementations?.length}
-    <div class="group">
-      <button class="group-header" onclick={() => (collapsed = !collapsed)}>
-        <span class="arrow">{collapsed ? '▶' : '▼'}</span>
-        {shortName(spec.mnemonic)}
-      </button>
-      {#if !collapsed}
-        <div class="group-children">
-          {#each spec.implementations as impl (impl)}
-            <PaletteNode mnemonic={impl} depth={depth + 1} />
-          {/each}
+    {#if spec.category === "ABSTRACT" && spec.implementations?.length}
+        <div class="group">
+            <button
+                class="group-header"
+                onclick={() => (collapsed = !collapsed)}
+            >
+                <span class="arrow">{collapsed ? "▶" : "▼"}</span>
+                {shortName(spec.mnemonic)}
+            </button>
+            {#if !collapsed}
+                <div class="group-children">
+                    {#each spec.implementations as impl (impl)}
+                        <PaletteNode mnemonic={impl} depth={depth + 1} />
+                    {/each}
+                </div>
+            {/if}
         </div>
-      {/if}
-    </div>
-  {:else if spec.category === 'CONCRETE'}
-    <div
-      class="palette-item"
-      role="listitem"
-      draggable="true"
-      ondragstart={onDragStart}
-    >
-      <span class="arrow-spacer"></span>
-      <span
-        class="info-icon"
-        title="Documentation"
-        role="button"
-        tabindex="-1"
-        onmouseenter={onIconEnter}
-        onmouseleave={onIconLeave}
-        onclick={onIconClick}
-        onkeydown={onIconClick}
-        ondragstart={(e) => e.stopPropagation()}
-        draggable="false"
-      >i</span>
-      <span class="item-name">{shortName(spec.mnemonic)}</span>
-    </div>
-    {#if showDocs}
-      <DocsPopover
-        url="/docs/autogen.md?target={mnemonic}"
-        title={mnemonic}
-        {pinned}
-        onclose={closeDocs}
-        onmouseenter={onPopoverEnter}
-        onmouseleave={onPopoverLeave}
-      />
+    {:else if spec.category === "CONCRETE"}
+        <div
+            class="palette-item"
+            role="listitem"
+            draggable="true"
+            ondragstart={onDragStart}
+        >
+            <span class="arrow-spacer"></span>
+            <span
+                class="info-icon"
+                title="Documentation"
+                role="button"
+                tabindex="-1"
+                onmouseenter={onIconEnter}
+                onmouseleave={onIconLeave}
+                onclick={onIconClick}
+                onkeydown={onIconClick}
+                ondragstart={(e) => e.stopPropagation()}
+                draggable="false">i</span
+            >
+            <span class="item-name">{shortName(spec.mnemonic)}</span>
+        </div>
+        {#if showDocs}
+            <DocsPopover
+                url="/docs/autogen.md?target={mnemonic}"
+                title={mnemonic}
+                {pinned}
+                onclose={closeDocs}
+                onmouseenter={onPopoverEnter}
+                onmouseleave={onPopoverLeave}
+            />
+        {/if}
     {/if}
-  {/if}
 {/if}
 
 <style>
-  .loading {
-    font-size: 0.7rem;
-    color: var(--text-muted);
-    padding: 0.2rem 0.5rem;
-  }
+    .loading {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        padding: 0.2rem 0.5rem;
+    }
 
-  .group {
-    margin-bottom: 0.1rem;
-  }
+    .group {
+        margin-bottom: 0.1rem;
+    }
 
-  .group-header {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    width: 100%;
-    padding: 0.3rem 0.4rem;
-    background: none;
-    border: none;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    cursor: pointer;
-    border-radius: 4px;
-    text-align: left;
-    font-family: inherit;
-  }
+    .group-header {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        width: 100%;
+        padding: 0.3rem 0.4rem;
+        background: none;
+        border: none;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        cursor: pointer;
+        border-radius: 4px;
+        text-align: left;
+        font-family: inherit;
+    }
 
-  .group-header:hover {
-    background: var(--surface-3);
-  }
+    .group-header:hover {
+        background: var(--surface-3);
+    }
 
-  .arrow {
-    font-size: 0.55rem;
-    width: 0.65rem;
-  }
+    .arrow {
+        font-size: 0.55rem;
+        width: 0.65rem;
+    }
 
-  .group-children {
-    padding-left: 0.75rem;
-  }
+    .group-children {
+        padding-left: 0.75rem;
+    }
 
-  .palette-item {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.3rem 0.5rem;
-    margin: 0.1rem 0;
-    font-size: 0.78rem;
-    color: var(--text-primary);
-    background: var(--surface-3);
-    border: 1px solid var(--border-default);
-    border-radius: 4px;
-    cursor: grab;
-    user-select: none;
-    transition: background 0.15s, border-color 0.15s;
-  }
+    .palette-item {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.3rem 0.5rem;
+        margin: 0.1rem 0;
+        font-size: 0.78rem;
+        color: var(--text-primary);
+        background: var(--surface-3);
+        border: 1px solid var(--border-default);
+        border-radius: 4px;
+        cursor: grab;
+        user-select: none;
+        transition:
+            background 0.15s,
+            border-color 0.15s;
+    }
 
-  .arrow-spacer {
-    display: inline-block;
-    width: 0.65rem;
-    flex-shrink: 0;
-  }
+    .arrow-spacer {
+        display: inline-block;
+        width: 0.65rem;
+        flex-shrink: 0;
+    }
 
-  .item-name {
-    flex: 1;
-    min-width: 0;
-  }
+    .item-name {
+        flex: 1;
+        min-width: 0;
+    }
 
-  .info-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 13px;
-    height: 13px;
-    border-radius: 50%;
-    background: var(--surface-3);
-    color: var(--text-muted);
-    font-size: 0.5rem;
-    font-style: italic;
-    font-family: Georgia, serif;
-    font-weight: 700;
-    cursor: pointer;
-    line-height: 1;
-    opacity: 0;
-    transition: opacity 0.12s;
-  }
+    .info-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        background: var(--surface-3);
+        color: var(--text-muted);
+        font-size: 0.5rem;
+        font-style: italic;
+        font-family: Georgia, serif;
+        font-weight: 700;
+        cursor: pointer;
+        line-height: 1;
+        opacity: 0;
+        transition: opacity 0.12s;
+    }
 
-  .palette-item:hover .info-icon {
-    opacity: 1;
-  }
+    .palette-item:hover .info-icon {
+        opacity: 1;
+    }
 
-  .info-icon:hover {
-    background: var(--border-default);
-    color: var(--text-primary);
-  }
+    .info-icon:hover {
+        background: var(--border-default);
+        color: var(--text-primary);
+    }
 
-  .palette-item:hover {
-    border-color: var(--primary);
-    background: var(--primary-subtle);
-  }
+    .palette-item:hover {
+        border-color: var(--primary);
+        background: var(--primary-subtle);
+    }
 
-  .palette-item:active {
-    cursor: grabbing;
-  }
+    .palette-item:active {
+        cursor: grabbing;
+    }
 </style>

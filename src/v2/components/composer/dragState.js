@@ -36,11 +36,14 @@ export function isDragDescendant(containerYaml) {
 
 function containsRef(node, target) {
   if (node === target) return true;
-  if (Array.isArray(node)) return node.some(child => containsRef(child, target));
+  if (Array.isArray(node))
+    return node.some((child) => containsRef(child, target));
   if (node?.task) return containsRef(node.task, target);
-  if (node?.v && typeof node.v === 'object') return containsRef(node.v, target);
-  if (typeof node === 'object' && node !== null) {
-    return Object.values(node).some(v => typeof v === 'object' && v !== null && containsRef(v, target));
+  if (node?.v && typeof node.v === "object") return containsRef(node.v, target);
+  if (typeof node === "object" && node !== null) {
+    return Object.values(node).some(
+      (v) => typeof v === "object" && v !== null && containsRef(v, target),
+    );
   }
   return false;
 }
