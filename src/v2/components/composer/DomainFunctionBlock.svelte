@@ -1,6 +1,8 @@
 <script>
     import ConfirmDeleteButton from "../ConfirmDeleteButton.svelte";
     import DomainFunctionBlock from "./DomainFunctionBlock.svelte";
+    import DomainFunctionCollectionBlock from "./DomainFunctionCollectionBlock.svelte";
+    import DomainFunctionMapBlock from "./DomainFunctionMapBlock.svelte";
     import DomainTaskBlock from "./DomainTaskBlock.svelte";
     import {
         setSelectionYaml,
@@ -12,108 +14,11 @@
         setDragItem,
         setRemoveSource,
         clearDragItem,
-        getDragHeight,
         getDragItem,
-        isDragDescendant,
-        removeSource,
     } from "./dragState.js";
-    import { fetchSpec, isInjectionCollection, getSpec } from "../../mnemoUtils.js";
+    import { fetchSpec } from "../../mnemoUtils.js";
 
     let { yaml = {}, ancestorParams = [], onremove = () => {} } = $props();
-
-    // ── Mode detection ────────────────────────────────────────────────────────────
-
-    let isCollection = $derived(Array.isArray(yaml));
-    let isMap = $derived(
-        !isCollection &&
-        yaml != null &&
-        typeof yaml === "object" &&
-        !("task" in yaml) &&
-        !("tasks" in yaml),
-    );
-
-    // ── Collection state ──────────────────────────────────────────────────────────
-
-    let items = $derived(isCollection ? yaml : []);
-    let dropIndex = $state(-1);
-    let dragHeight = $state(0);
-    let listEl;
-
-    function handleDragOver(e) {
-        if (e._listHandled || (getDragItem() && isDragDescendant(yaml))) {
-            dropIndex = -1;
-            return;
-        }
-        e._listHandled = true;
-        e.preventDefault();
-        e.dataTransfer.dropEffect = getDragItem() ? "move" : "copy";
-        dragHeight = getDragItem() ? getDragHeight() : 32;
-
-        const children = [...listEl.children].filter(
-            (el) => !el.classList.contains("drop-placeholder"),
-        );
-        if (children.length === 0) { dropIndex = 0; return; }
-
-        let idx = children.length;
-        for (let i = 0; i < children.length; i++) {
-            const rect = children[i].getBoundingClientRect();
-            if (e.clientY < rect.top + rect.height / 2) { idx = i; break; }
-        }
-
-        const dragItem = getDragItem();
-        if (dragItem) {
-            const sourceIndex = items.indexOf(dragItem);
-            if (sourceIndex >= 0 && (idx === sourceIndex || idx === sourceIndex + 1)) {
-                dropIndex = -1;
-                return;
-            }
-        }
-        dropIndex = idx;
-    }
-
-    function handleDragEnter(e) {
-        if (e._listHandled) return;
-        e._listHandled = true;
-        e.preventDefault();
-    }
-
-    function handleDragLeave(e) {
-        if (!listEl.contains(e.relatedTarget)) dropIndex = -1;
-    }
-
-    function handleDrop(e) {
-        if (e._listHandled) return;
-        e._listHandled = true;
-        e.preventDefault();
-        const item = getDragItem();
-        if (item && dropIndex >= 0) {
-            const sourceIndex = items.indexOf(item);
-            removeSource();
-            const insertIndex = sourceIndex >= 0 && dropIndex > sourceIndex
-                ? dropIndex - 1 : dropIndex;
-            yaml.splice(insertIndex, 0, item);
-            setSelectionYaml(item);
-            flush();
-        } else if (!item && dropIndex >= 0) {
-            const mnemonic = e.dataTransfer.getData("text/plain");
-            if (mnemonic) {
-                const taskV = isInjectionCollection(mnemonic) ? [] : {};
-                const newItem = { task: { t: mnemonic, v: taskV } };
-                yaml.splice(dropIndex, 0, newItem);
-                setSelectionYaml(newItem);
-                flush();
-                if (!getSpec(mnemonic)) fetchSpec(mnemonic);
-            }
-        }
-        dropIndex = -1;
-        clearDragItem();
-    }
-
-    // ── Map state ─────────────────────────────────────────────────────────────────
-
-    let entries = $derived(isMap ? Object.entries(yaml) : []);
-
-    // ── Direct (card) state ───────────────────────────────────────────────────────
 
     let v = $derived(yaml?.v ?? yaml ?? {});
     let hasTask = $derived(v != null && typeof v === "object" && "task" in v);
@@ -188,48 +93,7 @@
     function handleDelete() { onremove(); flush(); }
 </script>
 
-{#if isCollection}
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div
-        class="list"
-        bind:this={listEl}
-        ondragenter={handleDragEnter}
-        ondragover={handleDragOver}
-        ondragleave={handleDragLeave}
-        ondrop={handleDrop}
-    >
-        {#each items as item, i (i)}
-            {#if dropIndex === i}
-                <div class="drop-placeholder" style="height: {dragHeight}px"></div>
-            {/if}
-            <DomainFunctionBlock
-                yaml={item}
-                {ancestorParams}
-                onremove={() => { yaml.splice(i, 1); }}
-            />
-        {/each}
-        {#if dropIndex === items.length}
-            <div class="drop-placeholder" style="height: {dragHeight}px"></div>
-        {:else}
-            <div class="drop-placeholder empty" style="height: 32px"></div>
-        {/if}
-    </div>
-{:else if isMap}
-    {#if entries.length > 0}
-        <div class="map">
-            {#each entries as [key, value] (key)}
-                <div class="map-entry">
-                    <span class="map-key">{key}</span>
-                    <DomainFunctionBlock
-                        yaml={value}
-                        {ancestorParams}
-                        onremove={() => { delete yaml[key]; }}
-                    />
-                </div>
-            {/each}
-        </div>
-    {/if}
-{:else if valid && taskYaml}
+{#if valid && taskYaml}
     <div
         class="task"
         class:has-children={domainFunctionParams.length > 0}
@@ -298,17 +162,29 @@
                         <span class="param-label">{param.name}</span>
                     {/if}
                     <div class="children-content">
-                        <DomainFunctionBlock
-                            yaml={getParamYaml(param)}
-                            ancestorParams={[...ancestorParams, ...paramKeys]}
-                            onremove={() => {
-                                if (param.name === "@delegating@") {
-                                    taskYaml.v = null;
-                                } else {
-                                    delete taskYaml.v[param.name];
-                                }
-                            }}
-                        />
+                        {#if param.injectionStrategy === "COLLECTION"}
+                            <DomainFunctionCollectionBlock
+                                yaml={getParamYaml(param)}
+                                ancestorParams={[...ancestorParams, ...paramKeys]}
+                            />
+                        {:else if param.injectionStrategy === "MAP"}
+                            <DomainFunctionMapBlock
+                                yaml={getParamYaml(param)}
+                                ancestorParams={[...ancestorParams, ...paramKeys]}
+                            />
+                        {:else}
+                            <DomainFunctionBlock
+                                yaml={getParamYaml(param)}
+                                ancestorParams={[...ancestorParams, ...paramKeys]}
+                                onremove={() => {
+                                    if (param.name === "@delegating@") {
+                                        taskYaml.v = null;
+                                    } else {
+                                        delete taskYaml.v[param.name];
+                                    }
+                                }}
+                            />
+                        {/if}
                     </div>
                 </div>
             {/each}
@@ -318,51 +194,6 @@
 {/if}
 
 <style>
-    /* ── Collection ──────────────────────────────────────────────────────────── */
-    .list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-        min-height: 0.5rem;
-    }
-
-    .drop-placeholder {
-        border: 2px dashed var(--primary);
-        border-radius: 6px;
-        background: var(--primary-subtle);
-        margin-left: 1.25rem;
-    }
-
-    .drop-placeholder.empty {
-        border-color: var(--border-default);
-    }
-
-    /* ── Map ─────────────────────────────────────────────────────────────────── */
-    .map {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-    }
-
-    .map-entry {
-        position: relative;
-        border: 1px dashed var(--border-default);
-        border-radius: 6px;
-        padding: 0.5rem;
-    }
-
-    .map-key {
-        position: absolute;
-        top: -0.55rem;
-        left: 0.5rem;
-        background: var(--surface-1);
-        padding: 0 0.3rem;
-        font-size: 0.65rem;
-        font-weight: 600;
-        color: var(--text-secondary);
-    }
-
-    /* ── Direct (card) ───────────────────────────────────────────────────────── */
     .task {
         position: relative;
     }
