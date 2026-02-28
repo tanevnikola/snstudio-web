@@ -3,8 +3,7 @@
     import FunctionComposer from "../components/composer/FunctionComposer.svelte";
     import TaskProperties from "../components/composer/TaskProperties.svelte";
     import YamlEditor from "../components/editor/YamlEditor.svelte";
-    import { getSelectionYaml } from "../components/composer/selectionState.svelte.js";
-    import { getParsedTree } from "../components/composer/composerState.js";
+    import { getSelectionPath } from "../components/composer/selectionState.svelte.js";
     import jsYaml from "js-yaml";
     import FunctionProperties from "../components/composer/FunctionProperties.svelte";
 
@@ -22,9 +21,20 @@
     const MARKER = "__hl__";
 
     let highlightRange = $derived.by(() => {
-        const ref = getSelectionYaml();
-        const tree = getParsedTree();
-        if (!ref || !tree) return null;
+        const path = getSelectionPath();
+        if (!path || !composerYaml) return null;
+
+        let tree;
+        try { tree = jsYaml.load(composerYaml); } catch { return null; }
+        if (!tree) return null;
+
+        // Navigate to selected node via stored path
+        let ref = tree;
+        for (const key of path) {
+            if (ref == null) return null;
+            ref = ref[key];
+        }
+        if (!ref || typeof ref !== 'object') return null;
 
         // Inject temporary marker into task ref, dump, find it
         ref[MARKER] = 1;

@@ -11,7 +11,7 @@
     import { flush } from "./composerState.js";
     import { fetchSpec } from "../../mnemoUtils.js";
 
-    let { yaml = {}, parent = null, onremove = () => {} } = $props();
+    let { yaml = {}, parent = null, onremove = () => {}, selectOnMount = false, onAutoSelected = () => {} } = $props();
 
     let v = $derived(yaml?.v ?? yaml ?? {});
     let hasTask = $derived(v != null && typeof v === "object" && "task" in v);
@@ -55,13 +55,15 @@
     let selected = $state(false);
     let dragging = $state(false);
 
+    function doSelect() {
+        selected = true;
+        select(() => { selected = false; });
+        setSelectionYaml(yaml);
+    }
+
     function handleSelect(e) {
         e.stopPropagation();
-        selected = true;
-        select(() => {
-            selected = false;
-        });
-        setSelectionYaml(yaml);
+        doSelect();
     }
 
     function handleDragStart(e) {
@@ -87,6 +89,13 @@
     $effect(() => {
         if (selected) {
             setSelectionYaml(yaml);
+        }
+    });
+
+    $effect(() => {
+        if (selectOnMount) {
+            doSelect();
+            onAutoSelected();
         }
     });
 </script>

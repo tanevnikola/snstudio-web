@@ -13,11 +13,11 @@
         getSpec,
         fetchSpec,
     } from "../../mnemoUtils.js";
-
     let { yaml = [] } = $props();
 
     let items = $derived(Array.isArray(yaml) ? yaml : []);
     let dropIndex = $state(-1);
+    let pendingSelectIndex = $state(-1);
     let dragHeight = $state(0);
     let listEl;
 
@@ -75,6 +75,7 @@
         if (item && dropIndex >= 0) {
             removeSource();
             yaml.splice(dropIndex, 0, item);
+            pendingSelectIndex = dropIndex;
             flush();
         } else if (!item && dropIndex >= 0) {
             const mnemonic = e.dataTransfer.getData("text/plain");
@@ -82,6 +83,7 @@
                 const taskV = isInjectionCollection(mnemonic) ? [] : {};
                 const newItem = { task: { t: mnemonic, v: taskV } };
                 yaml.splice(dropIndex, 0, newItem);
+                pendingSelectIndex = dropIndex;
                 flush();
                 if (!getSpec(mnemonic)) {
                     fetchSpec(mnemonic);
@@ -108,9 +110,9 @@
         {/if}
         <DomainFunctionBlock
             yaml={item}
-            onremove={() => {
-                yaml.splice(i, 1);
-            }}
+            onremove={() => { yaml.splice(i, 1); }}
+            selectOnMount={i === pendingSelectIndex}
+            onAutoSelected={() => { pendingSelectIndex = -1; }}
         />
     {/each}
     {#if dropIndex === items.length}
