@@ -8,7 +8,7 @@
     } from "../../mnemoUtils.js";
     import ParameterField from "./ParameterField.svelte";
     import DocsPopover from "../DocsPopover.svelte";
-    import Self from "./MnemonicValue.svelte";
+    import MnemonicValue from "./MnemonicValue.svelte";
     import { extractParameterYaml } from "../../yamlUtils.js";
     import { untrack } from "svelte";
 
@@ -159,7 +159,7 @@
         </div>
         {#if selectedMnemonic}
             {#key selectedMnemonic}
-                <Self
+                <MnemonicValue
                     {yaml}
                     mnemonic={selectedMnemonic}
                     context={childContext}

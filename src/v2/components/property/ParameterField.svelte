@@ -66,7 +66,6 @@
             !isMapInjection(parameterSpec) &&
             !isCollectionInjection(parameterSpec),
     );
-    let isMnemonicLike = $derived(injecting || isRepresentingMnemonic);
 
     let defaultCollapsed = $derived(
         parameterSpec?.hints?.includes("section:collapsed") ?? false,
@@ -164,14 +163,14 @@
 {:else}
     <div class="field">
         <div class="field-header">
-            {#if isMnemonicLike}
-                <button
-                    class="collapse-toggle"
-                    onclick={() => (collapsed = !collapsed)}
-                >
-                    {collapsed ? "▶" : "▼"}
-                </button>
-            {/if}
+            <!-- Collapse button -->
+            <button
+                class="collapse-toggle"
+                onclick={() => (collapsed = !collapsed)}
+            >
+                {collapsed ? "▶" : "▼"}
+            </button>
+
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <span
                 class="label"
