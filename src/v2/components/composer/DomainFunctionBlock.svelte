@@ -14,8 +14,6 @@
         yaml = {},
         parent = null,
         onremove = () => {},
-        selectOnMount = false,
-        onAutoSelected = () => {},
     } = $props();
 
     let v = $derived(yaml?.v ?? yaml ?? {});
@@ -77,6 +75,7 @@
         setDragItem(yaml);
         setRemoveSource(onremove);
         dragging = true;
+        doSelect();
     }
 
     function handleDragEnd() {
@@ -89,12 +88,6 @@
         flush();
     }
 
-    $effect(() => {
-        if (selectOnMount) {
-            doSelect();
-            onAutoSelected();
-        }
-    });
 </script>
 
 {#if valid && taskYaml}

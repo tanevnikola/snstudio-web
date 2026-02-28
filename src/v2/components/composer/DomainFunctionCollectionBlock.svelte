@@ -7,7 +7,7 @@
         removeSource,
         clearDragItem,
     } from "./dragState.js";
-    import { flush } from "./composerState.svelte.js";
+    import { flush, setSelectionYaml } from "./composerState.svelte.js";
     import {
         isInjectionCollection,
         getSpec,
@@ -17,7 +17,6 @@
 
     let items = $derived(Array.isArray(yaml) ? yaml : []);
     let dropIndex = $state(-1);
-    let pendingSelectIndex = $state(-1);
     let dragHeight = $state(0);
     let listEl;
 
@@ -93,7 +92,7 @@
                 ? dropIndex - 1
                 : dropIndex;
             yaml.splice(insertIndex, 0, item);
-            pendingSelectIndex = insertIndex;
+            setSelectionYaml(item);
             flush();
         } else if (!item && dropIndex >= 0) {
             const mnemonic = e.dataTransfer.getData("text/plain");
@@ -101,7 +100,7 @@
                 const taskV = isInjectionCollection(mnemonic) ? [] : {};
                 const newItem = { task: { t: mnemonic, v: taskV } };
                 yaml.splice(dropIndex, 0, newItem);
-                pendingSelectIndex = dropIndex;
+                setSelectionYaml(newItem);
                 flush();
                 if (!getSpec(mnemonic)) {
                     fetchSpec(mnemonic);
@@ -129,8 +128,6 @@
         <DomainFunctionBlock
             yaml={item}
             onremove={() => { yaml.splice(i, 1); }}
-            selectOnMount={i === pendingSelectIndex}
-            onAutoSelected={() => { pendingSelectIndex = -1; }}
         />
     {/each}
     {#if dropIndex === items.length}
