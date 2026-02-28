@@ -52,6 +52,18 @@
                 break;
             }
         }
+
+        // Suppress zones immediately before and after the dragged item —
+        // dropping there would be a no-op (same position in the list).
+        const dragItem = getDragItem();
+        if (dragItem) {
+            const sourceIndex = items.indexOf(dragItem);
+            if (sourceIndex >= 0 && (idx === sourceIndex || idx === sourceIndex + 1)) {
+                dropIndex = -1;
+                return;
+            }
+        }
+
         dropIndex = idx;
     }
 
@@ -73,9 +85,15 @@
         e.preventDefault();
         const item = getDragItem();
         if (item && dropIndex >= 0) {
+            const sourceIndex = items.indexOf(item);
             removeSource();
-            yaml.splice(dropIndex, 0, item);
-            pendingSelectIndex = dropIndex;
+            // When dragging within this collection, removing the item shifts
+            // every subsequent index down by 1, so correct for that.
+            const insertIndex = sourceIndex >= 0 && dropIndex > sourceIndex
+                ? dropIndex - 1
+                : dropIndex;
+            yaml.splice(insertIndex, 0, item);
+            pendingSelectIndex = insertIndex;
             flush();
         } else if (!item && dropIndex >= 0) {
             const mnemonic = e.dataTransfer.getData("text/plain");
