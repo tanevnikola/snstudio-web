@@ -17,10 +17,15 @@
     let readonlyMode = $state(false);
     let copyLabel = $state("Copy");
     let screenEl;
+    let liveText = $state(text);
+
+    $effect(() => {
+        liveText = text;
+    });
 
     $effect(() => {
         if (!screenEl || collapsed) return;
-        const lineCount = (text.match(/\n/g) || []).length + 1;
+        const lineCount = (liveText.match(/\n/g) || []).length + 1;
         const rem = parseFloat(
             getComputedStyle(document.documentElement).fontSize,
         );
@@ -32,7 +37,7 @@
     });
 
     let highlightedHtml = $derived(
-        text ? hljs.highlight(text, { language: "javascript" }).value : "",
+        liveText ? hljs.highlight(liveText, { language: "javascript" }).value : "",
     );
 
     function copyText() {
@@ -69,10 +74,11 @@
     </div>
     {#if !collapsed}
         <CodeEditor
-            {text}
+            text={liveText}
             {highlightedHtml}
             {highlightRange}
             readonly={readonlyMode}
+            oninput={(val) => { liveText = val; }}
             {onchange}
         />
     {/if}
