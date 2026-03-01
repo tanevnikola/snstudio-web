@@ -6,10 +6,24 @@
     import { getSelectionYaml, getParsedTree } from "../components/composer/composerState.svelte.js";
     import jsYaml from "js-yaml";
     import FunctionProperties from "../components/composer/FunctionProperties.svelte";
+    import { selection, updateFunctionYaml } from "../store/projectStore.svelte.js";
+    import { screenGuard, clearGuard } from "../store/screenGuard.svelte.js";
 
     let { yaml = "" } = $props();
 
+    const initialYaml = yaml;
     let composerYaml = $state(yaml);
+
+    $effect(() => {
+        screenGuard.isDirty = composerYaml !== initialYaml;
+        screenGuard.save = async () => {
+            try {
+                const parsed = jsYaml.load(composerYaml);
+                updateFunctionYaml(selection.functionName, parsed);
+            } catch { /* invalid yaml — can't save */ }
+        };
+        return () => clearGuard();
+    });
 
     let paletteWidth = $state(260);
     let propsWidth = $state(Math.floor(window.innerWidth / 4));

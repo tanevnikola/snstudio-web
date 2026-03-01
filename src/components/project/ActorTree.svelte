@@ -5,6 +5,8 @@
     addActor, removeActor, renameActor, selectActor,
   } from '../../store/projectStore.svelte.js';
 
+  let { onselect = null } = $props();
+
   let renamingName = $state(null);
   let renameValue = $state('');
   let renameInput = $state(null);
@@ -49,7 +51,7 @@
       <div
         class="row"
         class:selected={selection.actorName === name && selection.functionScope === null}
-        onclick={() => selectActor(name)}
+        onclick={() => onselect ? onselect(name) : selectActor(name)}
       >
         {#if renamingName === name}
           <input

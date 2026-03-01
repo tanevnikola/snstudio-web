@@ -5,6 +5,8 @@
     addFunction, removeFunction, renameFunction, selectProjectFunction,
   } from '../../store/projectStore.svelte.js';
 
+  let { onselect = null } = $props();
+
   let renamingName = $state(null);
   let renameValue = $state('');
   let renameInput = $state(null);
@@ -49,7 +51,7 @@
       <div
         class="row"
         class:selected={selection.functionName === name && selection.functionScope === 'project'}
-        onclick={() => selectProjectFunction(name)}
+        onclick={() => onselect ? onselect(name) : selectProjectFunction(name)}
       >
         {#if renamingName === name}
           <input
