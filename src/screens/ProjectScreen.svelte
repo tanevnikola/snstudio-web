@@ -70,6 +70,8 @@
 
   .detail-panel.no-padding {
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
   .empty-state {
