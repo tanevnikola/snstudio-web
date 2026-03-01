@@ -1,6 +1,9 @@
 <script>
   import { fetchSpec } from '../mnemoUtils.js';
   import { initProjects } from '../store/projectsStore.svelte.js';
+  import { migrateFromV2Keys } from '../store/persist.js';
+
+  migrateFromV2Keys();
 
   let { onready } = $props();
 
