@@ -173,7 +173,7 @@
                     collapsed = !collapsed;
                 }}
             >
-                <span class="chevron">&#9662;</span>
+                <span class="chevron">▼</span>
             </button>
             <div
                 class="block"
@@ -216,6 +216,7 @@
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <div
                 class="children-area"
+                class:has-children={domainFunctionParams.length > 0}
                 ondragenter={handleChildrenDragEnter}
                 ondragover={handleChildrenDragOver}
             >
@@ -340,7 +341,7 @@
         cursor: pointer;
         padding: 0;
         color: var(--text-secondary);
-        font-size: 0.7rem;
+        font-size: 10px;
     }
 
     .collapse-btn.hidden {
@@ -418,26 +419,41 @@
         color: var(--text-muted);
     }
 
-    .task.has-children::after {
-        content: "";
-        position: absolute;
-        left: 0.7rem;
-        top: 100%;
-        height: 0;
-        width: 2px;
-        background: var(--border-default);
-        border-radius: 1px;
+    .children-area {
+        margin-top: 0.25rem;
     }
 
-    .task.has-children:not(.collapsed)::after {
-        top: 2rem;
+    .children-area.has-children {
+        position: relative;
+        border-left: 2px dashed var(--border-default);
+        padding-left: 0.75rem;
+        padding-top: 0.25rem;
+        padding-bottom: 0.25rem;
+        margin-left: 0.6rem;
+    }
+
+    .children-area.has-children::before,
+    .children-area.has-children::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        width: 6px;
+        border-color: var(--border-default);
+        border-style: dashed;
+    }
+
+    .children-area.has-children::before {
+        top: 0;
+        border-width: 2px 0 0 0;
+    }
+
+    .children-area.has-children::after {
         bottom: 0;
-        height: auto;
+        border-width: 0 0 2px 0;
     }
 
     .children {
         margin-top: 0.25rem;
-        margin-left: 2rem;
     }
 
     .children.named + .children {

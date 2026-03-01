@@ -83,6 +83,7 @@
         height: 32px;
         border: 2px dashed var(--border-default);
         border-radius: 6px;
+        background: var(--primary-subtle);
         margin-left: 1.25rem;
     }
 
