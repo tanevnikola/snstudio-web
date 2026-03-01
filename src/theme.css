@@ -1,6 +1,42 @@
-/* ── SwarmNet — brand default (Stratos Blue) ────────────── */
+/* ── Default — charcoal-brown, glowing orange-red ────────── */
 :root,
-[data-theme="dark"] {
+[data-theme="default"] {
+    --surface-0: #130d09;
+    --surface-1: #1c1410;
+    --surface-2: #271a13;
+    --surface-3: #342318;
+
+    --border-subtle:  #4a2e1c;
+    --border-default: #5e3a22;
+    --border-strong:  #7a4e30;
+
+    --text-primary:   #f5e8d8;
+    --text-secondary: #b89878;
+    --text-muted:     #8a7060;
+
+    --primary:        #e85a1a;
+    --primary-hover:  #f07030;
+    --primary-subtle: rgba(232, 90, 26, 0.16);
+
+    --danger:         #cc2a2a;
+    --danger-hover:   #a81e1e;
+    --danger-subtle:  rgba(204, 42, 42, 0.12);
+
+    --editor-bg:      #0e0a07;
+    --editor-header:  #090604;
+    --editor-text:    #f5e8d8;
+    --editor-muted:   #7a6050;
+    --editor-border:  #342318;
+
+    --handle:         #5e3a22;
+    --handle-active:  #b89878;
+
+    --param-new:      #5aad68;
+    --param-override: #e85a1a;
+  }
+
+/* ── Stratos Blue — brand deep navy ─────────────────────── */
+[data-theme="stratos-blue"] {
   /* Surfaces (Stratos Blue scale)
      0 = recessed / canvas
      1 = secondary
@@ -84,8 +120,8 @@
   --param-override: #d4703a;
 }
 
-/* ── Dusk — desaturated blue-grey ─────────────────────── */
-[data-theme="dusk"] {
+/* ── Midnight — cold dark navy ────────────────────────── */
+[data-theme="midnight"] {
   --surface-0: #0f1320;
   --surface-1: #181d2e;
   --surface-2: #21273f;
@@ -119,6 +155,150 @@
   /* Params bar */
   --param-new:      #5dab6a;
   --param-override: #e8913a;
+}
+
+/* ── Obsidian — near-black green tint, jade accent ─────── */
+[data-theme="obsidian"] {
+  --surface-0: #090e0a;
+  --surface-1: #0e1510;
+  --surface-2: #141d16;
+  --surface-3: #1c2a1e;
+
+  --border-subtle:  #253428;
+  --border-default: #324838;
+  --border-strong:  #456050;
+
+  --text-primary:   #d8f0dc;
+  --text-secondary: #8ab090;
+  --text-muted:     #6a8870;
+
+  --primary:        #2ebd6a;
+  --primary-hover:  #42d47e;
+  --primary-subtle: rgba(46, 189, 106, 0.14);
+
+  --danger:         #e05050;
+  --danger-hover:   #c03030;
+  --danger-subtle:  rgba(224, 80, 80, 0.12);
+
+  --editor-bg:      #060c07;
+  --editor-header:  #040804;
+  --editor-text:    #d8f0dc;
+  --editor-muted:   #5a8060;
+  --editor-border:  #1c2a1e;
+
+  --handle:         #324838;
+  --handle-active:  #8ab090;
+
+  --param-new:      #2ebd6a;
+  --param-override: #c8a030;
+}
+
+/* ── Abyss — pitch-black indigo, electric teal ─────────── */
+[data-theme="abyss"] {
+  --surface-0: #03060f;
+  --surface-1: #060d1a;
+  --surface-2: #0a1428;
+  --surface-3: #0f1e38;
+
+  --border-subtle:  #152440;
+  --border-default: #1e3258;
+  --border-strong:  #2a4878;
+
+  --text-primary:   #d0eaf8;
+  --text-secondary: #7098b8;
+  --text-muted:     #507088;
+
+  --primary:        #00c8d4;
+  --primary-hover:  #00dce8;
+  --primary-subtle: rgba(0, 200, 212, 0.13);
+
+  --danger:         #e53935;
+  --danger-hover:   #b71c1c;
+  --danger-subtle:  rgba(229, 57, 53, 0.12);
+
+  --editor-bg:      #020509;
+  --editor-header:  #010305;
+  --editor-text:    #d0eaf8;
+  --editor-muted:   #406880;
+  --editor-border:  #0f1e38;
+
+  --handle:         #1e3258;
+  --handle-active:  #7098b8;
+
+  --param-new:      #3ab870;
+  --param-override: #e8a020;
+}
+
+/* ── Paper — warm cream, parchment ───────────────────────── */
+[data-theme="paper"] {
+  --surface-0: #ede8df;
+  --surface-1: #f2ede5;
+  --surface-2: #f7f3ec;
+  --surface-3: #ffffff;
+
+  --border-subtle:  #ddd5c4;
+  --border-default: #c4baaa;
+  --border-strong:  #a09080;
+
+  --text-primary:   #241808;
+  --text-secondary: #6a5438;
+  --text-muted:     #9a8868;
+
+  --primary:        #cc5500;
+  --primary-hover:  #d67632;
+  --primary-subtle: rgba(204, 85, 0, 0.10);
+
+  --danger:         #c01c0a;
+  --danger-hover:   #a01408;
+  --danger-subtle:  rgba(192, 28, 10, 0.08);
+
+  --editor-bg:      #1c1814;
+  --editor-header:  #161210;
+  --editor-text:    #f2ede5;
+  --editor-muted:   #7a6858;
+  --editor-border:  #342c24;
+
+  --handle:         #c4baaa;
+  --handle-active:  #6a5438;
+
+  --param-new:      #2e7d3a;
+  --param-override: #b84500;
+}
+
+/* ── Cloud — clean cool grey-white ───────────────────────── */
+[data-theme="cloud"] {
+  --surface-0: #eaecf0;
+  --surface-1: #f0f2f5;
+  --surface-2: #f6f7f9;
+  --surface-3: #ffffff;
+
+  --border-subtle:  #d8dce2;
+  --border-default: #c0c6cf;
+  --border-strong:  #96a0ac;
+
+  --text-primary:   #141e28;
+  --text-secondary: #445060;
+  --text-muted:     #728090;
+
+  --primary:        #cc5500;
+  --primary-hover:  #d67632;
+  --primary-subtle: rgba(204, 85, 0, 0.10);
+
+  --danger:         #d01818;
+  --danger-hover:   #b01010;
+  --danger-subtle:  rgba(208, 24, 24, 0.08);
+
+  --editor-bg:      #161c22;
+  --editor-header:  #121820;
+  --editor-text:    #d8dee9;
+  --editor-muted:   #6e7681;
+  --editor-border:  #28303a;
+
+  --handle:         #c0c6cf;
+  --handle-active:  #445060;
+
+  --param-new:      #2e8a40;
+  --param-override: #b84500;
 }
 
 /* ── SnLight — Stratos Blue tints ──────────────────────── */

@@ -55,9 +55,14 @@
               <span class="setting-desc">Choose your interface theme.</span>
             </div>
             <select class="ctrl ctrl--select-inline" value={settings.theme} onchange={onThemeChange}>
-              <option value="dark">Swarmnet</option>
+              <option value="default">Default</option>
               <option value="zed">Zed</option>
-              <option value="dusk">Dusk</option>
+              <option value="stratos-blue">Stratos Blue</option>
+              <option value="midnight">Midnight</option>
+              <option value="obsidian">Obsidian</option>
+              <option value="abyss">Abyss</option>
+              <option value="paper">Paper</option>
+              <option value="cloud">Cloud</option>
               <option value="light">Light</option>
             </select>
           </div>

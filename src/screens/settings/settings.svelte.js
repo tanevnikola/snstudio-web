@@ -1,7 +1,7 @@
 const STORAGE_KEY = "snstudio_settings";
 
 const defaults = {
-  theme: "dark",
+  theme: "default",
   codeEditor: {
     maxCodeHistory: 10,
   },
