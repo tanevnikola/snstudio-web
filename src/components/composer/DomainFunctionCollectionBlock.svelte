@@ -1,5 +1,6 @@
 <script>
     import DomainFunctionBlock from "./DomainFunctionBlock.svelte";
+    import DomainFunctionDropZone from "./DomainFunctionDropZone.svelte";
     import { setSelectionYaml, flush } from "./composerState.svelte.js";
     import {
         setDragHeight,
@@ -34,7 +35,7 @@
         dragHeight = getDragItem() ? getDragHeight() : 32;
 
         const children = [...listEl.children].filter(
-            (el) => !el.classList.contains("drop-placeholder"),
+            (el) => !el.classList.contains("drop-zone"),
         );
         if (children.length === 0) {
             dropIndex = 0;
@@ -116,7 +117,7 @@
 >
     {#each yaml as item, i (i)}
         {#if dropIndex === i}
-            <div class="drop-placeholder" style="height: {dragHeight}px"></div>
+            <DomainFunctionDropZone passive over height={dragHeight} style="margin-left: 1.25rem" />
         {/if}
         <DomainFunctionBlock
             yaml={item}
@@ -127,9 +128,9 @@
         />
     {/each}
     {#if dropIndex === yaml.length}
-        <div class="drop-placeholder" style="height: {dragHeight}px"></div>
+        <DomainFunctionDropZone passive over height={dragHeight} style="margin-left: 1.25rem" />
     {:else}
-        <div class="drop-placeholder empty" style="height: 32px"></div>
+        <DomainFunctionDropZone passive style="margin-left: 1.25rem" />
     {/if}
 </div>
 
@@ -139,16 +140,5 @@
         flex-direction: column;
         gap: 0.25rem;
         min-height: 0.5rem;
-    }
-
-    .drop-placeholder {
-        border: 2px dashed var(--primary);
-        border-radius: 6px;
-        background: var(--primary-subtle);
-        margin-left: 1.25rem;
-    }
-
-    .drop-placeholder.empty {
-        border-color: var(--border-default);
     }
 </style>
