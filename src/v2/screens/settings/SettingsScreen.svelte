@@ -64,10 +64,12 @@
           <div class="setting-row setting-row--inline">
             <div class="setting-label">
               <span class="setting-name">Theme</span>
-              <span class="setting-desc">Choose between dark and light interface themes.</span>
+              <span class="setting-desc">Choose your interface theme.</span>
             </div>
             <select class="ctrl ctrl--select-inline" value={settings.theme} onchange={onThemeChange}>
-              <option value="dark">Dark</option>
+              <option value="dark">Swarmnet</option>
+              <option value="zed">Zed</option>
+              <option value="dusk">Dusk</option>
               <option value="light">Light</option>
             </select>
           </div>

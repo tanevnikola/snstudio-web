@@ -1,20 +1,19 @@
 import { createFn } from './function.js';
 import { loadProject, saveProject } from './persist.js';
 
-function createDefaultProject() {
-  return { actors: {} };
-}
-
 let _currentTag = $state(null);
 
-// project: { actors: { [name]: { actorYaml, functions: { [name]: FunctionEntry } } } }
-export const project = $state(createDefaultProject());
+// project: {
+//   actors:    { [name]: { actorYaml } },
+//   functions: { [name]: FunctionEntry }
+// }
+export const project = $state({ actors: {}, functions: {} });
 
 // UI selection — not persisted
 export const selection = $state({
   actorName: null,
   functionName: null,
-  functionScope: null, // 'library' | 'actor'
+  functionScope: null, // 'library' | 'project'
 });
 
 export function getCurrentTag() {
@@ -24,12 +23,12 @@ export function getCurrentTag() {
 export async function openProject(tag) {
   _currentTag = tag;
   const data = await loadProject(tag);
-  Object.assign(project, data ?? createDefaultProject());
+  Object.assign(project, data ?? { actors: {}, functions: {} });
 }
 
 export function closeProject() {
   _currentTag = null;
-  Object.assign(project, createDefaultProject());
+  Object.assign(project, { actors: {}, functions: {} });
   selection.actorName = null;
   selection.functionName = null;
   selection.functionScope = null;
@@ -44,7 +43,7 @@ function persist() {
 
 export function addActor(name) {
   if (name in project.actors) return;
-  project.actors[name] = { actorYaml: null, functions: {} };
+  project.actors[name] = { actorYaml: null };
   project.actors = { ...project.actors };
   persist();
 }
@@ -52,8 +51,6 @@ export function addActor(name) {
 export function removeActor(name) {
   if (selection.actorName === name) {
     selection.actorName = null;
-    selection.functionName = null;
-    selection.functionScope = null;
   }
   delete project.actors[name];
   project.actors = { ...project.actors };
@@ -76,44 +73,39 @@ export function updateActorYaml(actorName, yaml) {
   persist();
 }
 
-// ── Actor function CRUD ────────────────────────────────────────
+// ── Project function CRUD ──────────────────────────────────────
 
-export function addActorFunction(actorName, fnName) {
-  const actor = project.actors[actorName];
-  if (!actor || fnName in actor.functions) return;
-  actor.functions[fnName] = createFn();
-  actor.functions = { ...actor.functions };
+export function addFunction(name) {
+  if (name in project.functions) return;
+  project.functions[name] = createFn();
+  project.functions = { ...project.functions };
   persist();
 }
 
-export function removeActorFunction(actorName, fnName) {
-  const actor = project.actors[actorName];
-  if (!actor) return;
-  if (selection.functionName === fnName && selection.actorName === actorName) {
+export function removeFunction(name) {
+  if (selection.functionName === name && selection.functionScope === 'project') {
     selection.functionName = null;
     selection.functionScope = null;
   }
-  delete actor.functions[fnName];
-  actor.functions = { ...actor.functions };
+  delete project.functions[name];
+  project.functions = { ...project.functions };
   persist();
 }
 
-export function renameActorFunction(actorName, oldName, newName) {
-  const actor = project.actors[actorName];
-  if (!actor || oldName === newName || newName in actor.functions) return;
-  actor.functions[newName] = actor.functions[oldName];
-  delete actor.functions[oldName];
-  actor.functions = { ...actor.functions };
-  if (selection.functionName === oldName && selection.actorName === actorName) {
+export function renameFunction(oldName, newName) {
+  if (oldName === newName || newName in project.functions) return;
+  project.functions[newName] = project.functions[oldName];
+  delete project.functions[oldName];
+  project.functions = { ...project.functions };
+  if (selection.functionName === oldName && selection.functionScope === 'project') {
     selection.functionName = newName;
   }
   persist();
 }
 
-export function updateActorFunctionYaml(actorName, fnName, yaml) {
-  const actor = project.actors[actorName];
-  if (!actor?.functions[fnName]) return;
-  actor.functions[fnName].yaml = yaml;
+export function updateFunctionYaml(name, yaml) {
+  if (!(name in project.functions)) return;
+  project.functions[name].yaml = yaml;
   persist();
 }
 
@@ -131,10 +123,10 @@ export function selectLibraryFunction(fnName) {
   selection.actorName = null;
 }
 
-export function selectActorFunction(actorName, fnName) {
-  selection.actorName = actorName;
+export function selectProjectFunction(fnName) {
   selection.functionName = fnName;
-  selection.functionScope = 'actor';
+  selection.functionScope = 'project';
+  selection.actorName = null;
 }
 
 export function clearSelection() {

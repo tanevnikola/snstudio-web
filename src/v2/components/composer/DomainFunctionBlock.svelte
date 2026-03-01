@@ -404,10 +404,10 @@
     }
 
     .param-new {
-        color: #5dab6a;
+        color: var(--param-new);
     }
     .param-override {
-        color: #e8913a;
+        color: var(--param-override);
     }
     .param-ancestor {
         color: var(--text-muted);

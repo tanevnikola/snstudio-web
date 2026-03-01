@@ -1,4 +1,4 @@
-/* ── Default (Dark — Stratos Blue) ──────────────────────── */
+/* ── SwarmNet — brand default (Stratos Blue) ────────────── */
 :root,
 [data-theme="dark"] {
   /* Surfaces (Stratos Blue scale)
@@ -19,7 +19,7 @@
   /* Text */
   --text-primary: #e5e6eb;
   --text-secondary: #999bb2;
-  --text-muted: #666a8b;
+  --text-muted: #7d8898;
 
   /* Primary accent (Burnt Orange) */
   --primary: #cc5500;
@@ -41,48 +41,130 @@
   /* Handles */
   --handle: #4c5178;
   --handle-active: #999bb2;
+
+  /* Params bar */
+  --param-new:      #5dab6a;
+  --param-override: #e8913a;
 }
 
-/* ── Light — Sandstone ─────────────────────────────────── */
+/* ── Zed — neutral dark grey ──────────────────────────── */
+[data-theme="zed"] {
+  --surface-0: #161a1e;
+  --surface-1: #1c2024;
+  --surface-2: #20262c;
+  --surface-3: #272e36;
+
+  --border-subtle:  #2a3038;
+  --border-default: #363e47;
+  --border-strong:  #4a5568;
+
+  --text-primary:   #d8dee9;
+  --text-secondary: #8b96a5;
+  --text-muted:     #7d8898;
+
+  --primary:        #cc5500;
+  --primary-hover:  #d67632;
+  --primary-subtle: rgba(204, 85, 0, 0.15);
+
+  --danger:         #e53935;
+  --danger-hover:   #b71c1c;
+  --danger-subtle:  rgba(229, 57, 53, 0.12);
+
+  --editor-bg:      #1c2024;
+  --editor-header:  #161a1e;
+  --editor-text:    #d8dee9;
+  --editor-muted:   #6e7681;
+  --editor-border:  #2a3038;
+
+  --handle:         #363e47;
+  --handle-active:  #8b96a5;
+
+  /* Params bar */
+  --param-new:      #4fa85c;
+  --param-override: #d4703a;
+}
+
+/* ── Dusk — desaturated blue-grey ─────────────────────── */
+[data-theme="dusk"] {
+  --surface-0: #0f1320;
+  --surface-1: #181d2e;
+  --surface-2: #21273f;
+  --surface-3: #2e3553;
+
+  --border-subtle:  #363d5a;
+  --border-default: #4a5275;
+  --border-strong:  #636b90;
+
+  --text-primary:   #c8ccd8;
+  --text-secondary: #8890a8;
+  --text-muted:     #7d8898;
+
+  --primary:        #cc5500;
+  --primary-hover:  #d67632;
+  --primary-subtle: rgba(204, 85, 0, 0.15);
+
+  --danger:         #e53935;
+  --danger-hover:   #b71c1c;
+  --danger-subtle:  rgba(229, 57, 53, 0.12);
+
+  --editor-bg:      #0d1117;
+  --editor-header:  #0a0e14;
+  --editor-text:    #cdd6f4;
+  --editor-muted:   #6c7086;
+  --editor-border:  #30363d;
+
+  --handle:         #4a5275;
+  --handle-active:  #8890a8;
+
+  /* Params bar */
+  --param-new:      #5dab6a;
+  --param-override: #e8913a;
+}
+
+/* ── SnLight — Stratos Blue tints ──────────────────────── */
 [data-theme="light"] {
-  /* Surfaces (warm grey scale)
+  /* Surfaces (light tints of Stratos Blue)
      0 = recessed / canvas
      1 = secondary
      2 = panels / topbar
      3 = cards / hover */
-  --surface-0: #d5d0ca;
-  --surface-1: #dedad5;
-  --surface-2: #e8e5e0;
-  --surface-3: #f2f0ed;
+  --surface-0: #e8eaf5;
+  --surface-1: #eef0f9;
+  --surface-2: #f4f5fc;
+  --surface-3: #ffffff;
 
   /* Borders */
-  --border-default: #bab4ac;
-  --border-subtle: #ccc7c0;
-  --border-strong: #9e978f;
+  --border-subtle:  #d0d3ec;
+  --border-default: #b4b9db;
+  --border-strong:  #8890c0;
 
-  /* Text */
-  --text-primary: #1c1917;
-  --text-secondary: #57534e;
-  --text-muted: #a8a29e;
+  /* Text — Stratos Blue scale */
+  --text-primary:   #00073f;
+  --text-secondary: #353d70;
+  --text-muted:     #525c90;
 
   /* Primary accent (Burnt Orange) */
-  --primary: #cc5500;
-  --primary-hover: #b34a00;
+  --primary:        #cc5500;
+  --primary-hover:  #b34a00;
   --primary-subtle: rgba(204, 85, 0, 0.10);
 
   /* Danger */
-  --danger: #dc2626;
-  --danger-hover: #b91c1c;
-  --danger-subtle: rgba(220, 38, 38, 0.08);
+  --danger:         #dc2626;
+  --danger-hover:   #b91c1c;
+  --danger-subtle:  rgba(220, 38, 38, 0.08);
 
-  /* Editor (dark code editors even in light theme) */
-  --editor-bg: #1e1e2e;
-  --editor-header: #181825;
-  --editor-text: #cdd6f4;
-  --editor-muted: #6c7086;
-  --editor-border: #45475a;
+  /* Editor — dark even in light theme */
+  --editor-bg:      #1e1e2e;
+  --editor-header:  #181825;
+  --editor-text:    #cdd6f4;
+  --editor-muted:   #6c7086;
+  --editor-border:  #45475a;
 
   /* Handles */
-  --handle: #bab4ac;
-  --handle-active: #6d665f;
+  --handle:         #b4b9db;
+  --handle-active:  #353d70;
+
+  /* Params bar */
+  --param-new:      #2e7d3a;
+  --param-override: #b84500;
 }
