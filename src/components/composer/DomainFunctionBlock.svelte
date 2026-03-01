@@ -17,7 +17,7 @@
         clearDragItem,
         getDragItem,
     } from "./dragState.js";
-    import { fetchSpec } from "../../mnemoUtils.js";
+    import { fetchSpec } from "../../lib/mnemoUtils.js";
 
     let { yaml = {}, ancestorParams = [], onremove = () => {} } = $props();
 

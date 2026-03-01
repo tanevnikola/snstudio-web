@@ -1,7 +1,7 @@
 <script>
     import { getSelectionYaml, flush } from "./composerState.svelte.js";
     import ObjectProperties from "../property/ObjectProperties.svelte";
-    import { extractFunctionPropertiesYaml } from "../../yamlUtils.js";
+    import { extractFunctionPropertiesYaml } from "../../lib/yamlUtils.js";
 
     let functionYaml = $derived(getSelectionYaml());
     function onchange(updatedProperties) {

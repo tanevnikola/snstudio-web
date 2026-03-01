@@ -3,7 +3,7 @@
     import DomainFunctionDropZone from "./DomainFunctionDropZone.svelte";
     import { setSelectionYaml, flush } from "./composerState.svelte.js";
     import { getDragItem, isDragDescendant } from "./dragState.js";
-    import { fetchSpec, isInjectionCollection, getSpec } from "../../mnemoUtils.js";
+    import { fetchSpec, isInjectionCollection, getSpec } from "../../lib/mnemoUtils.js";
 
     let { yaml = {}, ancestorParams = [] } = $props();
 

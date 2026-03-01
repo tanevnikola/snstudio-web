@@ -4,7 +4,7 @@
   import ProjectScreen from './screens/ProjectScreen.svelte';
   import SettingsScreen from './screens/settings/SettingsScreen.svelte';
   import Icon from './components/Icon.svelte';
-  import { openProject, closeProject } from './store/projectStore.svelte.js';
+  import { openProject, closeProject } from './lib/store/projectStore.svelte.js';
 
   let ready = $state(false);
 

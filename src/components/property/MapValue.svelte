@@ -1,6 +1,6 @@
 <script>
-    import { deriveMapItemSpec } from "../../parameterSpecUtils";
-    import { normalizeParameterValue } from "../../yamlUtils";
+    import { deriveMapItemSpec } from "../../lib/parameterSpecUtils";
+    import { normalizeParameterValue } from "../../lib/yamlUtils";
     import ParameterField from "./ParameterField.svelte";
     import ConfirmDeleteButton from "../ConfirmDeleteButton.svelte";
 

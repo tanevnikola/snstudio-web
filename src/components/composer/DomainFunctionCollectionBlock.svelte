@@ -16,7 +16,7 @@
         fetchSpec,
         isInjectionCollection,
         getSpec,
-    } from "../../mnemoUtils.js";
+    } from "../../lib/mnemoUtils.js";
 
     let { yaml = [], ancestorParams = [] } = $props();
 

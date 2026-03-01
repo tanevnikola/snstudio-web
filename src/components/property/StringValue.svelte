@@ -1,5 +1,5 @@
 <script>
-    import { getPrimitiveValue } from "../../yamlUtils";
+    import { getPrimitiveValue } from "../../lib/yamlUtils";
     import JsEditor from "../editor/JsEditor.svelte";
     import PebbleEditor from "../editor/PebbleEditor.svelte";
 

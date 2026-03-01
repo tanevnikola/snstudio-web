@@ -1,7 +1,7 @@
 <script>
     import { getSelectionYaml, flush } from "./composerState.svelte.js";
     import ObjectProperties from "../property/ObjectProperties.svelte";
-    import { extractTaskMnemonic, extractTaskYaml } from "../../yamlUtils.js";
+    import { extractTaskMnemonic, extractTaskYaml } from "../../lib/yamlUtils.js";
 
     let functionYaml = $derived(getSelectionYaml());
     let taskYaml = $derived(extractTaskYaml(functionYaml));

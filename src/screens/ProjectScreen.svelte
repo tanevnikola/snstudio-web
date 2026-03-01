@@ -2,8 +2,8 @@
   import ActorTree from '../components/project/ActorTree.svelte';
   import FunctionTree from '../components/project/FunctionTree.svelte';
   import FunctionBuilderScreen from './FunctionBuilderScreen.svelte';
-  import { selection, project, selectProjectFunction, selectActor } from '../store/projectStore.svelte.js';
-  import { screenGuard, clearGuard } from '../store/screenGuard.svelte.js';
+  import { selection, project, selectProjectFunction, selectActor } from '../lib/store/projectStore.svelte.js';
+  import { screenGuard, clearGuard } from '../lib/store/screenGuard.svelte.js';
   import jsYaml from 'js-yaml';
 
   let { tag } = $props();

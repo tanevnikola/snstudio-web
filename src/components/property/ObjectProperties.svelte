@@ -1,7 +1,7 @@
 <script>
-    import { fetchSpec, getObjectProperties } from "../../mnemoUtils.js";
+    import { fetchSpec, getObjectProperties } from "../../lib/mnemoUtils.js";
     import ParameterField from "./ParameterField.svelte";
-    import { extractParameterYaml } from "../../yamlUtils.js";
+    import { extractParameterYaml } from "../../lib/yamlUtils.js";
 
     let { yaml, onchange = () => {} } = $props();
 

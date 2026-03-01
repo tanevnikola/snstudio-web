@@ -1,5 +1,5 @@
 <script>
-    import { getPrimitiveValue } from "../../yamlUtils";
+    import { getPrimitiveValue } from "../../lib/yamlUtils";
 
     let { yaml, mnemonic, spec, options = [], onchange = () => {} } = $props();
 

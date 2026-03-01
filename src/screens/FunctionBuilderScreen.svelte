@@ -6,8 +6,8 @@
     import { getSelectionYaml, getParsedTree } from "../components/composer/composerState.svelte.js";
     import jsYaml from "js-yaml";
     import FunctionProperties from "../components/composer/FunctionProperties.svelte";
-    import { selection, updateFunctionYaml } from "../store/projectStore.svelte.js";
-    import { screenGuard, clearGuard } from "../store/screenGuard.svelte.js";
+    import { selection, updateFunctionYaml } from "../lib/store/projectStore.svelte.js";
+    import { screenGuard, clearGuard } from "../lib/store/screenGuard.svelte.js";
 
     let { yaml = "" } = $props();
 

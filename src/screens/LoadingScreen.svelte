@@ -1,7 +1,7 @@
 <script>
-  import { fetchSpec } from '../mnemoUtils.js';
-  import { initProjects } from '../store/projectsStore.svelte.js';
-  import { migrateFromV2Keys } from '../store/persist.js';
+  import { fetchSpec } from '../lib/mnemoUtils.js';
+  import { initProjects } from '../lib/store/projectsStore.svelte.js';
+  import { migrateFromV2Keys } from '../lib/store/persist.js';
 
   migrateFromV2Keys();
 

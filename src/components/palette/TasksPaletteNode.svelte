@@ -1,7 +1,7 @@
 <script>
     import TasksPaletteNode from "./TasksPaletteNode.svelte";
     import DocsPopover from "../DocsPopover.svelte";
-    import { fetchSpec } from "../../mnemoUtils.js";
+    import { fetchSpec } from "../../lib/mnemoUtils.js";
 
     let { mnemonic, depth = 0, defaultCollapsed = true } = $props();
 

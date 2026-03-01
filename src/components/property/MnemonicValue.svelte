@@ -5,11 +5,11 @@
         getImplementations,
         getObjectProperties,
         isImplementing,
-    } from "../../mnemoUtils.js";
+    } from "../../lib/mnemoUtils.js";
     import ParameterField from "./ParameterField.svelte";
     import DocsPopover from "../DocsPopover.svelte";
     import MnemonicValue from "./MnemonicValue.svelte";
-    import { extractParameterYaml } from "../../yamlUtils.js";
+    import { extractParameterYaml } from "../../lib/yamlUtils.js";
     import { untrack } from "svelte";
 
     let { yaml, mnemonic, onchange = () => {}, context = {} } = $props();

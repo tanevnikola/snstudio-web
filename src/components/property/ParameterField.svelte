@@ -5,7 +5,7 @@
         isCollectionInjection,
         isDelegating,
         isInjectionAllowed,
-    } from "../../parameterSpecUtils.js";
+    } from "../../lib/parameterSpecUtils.js";
     import {
         getSpec,
         isImplementing,
@@ -14,7 +14,7 @@
         isBooleanPrimitive,
         isNumberPrimitive,
         isEnumPrimitive,
-    } from "../../mnemoUtils.js";
+    } from "../../lib/mnemoUtils.js";
     import MapValue from "./MapValue.svelte";
     import CollectionValue from "./CollectionValue.svelte";
     import MnemonicValue from "./MnemonicValue.svelte";

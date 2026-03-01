@@ -3,7 +3,7 @@
   import {
     project, selection,
     addFunction, removeFunction, renameFunction, selectProjectFunction,
-  } from '../../store/projectStore.svelte.js';
+  } from '../../lib/store/projectStore.svelte.js';
 
   let { onselect = null } = $props();
 

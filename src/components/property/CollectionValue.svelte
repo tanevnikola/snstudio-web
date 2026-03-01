@@ -1,6 +1,6 @@
 <script>
-    import { deriveCollectionItemSpec } from "../../parameterSpecUtils";
-    import { normalizeParameterValue } from "../../yamlUtils";
+    import { deriveCollectionItemSpec } from "../../lib/parameterSpecUtils";
+    import { normalizeParameterValue } from "../../lib/yamlUtils";
     import ParameterField from "./ParameterField.svelte";
 
     let {

@@ -1,5 +1,5 @@
 <script>
-  import { projectsList, addProject, removeProject, setProjectTag } from '../store/projectsStore.svelte.js';
+  import { projectsList, addProject, removeProject, setProjectTag } from '../lib/store/projectsStore.svelte.js';
   import ConfirmDeleteButton from '../components/ConfirmDeleteButton.svelte';
 
   let { onopen = () => {} } = $props();
