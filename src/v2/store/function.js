@@ -6,5 +6,15 @@
  */
 
 export function createFn() {
-  return { yaml: null };
+  return {
+    yaml: {
+      t: 'DomainFunction',
+      v: {
+        task: {
+          t: 'Task.Chain',
+          v: [],
+        },
+      },
+    },
+  };
 }

@@ -22,6 +22,7 @@
     import NumberValue from "./NumberValue.svelte";
     import BooleanValue from "./BooleanValue.svelte";
     import EnumValue from "./EnumValue.svelte";
+    import Icon from "../Icon.svelte";
 
     let {
         parameterYaml,
@@ -95,13 +96,7 @@
                     onclick={() => (injecting = !injecting)}
                     title="Use resource injector"
                 >
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="14"
-                        height="14"
-                        fill="currentColor"
-                        ><path d="M7 2v11h3v9l7-12h-4l4-8z" /></svg
-                    >
+                    <Icon name="bolt" size={14} />
                 </button>
             {/if}
 

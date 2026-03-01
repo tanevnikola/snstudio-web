@@ -1,5 +1,6 @@
 <script>
   import { fetchSpec } from '../mnemoUtils.js';
+  import { initProjects } from '../store/projectsStore.svelte.js';
 
   let { onready } = $props();
 
@@ -42,14 +43,12 @@
   }
 
   $effect(() => {
-    fetchAllSpecs((l, t) => {
-      loaded = l;
-      total = t;
-    })
+    Promise.all([
+      fetchAllSpecs((l, t) => { loaded = l; total = t; }),
+      initProjects(),
+    ])
       .then(() => onready?.())
-      .catch((e) => {
-        error = e.message;
-      });
+      .catch((e) => { error = e.message; });
   });
 </script>
 

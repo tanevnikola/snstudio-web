@@ -1,5 +1,6 @@
 <script>
   import { settings, persistSettings, applyTheme } from './settings.svelte.js';
+  import Icon from '../../components/Icon.svelte';
 
   const categories = [
     { id: 'appearance', label: 'Appearance' },
@@ -31,22 +32,9 @@
             onclick={() => (selectedCategory = cat.id)}
           >
             {#if cat.id === 'appearance'}
-              <svg class="cat-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="4"/>
-                <path d="M12 2v2"/>
-                <path d="M12 20v2"/>
-                <path d="m4.93 4.93 1.41 1.41"/>
-                <path d="m17.66 17.66 1.41 1.41"/>
-                <path d="M2 12h2"/>
-                <path d="M20 12h2"/>
-                <path d="m6.34 17.66-1.41 1.41"/>
-                <path d="m19.07 4.93-1.41 1.41"/>
-              </svg>
+              <span class="cat-icon"><Icon name="sun" size={15} /></span>
             {:else if cat.id === 'codeEditor'}
-              <svg class="cat-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polyline points="16 18 22 12 16 6"/>
-                <polyline points="8 6 2 12 8 18"/>
-              </svg>
+              <span class="cat-icon"><Icon name="code" size={15} /></span>
             {/if}
             <span>{cat.label}</span>
           </button>
