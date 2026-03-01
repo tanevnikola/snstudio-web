@@ -1,10 +1,10 @@
 <script>
-  import LoadingScreen from './v2/screens/LoadingScreen.svelte';
-  import HomeScreen from './v2/screens/HomeScreen.svelte';
-  import ProjectScreen from './v2/screens/ProjectScreen.svelte';
-  import SettingsScreen from './v2/screens/settings/SettingsScreen.svelte';
-  import Icon from './v2/components/Icon.svelte';
-  import { openProject, closeProject } from './v2/store/projectStore.svelte.js';
+  import LoadingScreen from './screens/LoadingScreen.svelte';
+  import HomeScreen from './screens/HomeScreen.svelte';
+  import ProjectScreen from './screens/ProjectScreen.svelte';
+  import SettingsScreen from './screens/settings/SettingsScreen.svelte';
+  import Icon from './components/Icon.svelte';
+  import { openProject, closeProject } from './store/projectStore.svelte.js';
 
   let ready = $state(false);
 
