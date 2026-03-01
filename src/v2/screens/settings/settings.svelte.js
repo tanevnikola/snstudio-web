@@ -1,7 +1,7 @@
-const STORAGE_KEY = 'snstudio_settings';
+const STORAGE_KEY = "snstudio_settings";
 
 const defaults = {
-  theme: 'dark',
+  theme: "dark",
   codeEditor: {
     maxCodeHistory: 10,
   },
@@ -26,7 +26,7 @@ function load() {
 export const settings = $state(load());
 
 export function applyTheme(theme) {
-  document.documentElement.setAttribute('data-theme', theme);
+  document.documentElement.setAttribute("data-theme", theme);
 }
 
 // Apply saved theme immediately

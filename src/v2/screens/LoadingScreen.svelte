@@ -1,5 +1,5 @@
 <script>
-  import { fetchSpec } from '../../v2/mnemoUtils.js';
+  import { fetchSpec } from '../mnemoUtils.js';
 
   let { onready } = $props();
 

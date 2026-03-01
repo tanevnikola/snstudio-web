@@ -1,5 +1,5 @@
 <script>
-  import LoadingScreen from './lib/components/LoadingScreen.svelte';
+  import LoadingScreen from './v2/screens/LoadingScreen.svelte';
   import MainScreen from './screens/main/MainScreen.svelte';
 
   let ready = $state(false);

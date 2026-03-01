@@ -1,5 +1,5 @@
 <script>
-  import SettingsScreen from '../settings/SettingsScreen.svelte';
+  import SettingsScreen from '../../v2/screens/settings/SettingsScreen.svelte';
   import ProjectScreen from '../project/ProjectScreen.svelte';
   import ProjectsScreen from '../projects/ProjectsScreen.svelte';
   import { loadProject, unloadProject } from '../../lib/projectStore.svelte.js';

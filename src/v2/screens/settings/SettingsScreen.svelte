@@ -1,5 +1,5 @@
 <script>
-  import { settings, persistSettings, applyTheme } from '../../lib/settings.svelte.js';
+  import { settings, persistSettings, applyTheme } from './settings.svelte.js';
 
   const categories = [
     { id: 'appearance', label: 'Appearance' },
