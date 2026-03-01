@@ -138,6 +138,11 @@
         e.preventDefault();
         e.dataTransfer.dropEffect = getDragItem() ? "move" : "copy";
     }
+
+    function goodLookinTaskgName(str) {
+      return str ? str.replace(/^Task\./, '') : str;
+    }
+
 </script>
 
 {#if valid && taskYaml}
@@ -193,7 +198,7 @@
                         <ConfirmDeleteButton onclick={handleDelete} />
                     </div>
                     <div class="info">
-                        <span class="title">{mnemonic}</span>
+                        <span class="title">{goodLookinTaskgName(mnemonic)}</span>
                         {#if detail}
                             <span class="detail">{detail}</span>
                         {/if}
@@ -201,12 +206,7 @@
                 </div>
                 {#if paramGroups.length > 0}
                     <div class="params-bar">
-                        (<!--
-                        -->{#each paramGroups as { k, cls }, i}<span
-                                class={cls}>{k}</span
-                            >{#if i < paramGroups.length - 1},
-                            {/if}{/each}<!--
-                    -->)
+                        ({#each paramGroups as { k, cls }}<span class={cls}>{k}</span>{/each})
                     </div>
                 {/if}
             </div>
@@ -398,7 +398,7 @@
 
     .params-bar {
         padding: 0.15rem 0.75rem;
-        font-size: 0.7rem;
+        font-size: 0.75rem;
         color: var(--text-muted);
         border-top: 1px solid var(--border-default);
     }
@@ -410,6 +410,11 @@
         color: var(--param-override);
     }
     .param-ancestor {
+        color: var(--text-muted);
+    }
+
+    .params-bar span + span::before {
+        content: ', ';
         color: var(--text-muted);
     }
 

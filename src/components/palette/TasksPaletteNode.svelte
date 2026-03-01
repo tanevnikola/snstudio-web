@@ -1,5 +1,5 @@
 <script>
-    import PaletteNode from "./PaletteNode.svelte";
+    import TasksPaletteNode from "./TasksPaletteNode.svelte";
     import DocsPopover from "../DocsPopover.svelte";
     import { fetchSpec } from "../../mnemoUtils.js";
 
@@ -88,7 +88,7 @@
             {#if !collapsed}
                 <div class="group-children">
                     {#each spec.implementations as impl (impl)}
-                        <PaletteNode mnemonic={impl} depth={depth + 1} />
+                        <TasksPaletteNode mnemonic={impl} depth={depth + 1} />
                     {/each}
                 </div>
             {/if}

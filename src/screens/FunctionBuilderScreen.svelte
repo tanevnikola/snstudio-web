@@ -1,5 +1,5 @@
 <script>
-    import ComponentsPalette from "../components/palette/ComponentsPalette.svelte";
+    import TasksPalette from "../components/palette/TasksPalette.svelte";
     import FunctionComposer from "../components/composer/FunctionComposer.svelte";
     import TaskProperties from "../components/composer/TaskProperties.svelte";
     import YamlEditor from "../components/editor/YamlEditor.svelte";
@@ -147,7 +147,7 @@
         style="grid-template-columns: {paletteWidth}px auto 1fr auto {propsWidth}px"
     >
         <div class="palette">
-            <ComponentsPalette />
+            <TasksPalette />
         </div>
         <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
         <div

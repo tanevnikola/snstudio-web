@@ -1,5 +1,5 @@
 <script>
-    import PaletteNode from "./PaletteNode.svelte";
+    import TasksPaletteNode from "./TasksPaletteNode.svelte";
 
     const roots = [
         { mnemonic: "FlowTask", label: "Flow" },
@@ -17,12 +17,12 @@
             onclick={() => (componentsCollapsed = !componentsCollapsed)}
         >
             <span class="section-arrow">{componentsCollapsed ? "▶" : "▼"}</span>
-            <span class="section-title">Components</span>
+            <span class="section-title">Tasks</span>
             <span class="section-count">{roots.length}</span>
         </button>
         {#if !componentsCollapsed}
             {#each roots as root (root.mnemonic)}
-                <PaletteNode
+                <TasksPaletteNode
                     mnemonic={root.mnemonic}
                     depth={0}
                     defaultCollapsed={false}
