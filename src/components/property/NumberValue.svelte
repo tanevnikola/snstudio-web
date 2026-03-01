@@ -6,7 +6,7 @@
     function handleBlur(e) {
         const v = /** @type {HTMLInputElement} */ (e.target).value;
         const num = Number(v);
-        onchange(v === "" ? null : { t: mnemonic, v: isNaN(num) ? v : num });
+        onchange(v === "" ? null : num);
     }
 </script>
 

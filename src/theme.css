@@ -33,6 +33,9 @@
 
     --param-new:      #5aad68;
     --param-override: #e85a1a;
+
+    --details-bg:     #342318;
+    --details-bg-muted:  #271a13;
   }
 
 /* ── Stratos Blue — brand deep navy ─────────────────────── */
@@ -81,6 +84,9 @@
   /* Params bar */
   --param-new:      #5dab6a;
   --param-override: #e8913a;
+
+  --details-bg:     #323865;
+  --details-bg-muted:  #252b5c;
 }
 
 /* ── Zed — neutral dark grey ──────────────────────────── */
@@ -118,6 +124,9 @@
   /* Params bar */
   --param-new:      #4fa85c;
   --param-override: #d4703a;
+
+  --details-bg:     #272e36;
+  --details-bg-muted:  #232930;
 }
 
 /* ── Midnight — cold dark navy ────────────────────────── */
@@ -155,6 +164,9 @@
   /* Params bar */
   --param-new:      #5dab6a;
   --param-override: #e8913a;
+
+  --details-bg:     #2e3553;
+  --details-bg-muted:  #262d49;
 }
 
 /* ── Obsidian — near-black green tint, jade accent ─────── */
@@ -191,6 +203,9 @@
 
   --param-new:      #2ebd6a;
   --param-override: #c8a030;
+
+  --details-bg:     #1c2a1e;
+  --details-bg-muted:  #18241a;
 }
 
 /* ── Abyss — pitch-black indigo, electric teal ─────────── */
@@ -227,6 +242,9 @@
 
   --param-new:      #3ab870;
   --param-override: #e8a020;
+
+  --details-bg:     #0f1e38;
+  --details-bg-muted:  #0c1930;
 }
 
 /* ── Paper — warm cream, parchment ───────────────────────── */
@@ -263,6 +281,9 @@
 
   --param-new:      #2e7d3a;
   --param-override: #b84500;
+
+  --details-bg:     #ffffff;
+  --details-bg-muted:  #ede8df;
 }
 
 /* ── Cloud — clean cool grey-white ───────────────────────── */
@@ -299,6 +320,9 @@
 
   --param-new:      #2e8a40;
   --param-override: #b84500;
+
+  --details-bg:     #ffffff;
+  --details-bg-muted:  #eaecf0;
 }
 
 /* ── SnLight — Stratos Blue tints ──────────────────────── */
@@ -347,4 +371,7 @@
   /* Params bar */
   --param-new:      #2e7d3a;
   --param-override: #b84500;
+
+  --details-bg:     #ffffff;
+  --details-bg-muted:  #eef0f9;
 }

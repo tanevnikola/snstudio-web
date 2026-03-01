@@ -32,7 +32,18 @@
         return { t: "Task.Chain", v: v.tasks };
     });
 
-    let detail = $derived(v.trace ?? "");
+    let detail = $derived.by(() => {
+        const flags = [];
+        if (v.declaration != null) flags.push("declared");
+        if (v.verbose === true) flags.push("verbose");
+        if (v.metrics === true) flags.push("metrics");
+        const trace = v.trace ?? "";
+        const prefix = flags.length > 0 ? `(${flags.join(", ")})` : "";
+        if (!prefix && !trace) return "";
+        if (!prefix) return trace;
+        if (!trace) return prefix;
+        return `${prefix} ${trace}`;
+    });
     let mnemonic = $derived(taskYaml?.t ?? "");
     let mnemonicSpec = $state(null);
     let collapsed = $state(false);
@@ -173,7 +184,7 @@
                     collapsed = !collapsed;
                 }}
             >
-                <span class="chevron">▼</span>
+                <span class="chevron">&#9662;</span>
             </button>
             <div
                 class="block"
@@ -216,7 +227,6 @@
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <div
                 class="children-area"
-                class:has-children={domainFunctionParams.length > 0}
                 ondragenter={handleChildrenDragEnter}
                 ondragover={handleChildrenDragOver}
             >
@@ -341,7 +351,7 @@
         cursor: pointer;
         padding: 0;
         color: var(--text-secondary);
-        font-size: 10px;
+        font-size: 0.7rem;
     }
 
     .collapse-btn.hidden {
@@ -390,7 +400,7 @@
     .detail {
         font-size: 0.7rem;
         color: var(--text-secondary);
-        background: var(--surface-3);
+        background: var(--details-bg);
         padding: 0.1rem 0.4rem;
         border-radius: 4px;
         white-space: nowrap;
@@ -401,6 +411,7 @@
         padding: 0.15rem 0.75rem;
         font-size: 0.75rem;
         color: var(--text-muted);
+        background: var(--details-bg-muted);
         border-top: 1px solid var(--border-default);
     }
 
@@ -419,41 +430,26 @@
         color: var(--text-muted);
     }
 
-    .children-area {
-        margin-top: 0.25rem;
-    }
-
-    .children-area.has-children {
-        position: relative;
-        border-left: 2px dashed var(--border-default);
-        padding-left: 0.75rem;
-        padding-top: 0.25rem;
-        padding-bottom: 0.25rem;
-        margin-left: 0.6rem;
-    }
-
-    .children-area.has-children::before,
-    .children-area.has-children::after {
-        content: '';
+    .task.has-children::after {
+        content: "";
         position: absolute;
-        left: 0;
-        width: 6px;
-        border-color: var(--border-default);
-        border-style: dashed;
+        left: 0.7rem;
+        top: 100%;
+        height: 0;
+        width: 2px;
+        background: var(--border-default);
+        border-radius: 1px;
     }
 
-    .children-area.has-children::before {
-        top: 0;
-        border-width: 2px 0 0 0;
-    }
-
-    .children-area.has-children::after {
+    .task.has-children:not(.collapsed)::after {
+        top: 2rem;
         bottom: 0;
-        border-width: 0 0 2px 0;
+        height: auto;
     }
 
     .children {
         margin-top: 0.25rem;
+        margin-left: 2rem;
     }
 
     .children.named + .children {
