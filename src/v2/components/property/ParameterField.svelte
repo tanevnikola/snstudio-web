@@ -166,9 +166,10 @@
             <!-- Collapse button -->
             <button
                 class="collapse-toggle"
+                class:collapsed
                 onclick={() => (collapsed = !collapsed)}
             >
-                {collapsed ? "▶" : "▼"}
+                <span class="chevron">▼</span>
             </button>
 
             <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -212,8 +213,6 @@
 <style>
     .field {
         margin-bottom: 8px;
-        padding-left: 12px;
-        border-left: 2px dashed var(--border-default);
         width: 100%;
     }
     .field-header {
@@ -221,20 +220,27 @@
         align-items: baseline;
         gap: 4px;
         margin-bottom: 4px;
-        margin-left: -12px;
     }
     .collapse-toggle {
         background: none;
         border: none;
         padding: 0;
-        font-size: 8px;
+        font-size: 10px;
         color: var(--text-muted);
         cursor: pointer;
         line-height: 1;
         flex-shrink: 0;
     }
-    .collapse-toggle:hover {
+    .collapse-toggle:hover .chevron {
         color: var(--text-secondary);
+    }
+    .chevron {
+        display: inline-block;
+        transition: transform 0.15s ease, color 0.15s ease;
+    }
+    .collapse-toggle.collapsed .chevron {
+        transform: rotate(-90deg);
+        color: #fff;
     }
     .label {
         display: inline;
@@ -303,8 +309,31 @@
         cursor: pointer;
     }
     .value {
+        position: relative;
         display: flex;
         align-items: flex-start;
+        border-left: 2px dashed var(--border-default);
+        padding-left: 10px;
+        padding-top: 4px;
+        padding-bottom: 4px;
+        margin-left: 4px;
+    }
+    .value::before,
+    .value::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        width: 5px;
+        border-color: var(--border-default);
+        border-style: dashed;
+    }
+    .value::before {
+        top: 0;
+        border-width: 2px 0 0 0;
+    }
+    .value::after {
+        bottom: 0;
+        border-width: 0 0 2px 0;
     }
     .value > :global(*) {
         flex: 1;

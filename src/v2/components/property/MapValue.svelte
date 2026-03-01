@@ -2,6 +2,7 @@
     import { deriveMapItemSpec } from "../../parameterSpecUtils";
     import { normalizeParameterValue } from "../../yamlUtils";
     import ParameterField from "./ParameterField.svelte";
+    import ConfirmDeleteButton from "../ConfirmDeleteButton.svelte";
 
     let {
         yaml = null,
@@ -13,18 +14,24 @@
     let entrySpec = $derived(deriveMapItemSpec(parameterSpec));
     let keys = $derived(yaml ? Object.keys(yaml) : []);
 
+    let collapsed = $state({});
+
     function handleValueChange(key, value) {
         onchange({ ...yaml, [key]: value });
     }
 
     function handleKeyChange(oldKey, newKey) {
-        if (oldKey === newKey) return;
+        newKey = newKey.trim();
+        if (!newKey || newKey === oldKey) return;
         const { [oldKey]: value, ...rest } = yaml;
         onchange({ ...rest, [newKey]: value });
     }
 
     function addEntry() {
-        onchange({ ...yaml, "": null });
+        let key = "key";
+        let n = 1;
+        while (key in (yaml ?? {})) key = `key${n++}`;
+        onchange({ ...yaml, [key]: null });
     }
 
     function removeEntry(key) {
@@ -37,14 +44,17 @@
     {#each keys as key (key)}
         <div class="entry">
             <div class="entry-header">
+                <ConfirmDeleteButton onclick={() => removeEntry(key)} />
                 <button
-                    class="remove-btn"
-                    onclick={() => removeEntry(key)}
-                    title="Remove entry">&times;</button
+                    class="collapse-toggle"
+                    class:collapsed={collapsed[key]}
+                    onclick={() => (collapsed[key] = !collapsed[key])}
                 >
+                    <span class="chevron">▼</span>
+                </button>
                 <input
                     type="text"
-                    class="key-input"
+                    class="key-label"
                     placeholder="key"
                     value={key}
                     onblur={(e) =>
@@ -52,14 +62,25 @@
                             key,
                             /** @type {HTMLInputElement} */ (e.target).value,
                         )}
+                    onkeydown={(e) => {
+                        if (e.key === "Enter")
+                            /** @type {HTMLInputElement} */ (e.target).blur();
+                    }}
                 />
             </div>
-            <ParameterField
-                parameterYaml={normalizeParameterValue(yaml[key], entrySpec)}
-                parameterSpec={entrySpec}
-                {context}
-                onchange={(value) => handleValueChange(key, value)}
-            />
+            {#if !collapsed[key]}
+                <div class="entry-value">
+                    <ParameterField
+                        parameterYaml={normalizeParameterValue(
+                            yaml[key],
+                            entrySpec,
+                        )}
+                        parameterSpec={entrySpec}
+                        {context}
+                        onchange={(value) => handleValueChange(key, value)}
+                    />
+                </div>
+            {/if}
         </div>
     {/each}
     <button class="add-btn" onclick={addEntry}>+ add entry</button>
@@ -79,42 +100,71 @@
     .entry-header {
         display: flex;
         align-items: center;
-        gap: 4px;
-        margin-bottom: 4px;
+        gap: 2px;
+        margin-bottom: 2px;
     }
-    .key-input {
-        flex: 1;
-        min-width: 0;
-        padding: 4px 8px;
-        border: 1px solid var(--border-default);
-        border-radius: 4px;
-        font-size: 13px;
-        box-sizing: border-box;
-        background: var(--surface-2);
-        color: var(--text-primary);
-    }
-    .key-input:focus {
-        outline: none;
-        border-color: var(--primary);
-    }
-    .remove-btn {
-        flex-shrink: 0;
-        width: 20px;
-        height: 20px;
-        padding: 0;
-        border: none;
-        border-radius: 4px;
+    .collapse-toggle {
         background: none;
+        border: none;
+        padding: 0;
+        font-size: 10px;
         color: var(--text-muted);
-        font-size: 16px;
         cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+        line-height: 1;
+        flex-shrink: 0;
     }
-    .remove-btn:hover {
-        background: var(--danger-subtle);
-        color: var(--danger);
+    .collapse-toggle:hover .chevron {
+        color: var(--text-secondary);
+    }
+    .chevron {
+        display: inline-block;
+        transition: transform 0.15s ease, color 0.15s ease;
+    }
+    .collapse-toggle.collapsed .chevron {
+        transform: rotate(-90deg);
+        color: #fff;
+    }
+    .entry-value {
+        position: relative;
+        border-left: 2px dashed var(--border-default);
+        padding-left: 10px;
+        padding-top: 4px;
+        padding-bottom: 4px;
+        margin-left: 22px;
+    }
+    .entry-value::before,
+    .entry-value::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        width: 5px;
+        border-color: var(--border-default);
+        border-style: dashed;
+    }
+    .entry-value::before {
+        top: 0;
+        border-width: 2px 0 0 0;
+    }
+    .entry-value::after {
+        bottom: 0;
+        border-width: 0 0 2px 0;
+    }
+    .key-label {
+        background: none;
+        border: none;
+        outline: none;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        cursor: text;
+        padding: 0;
+        min-width: 2ch;
+        flex: 1;
+        font-family: inherit;
+    }
+    .key-label:focus {
+        color: var(--text-primary);
+        border-bottom: 1px solid var(--primary);
     }
     .add-btn {
         align-self: flex-start;
