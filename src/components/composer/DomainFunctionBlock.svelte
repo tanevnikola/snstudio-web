@@ -88,6 +88,10 @@
             .map((k) => ({ k, cls: "param-ancestor" })),
     ]);
 
+    let visibleParamGroups = $derived(paramGroups.filter((p) => p.cls !== "param-ancestor"));
+    let ancestorParamGroups = $derived(paramGroups.filter((p) => p.cls === "param-ancestor"));
+    let ancestorsExpanded = $state(false);
+
     function getParamYaml(param) {
         if (param.name === "@delegating@") return taskYaml?.v;
         if (
@@ -217,7 +221,7 @@
                 </div>
                 {#if paramGroups.length > 0}
                     <div class="params-bar">
-                        ({#each paramGroups as { k, cls }}<span class={cls}>{k}</span>{/each})
+                        ({#each visibleParamGroups as { k, cls }}<span class={cls}>{k}</span>{/each}{#if ancestorParamGroups.length > 0}{#if ancestorsExpanded}{#each ancestorParamGroups as { k, cls }}<span class="{cls} ancestors-toggle" onclick={(e) => { e.stopPropagation(); ancestorsExpanded = false; }}>{k}</span>{/each}{:else}<span class="ancestors-toggle" onclick={(e) => { e.stopPropagation(); ancestorsExpanded = true; }}>…</span>{/if}{/if})
                     </div>
                 {/if}
             </div>
@@ -423,6 +427,15 @@
     }
     .param-ancestor {
         color: var(--text-muted);
+    }
+
+    .ancestors-toggle {
+        color: var(--text-muted);
+        cursor: pointer;
+    }
+
+    .ancestors-toggle:hover {
+        color: var(--text-secondary);
     }
 
     .params-bar span + span::before {
