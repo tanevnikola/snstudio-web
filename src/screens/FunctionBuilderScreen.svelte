@@ -1,11 +1,11 @@
 <script>
     import TasksPalette from "../components/palette/TasksPalette.svelte";
-    import FunctionComposer from "../components/composer/FunctionComposer.svelte";
-    import TaskProperties from "../components/composer/TaskProperties.svelte";
+    import FunctionComposer from "../components/function-composer/FunctionComposer.svelte";
+    import TaskProperties from "../components/function-composer/TaskProperties.svelte";
     import YamlEditor from "../components/editor/YamlEditor.svelte";
-    import { getSelectionYaml, getParsedTree } from "../components/composer/composerState.svelte.js";
+    import { getSelectionYaml, getParsedTree } from "../components/function-composer/composerState.svelte.js";
     import jsYaml from "js-yaml";
-    import FunctionProperties from "../components/composer/FunctionProperties.svelte";
+    import FunctionProperties from "../components/function-composer/FunctionProperties.svelte";
     import { selection, updateFunctionYaml } from "../lib/store/projectStore.svelte.js";
     import { screenGuard, clearGuard } from "../lib/store/screenGuard.svelte.js";
 
