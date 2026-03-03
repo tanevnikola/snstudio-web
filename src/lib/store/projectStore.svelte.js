@@ -1,5 +1,5 @@
-import { createFn } from './function.js';
-import { loadProject, saveProject } from './persist.js';
+import {createFn} from './function.js';
+import {loadProject, saveProject} from './persist.js';
 
 let _currentTag = $state(null);
 

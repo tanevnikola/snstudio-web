@@ -1,5 +1,5 @@
-import { createFn } from './function.js';
-import { loadLibrary, saveLibrary } from './persist.js';
+import {createFn} from './function.js';
+import {loadLibrary, saveLibrary} from './persist.js';
 
 // functions: { [path/name]: FunctionEntry }
 // e.g. { "myFunc": { yaml }, "utils/helper": { yaml } }

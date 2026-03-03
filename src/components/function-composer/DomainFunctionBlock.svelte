@@ -221,7 +221,7 @@
                 </div>
                 {#if paramGroups.length > 0}
                     <div class="params-bar">
-                        ({#each visibleParamGroups as { k, cls }}<span class={cls}>{k}</span>{/each}{#if ancestorParamGroups.length > 0}{#if ancestorsExpanded}{#each ancestorParamGroups as { k, cls }}<span class="{cls} ancestors-toggle" onclick={(e) => { e.stopPropagation(); ancestorsExpanded = false; }}>{k}</span>{/each}{:else}<span class="ancestors-toggle" onclick={(e) => { e.stopPropagation(); ancestorsExpanded = true; }}>…</span>{/if}{/if})
+                        {#each visibleParamGroups as { k, cls }}<span class={cls}>{k}</span>{/each}{#if ancestorParamGroups.length > 0}{#if ancestorsExpanded}{#each ancestorParamGroups as { k, cls }}<span class="{cls} ancestors-toggle" onclick={(e) => { e.stopPropagation(); ancestorsExpanded = false; }}>{k}</span>{/each}{:else}<span class="ancestors-toggle" onclick={(e) => { e.stopPropagation(); ancestorsExpanded = true; }}>…</span>{/if}{/if}
                     </div>
                 {/if}
             </div>

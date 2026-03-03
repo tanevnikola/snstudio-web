@@ -1,4 +1,4 @@
-import { loadProjects, saveProjects, deleteProject, renameProject as renameProjectStorage } from './persist.js';
+import {deleteProject, loadProjects, renameProject as renameProjectStorage, saveProjects} from './persist.js';
 
 // projects: [{ tag }]
 export const projectsList = $state({ projects: [] });

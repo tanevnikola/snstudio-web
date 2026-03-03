@@ -1,6 +1,5 @@
 import jsYaml from 'js-yaml';
-import { isCollectionInjection, isDelegating, isMapInjection } from "./parameterSpecUtils";
-import { isImplementing, isResourceInjector } from './mnemoUtils';
+import {isCollectionInjection, isDelegating, isMapInjection} from "./parameterSpecUtils";
 
 export function dumpYamlAsText(yaml) {
     return yaml ? jsYaml.dump(yaml, { lineWidth: -1, noRefs: true }) : ''
